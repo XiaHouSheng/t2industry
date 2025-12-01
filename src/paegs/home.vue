@@ -1,10 +1,9 @@
 <script setup>
-import Root from './paegs/root.vue';
 
 </script>
 
 <template>
-    <Root></Root>
+<h1>home</h1>
 </template>
 
 <style scoped>

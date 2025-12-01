@@ -1,0 +1,57 @@
+:root{
+  --sheng-self-height: 740px;
+  --sheng-self-simulation-list-height: 740px
+}
+
+.text-align-center {
+  text-align: center;
+}
+
+.display-flex {
+  display: flex;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.align-item-center {
+  align-items: center;
+}
+
+.max-height-width {
+  height: 100%;
+  width: 100%;
+}
+
+.flex-direation-row {
+  flex-direction: row;
+}
+
+.flex-direation-col {
+  flex-direction: column;
+}
+
+.flex-direation-row-re {
+  flex-direction: row-reverse;
+}
+
+.flex-direation-col-re {
+  flex-direction: column-reverse;
+}
+
+.padding-0 {
+  padding: 0;
+}
+
+.margin-0 {
+  margin: 0;
+}
+
+.flex-grow-1{
+  flex-grow: 1;
+}
+
+.container{
+  height: var(--sheng-self-height)
+}
