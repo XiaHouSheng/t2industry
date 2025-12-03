@@ -2,7 +2,6 @@
 import { ref } from "vue";
 import { useRootStore } from "../../stores/SimStore";
 
-//后续可以脚本批量生成，根据inner与outer的数量
 const rootStore = useRootStore();
 const props = defineProps({
   gs_id: {
@@ -43,26 +42,48 @@ const handleBeltConnect = (event, which) => {
     style="justify-content: space-between"
     @contextmenu="handleRightClick"
   >
-    <div class="display-flex flex-direation-row justify-content-center">
+    <div
+      class="display-flex flex-direation-row justify-content-center"
+    >
+      <!-- inner数量 = width=3 -->
       <el-button
         @click="handleBeltConnect($event, 'inner')"
         class="sim-inner-btn"
         round
       ></el-button>
-      <el-button class="sim-inner-btn" round></el-button>
-      <el-button class="sim-inner-btn" round></el-button>
+      <el-button
+        @click="handleBeltConnect($event, 'inner')"
+        class="sim-inner-btn"
+        round
+      ></el-button>
+      <el-button
+        @click="handleBeltConnect($event, 'inner')"
+        class="sim-inner-btn"
+        round
+      ></el-button>
     </div>
     <div class="display-flex flex-direation-row justify-content-center">
       {{ props.el_name }}
     </div>
-    <div class="display-flex flex-direation-row justify-content-center">
+    <div
+      class="display-flex flex-direation-row justify-content-center"
+    >
+      <!-- outer数量 = width=3 -->
       <el-button
-        @click="handleBeltConnect($event, 'outter')"
+        @click="handleBeltConnect($event,'outter')"
         class="sim-outer-btn"
         round
       ></el-button>
-      <el-button class="sim-outer-btn" round></el-button>
-      <el-button class="sim-outer-btn" round></el-button>
+      <el-button
+        @click="handleBeltConnect($event,'outter')"
+        class="sim-outer-btn"
+        round
+      ></el-button>
+      <el-button
+        @click="handleBeltConnect($event,'outter')"
+        class="sim-outer-btn"
+        round
+      ></el-button>
     </div>
   </div>
 </template>
