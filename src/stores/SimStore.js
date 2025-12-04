@@ -4,7 +4,7 @@ import { markRaw } from "vue";
 
 export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
-    isBeltConnecting: true, //是否处于传送带连接状态
+    isBeltConnecting: false, //是否处于传送带连接状态
     gridWidgets: {}, //用于所有模拟控件的存储
     rootGrid: null, //存储根gridstack对象
     rootGridEngine: null, //gridstack引擎
@@ -34,8 +34,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.gridEl.style.height = `${this.defaultHeight}px`;
     },
 
-    
-
     //缩放
     handleScalingChange(event) {
       event.preventDefault();
@@ -50,6 +48,17 @@ export const useRootStore = defineStore("sheng-root-store", {
           contWidth
         )}px`;
       }
+    },
+    
+    //选择是否为传送带放置模式
+    handleBeltModeChange() {
+      if (this.isBeltConnecting){
+        this.isBeltConnecting = false
+        console.log("belt mode off")
+        return
+      }
+      this.isBeltConnecting = true
+      console.log("belt mode on")
     },
 
     //此方法目前没有算scroll量后续还需要修改

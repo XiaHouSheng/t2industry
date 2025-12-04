@@ -1,6 +1,12 @@
 <template>
   <el-row :gutter="6" class="container">
     <el-col :span="4">
+      <div class="max-width sheng-test-border display-flex flex-direation-row justify-content-center">
+        <el-radio-group v-model="radioGroupValue" size="large" @change="rootStore.handleBeltModeChange">
+          <el-radio-button label="开" value="open" />
+          <el-radio-button label="关" value="close" />
+        </el-radio-group>
+      </div>
       <div class="sheng-cont-list sidebar sheng-test-border">
         <!--data-gs-widget后续直接生成，目前便于测试先这么整-->
         <!--data-gs-widget也可以用于传递参数，如inner与outer数量等-->
@@ -156,6 +162,7 @@ import {
   nextTick,
   createVNode,
   render,
+  ref,
   getCurrentInstance,
 } from "vue";
 import { GridStack } from "gridstack";
@@ -167,6 +174,8 @@ import {
 import "gridstack/dist/gridstack.min.css";
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
+const radioGroupValue = ref("close")
+
 
 onMounted(async () => {
   await nextTick();
