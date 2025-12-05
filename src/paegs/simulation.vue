@@ -1,8 +1,20 @@
 <template>
+  <div
+    class="selection-box"
+    @mousedown="selectStore.handleMouseDown"
+    @mousemove="selectStore.handleMouseMove"
+    @mouseup="selectStore.handleMouseUp"
+  ></div>
   <el-row :gutter="6" class="container">
     <el-col :span="4">
-      <div class="max-width sheng-test-border display-flex flex-direation-row justify-content-center">
-        <el-radio-group v-model="radioGroupValue" size="large" @change="rootStore.handleBeltModeChange">
+      <div
+        class="sheng-cont-tool-bar max-width sheng-test-border display-flex flex-direation-row justify-content-center"
+      >
+        <el-radio-group
+          v-model="radioGroupValue"
+          size="large"
+          @change="rootStore.handleBeltModeChange"
+        >
           <el-radio-button label="开" value="open" />
           <el-radio-button label="关" value="close" />
         </el-radio-group>
@@ -10,19 +22,8 @@
       <div class="sheng-cont-list sidebar sheng-test-border">
         <!--data-gs-widget后续直接生成，目前便于测试先这么整-->
         <!--data-gs-widget也可以用于传递参数，如inner与outer数量等-->
-        <!--
-        <div
-          v-for="value in 1"
-          data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"conveyerbelt"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">传送带</el-text>
-        </div>
-        -->
         <!-- 3x3 尺寸机器 -->
         <div
-          v-for="value in 1"
           data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"refineryFurnace"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
         >
@@ -31,7 +32,6 @@
         </div>
 
         <div
-          v-for="value in 1"
           data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"crusher"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
         >
@@ -40,7 +40,6 @@
         </div>
 
         <div
-          v-for="value in 1"
           data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"accessoryMachine"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
         >
@@ -49,7 +48,6 @@
         </div>
 
         <div
-          v-for="value in 1"
           data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"shapingMachine"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
         >
@@ -58,7 +56,6 @@
         </div>
 
         <div
-          v-for="value in 1"
           data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"protocolStorageBox"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
         >
@@ -68,7 +65,6 @@
 
         <!-- 5x5 尺寸机器 -->
         <div
-          v-for="value in 1"
           data-gs-widget='{"w":5, "h":5, "noResize":true, "id":"seedHarvester"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
         >
@@ -77,7 +73,6 @@
         </div>
 
         <div
-          v-for="value in 1"
           data-gs-widget='{"w":5, "h":5, "noResize":true, "id":"planter"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
         >
@@ -87,7 +82,6 @@
 
         <!-- 6x4 尺寸机器 -->
         <div
-          v-for="value in 1"
           data-gs-widget='{"w":6, "h":4, "noResize":true, "id":"equipmentComponentMachine"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
         >
@@ -96,7 +90,6 @@
         </div>
 
         <div
-          v-for="value in 1"
           data-gs-widget='{"w":6, "h":4, "noResize":true, "id":"fillingMachine"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
         >
@@ -105,7 +98,6 @@
         </div>
 
         <div
-          v-for="value in 1"
           data-gs-widget='{"w":6, "h":4, "noResize":true, "id":"packagingMachine"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
         >
@@ -114,7 +106,6 @@
         </div>
 
         <div
-          v-for="value in 1"
           data-gs-widget='{"w":6, "h":4, "noResize":true, "id":"grinder"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
         >
@@ -122,9 +113,8 @@
           <el-text class="list-span">研磨机</el-text>
         </div>
 
-        <!-- 3x2 尺寸机器 -->
+        <!-- 3x1 尺寸机器 -->
         <div
-          v-for="value in 1"
           gs-h="1"
           data-gs-widget='{"w":3, "h":1, "noResize":true, "id":"warehouseDepositPort"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
@@ -134,7 +124,6 @@
         </div>
 
         <div
-          v-for="value in 1"
           data-gs-widget='{"w":3, "h":1, "noResize":true, "id":"warehouseWithdrawalPort"}'
           class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
         >
@@ -144,7 +133,14 @@
       </div>
     </el-col>
     <el-col :span="20">
-      <div class="sheng-cont-grid" @wheel="rootStore.handleScalingChange">
+      <div
+        class="sheng-cont-grid"
+        @wheel="rootStore.handleScalingChange"
+        @contextmenu="rootStore.handleRightClick"
+        @mousedown="selectStore.handleMouseDown"
+        @mousemove="selectStore.handleMouseMove"
+        @mouseup="selectStore.handleMouseUp"
+      >
         <div
           @click="rootStore.handleBeltNode"
           ref="targetGrid"
@@ -167,6 +163,7 @@ import {
 } from "vue";
 import { GridStack } from "gridstack";
 import { useRootStore } from "../stores/SimStore";
+import { useSelectStore } from "../stores/SelectStore";
 import {
   machineComponentMap,
   machineNameMap,
@@ -174,26 +171,29 @@ import {
 import "gridstack/dist/gridstack.min.css";
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
-const radioGroupValue = ref("close")
-
-
+const selectStore = useSelectStore();
+const radioGroupValue = ref("close");
 onMounted(async () => {
   await nextTick();
   //初始化
   const targetGridEl = document.querySelector("#grid-stack");
-  rootStore.initGrid(targetGridEl);
+  const targetGridCont = document.querySelector(".sheng-cont-grid");
+  const selector = document.querySelector(".selection-box");
+  selectStore.initSelector(selector);
+  rootStore.initGrid(targetGridEl, targetGridCont);
   //自定义克隆函数，用于拖拽添加
   const selfClone = (element) => {
     //拷贝待加入的cell
     let cloneNode = element.cloneNode(true);
     cloneNode.replaceChildren();
-    cloneNode.classList.remove("sheng-cont-item")
+    cloneNode.classList.remove("sheng-cont-item");
     //唯一id分配
     const root_id = JSON.parse(
       cloneNode.attributes.getNamedItem("data-gs-widget").nodeValue
     ).id;
-    const gs_id = root_id + `-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    console.log(gs_id)
+    const gs_id =
+      root_id + `-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    console.log(gs_id);
     //cell元素存储，用于删除与定位
     rootStore.gridWidgets[gs_id] = cloneNode;
     //vue组件映射 | 这个函数计划并入组件作为参数
@@ -213,8 +213,10 @@ onMounted(async () => {
 <style scoped>
 .sheng-cont-grid {
   overflow-y: scroll;
-  max-height: 100%;
-  height: var(--sheng-self-simulation-list-height);
+  height: var(--sheng-self-simulation-grid-height);
+}
+.sheng-cont-tool-bar {
+  height: var(--sheng-self-simulation-list-head-height);
 }
 .sheng-test-border {
   border: 1px dashed #409eff;
@@ -223,16 +225,20 @@ onMounted(async () => {
 }
 .sheng-cont-list {
   overflow-y: scroll;
-  max-height: 100%;
   height: var(--sheng-self-simulation-list-height);
   padding: 0 3px 0 3px;
 }
 .sheng-cont-item {
   min-height: 60px;
 }
-
-.sidebar-item{
+.sidebar-item {
   overflow: hidden;
+}
+.selection-box {
+  position: fixed;
+  z-index: 999;
+  border: 2px dashed #0e0e0e;
+  border-radius: 4px;
 }
 
 :deep(.grid-stack-item) {

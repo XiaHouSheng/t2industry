@@ -1,21 +1,25 @@
-import { GridStack, GridStackEngine } from "gridstack";
+import { GridStack } from "gridstack";
 import { defineStore } from "pinia";
 import { markRaw } from "vue";
 
 export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
+    isStartSelect: false, //是否处于选择状态
     isBeltConnecting: false, //是否处于传送带连接状态
-    gridWidgets: {}, //用于所有模拟控件的存储
+    isDeletingMode: true, //是否处于批量删除模式
+    gridWidgets: {}, //用于所有模拟控件的存储|id->element
+    gridWidgets2d: null, //用于模拟控件的存储（适用于1x1的传送带等)|x,y->element
     rootGrid: null, //存储根gridstack对象
     rootGridEngine: null, //gridstack引擎
     gridEl: null, //存储根元素对象
+    gridElCont: null, //存储gridstack的父容器
     defaultWidth: 1578,
     defaultHeight: 1578,
     defaultMaxWidth: 3017,
     numColumn: 72, //列个数
     gridOptions: {
       minRow: 72, //行个数
-      allowNewRow: true, //可向下扩充行
+      allowNewRow: false, //可向下扩充行
       float: true, //可以随意摆放
       //可以拖入
       acceptWidgets: function (el) {
@@ -26,12 +30,42 @@ export const useRootStore = defineStore("sheng-root-store", {
   }),
 
   actions: {
-    initGrid(target_el) {
+    initGrid(target_el, target_cont) {
+      this.initGridWidget2d();
       this.gridEl = markRaw(target_el);
+      this.gridElCont = markRaw(target_cont);
       this.rootGrid = markRaw(GridStack.init(this.gridOptions, target_el));
       this.rootGrid.column(this.numColumn);
       this.gridEl.style.width = `${this.defaultWidth}px`;
       this.gridEl.style.height = `${this.defaultHeight}px`;
+    },
+
+    initGridWidget2d() {
+      this.gridWidgets2d = Array.from({ length: this.gridOptions.minRow }, () =>
+        Array.from({ length: this.numColumn }, () => null)
+      );
+    },
+
+    handleRightClick(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      //处于连接状态取消连接模式
+      if (this.isBeltConnecting) {
+
+      } else {
+        //否则就进行删除
+        const position = this.getPositionFromClick(event);
+        this.deleteOneBelt(position)
+      }
+    },
+
+    //删除单个传送带
+    deleteOneBelt(position) {
+      const targetElement = this.gridWidgets2d[position.x][position.y];
+      if (targetElement) {
+        this.rootGrid.removeWidget(targetElement);
+        delete this.gridWidgets2d[position.x][position.y];
+      }
     },
 
     //缩放
@@ -49,24 +83,22 @@ export const useRootStore = defineStore("sheng-root-store", {
         )}px`;
       }
     },
-    
+
     //选择是否为传送带放置模式
     handleBeltModeChange() {
-      if (this.isBeltConnecting){
-        this.isBeltConnecting = false
-        console.log("belt mode off")
-        return
+      if (this.isBeltConnecting) {
+        this.isBeltConnecting = false;
+        console.log("belt mode off");
+        return;
       }
-      this.isBeltConnecting = true
-      console.log("belt mode on")
+      this.isBeltConnecting = true;
+      console.log("belt mode on");
     },
 
-    //此方法目前没有算scroll量后续还需要修改
+    //已经计算scroll
     getPositionFromClick(event) {
-      let clientX = event.clientX;
-      clientX -= 26; //offset
-      let clientY = event.clientY;
-      clientY -= 80; //offset
+      let clientX = event.clientX + this.gridElCont.scrollLeft - 26; //offset
+      let clientY = event.clientY + this.gridElCont.scrollTop - 80; //offset
       return this.rootGrid.getCellFromPixel({
         left: clientX,
         top: clientY,
@@ -82,7 +114,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       return this.rootGrid.isAreaEmpty(x, y, 1, 1);
     },
 
-    pushNewNodeFromPosition(position,which,gs_id) {
+    pushNewNodeFromPosition(position, which, gs_id) {
       const node = {
         x: position["x"],
         y: position["y"],
@@ -106,13 +138,15 @@ export const useRootStore = defineStore("sheng-root-store", {
       //打包节点
       this.connectNodes.push(node);
     },
+
     //取消连接
     cancelBeltConnect() {
       this.isBeltConnecting = false;
-      this.rootGrid.enableMove(true);
       //连接关系清空
     },
-    //开始连接
+
+
+    //开始连接 停用
     //记录第一个节点位置，作为下一个节点的铺垫
     startBeltConnect(event, which, gs_id) {
       console.log("start connnect!");
@@ -121,7 +155,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.pushNewNode(event, which, gs_id);
       console.log(this.connectNodes);
     },
-    //完成连接
+    //完成连接 停用
     //根据inner与outter和specific节点来进行判断
     compeleteBeltConnect() {
       this.isBeltConnecting = false;
@@ -129,6 +163,7 @@ export const useRootStore = defineStore("sheng-root-store", {
     },
 
     //连接过程
+    //传送带连接-暂时停用节点关联模式，后续再更新
     handleBeltNode(event) {
       //传送带连接-暂时停用节点关联模式，后续再更新
       if (false) {
@@ -156,22 +191,22 @@ export const useRootStore = defineStore("sheng-root-store", {
       if (this.isBeltConnecting) {
         //判空
         if (this.isCellEmpty(event)) {
-          const position = this.getPositionFromClick(event)
-          const oldNode = this.connectNodes.at(-1); 
+          const position = this.getPositionFromClick(event);
+          const oldNode = this.connectNodes.at(-1);
           //判断是否有旧的节点
           if (!oldNode) {
-            this.generateFirstBelt(position)
-            this.pushNewNodeFromPosition(position,"conveyer","conveyerBelt")
-            console.log(this.connectNodes)
-            return
+            this.generateOneBelt(position);
+            this.pushNewNodeFromPosition(position, "conveyer", "conveyerBelt");
+            console.log(this.connectNodes);
+            return;
           }
-          this.generateBelt(oldNode,position,"conveyerBelt")
+          this.generateBelt(oldNode, position, "conveyerBelt");
         }
       }
     },
-
-    generateFirstBelt(position) {
-      this.rootGrid.addWidget({
+    //生成一个传送带
+    generateOneBelt(position) {
+      const craftElement = this.rootGrid.addWidget({
         x: position.x,
         y: position.y,
         w: 1,
@@ -179,8 +214,10 @@ export const useRootStore = defineStore("sheng-root-store", {
         noResize: true,
         id: "conveyerBelt",
       });
+      this.gridWidgets2d[position.x][position.y] = craftElement;
     },
 
+    //生成一些列传送带
     generateBelt(oldNode, newPosition, id) {
       if (oldNode.x == newPosition.x) {
         //console.log(oldNode,newPosition)
@@ -198,14 +235,9 @@ export const useRootStore = defineStore("sheng-root-store", {
         //可以优化暂定
         index = 0;
         while (index < preDelta) {
-          this.rootGrid.addWidget({
+          this.generateOneBelt({
             x: oldNode.x,
             y: index + startY,
-            w: 1,
-            h: 1,
-            noResize: true,
-            //通过id对关联关系进行分配
-            id: id,
           });
           index += 1;
         }
@@ -213,8 +245,8 @@ export const useRootStore = defineStore("sheng-root-store", {
           //return id;
         }
         //return id + `-${index - 1}`;
-        this.pushNewNodeFromPosition(newPosition,"convyerBelt","convyerBelt")
-        return
+        this.pushNewNodeFromPosition(newPosition, "convyerBelt", "convyerBelt");
+        return;
       }
       if (oldNode.y == newPosition.y) {
         /*
@@ -239,13 +271,9 @@ export const useRootStore = defineStore("sheng-root-store", {
         //可以优化暂定
         index = 0;
         while (index < preDelta) {
-          this.rootGrid.addWidget({
+          this.generateOneBelt({
             x: index + startX,
             y: oldNode.y,
-            w: 1,
-            h: 1,
-            noResize: true,
-            id: id,
           });
           index += 1;
         }
@@ -253,11 +281,11 @@ export const useRootStore = defineStore("sheng-root-store", {
           //return id;
         }
         //return id + `-${index - 1}`;
-        this.pushNewNodeFromPosition(newPosition,"convyerBelt","convyerBelt")
-        return
+        this.pushNewNodeFromPosition(newPosition, "convyerBelt", "convyerBelt");
+        return;
       }
       //暂定非直线不行
-      console.log("not a line")
+      console.log("not a line");
     },
   },
 });

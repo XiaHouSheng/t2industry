@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from "vue";
 import { useRootStore } from "../../stores/SimStore";
+// 1. 新增导入 MachineStore 并实例化
+import { useMachineStore } from "../../stores/MachineStore";
+const machineStore = useMachineStore()
 
 const rootStore = useRootStore();
 const props = defineProps({
@@ -12,47 +15,25 @@ const props = defineProps({
     type: String,
   },
 });
-//机器设置接口
-const handleOpenDialog = () => {};
-//右键删除机器
-const handleRightClick = (event) => {
-  event.preventDefault();
-  if (rootStore.isBeltConnecting) {
-    rootStore.cancelBeltConnect();
-    return;
-  }
-  rootStore.rootGrid.removeWidget(rootStore.gridWidgets[props.gs_id]);
-  delete rootStore.gridWidgets[props.gs_id];
-};
-//进出口事件
-const handleBeltConnect = (event, which) => {
-  event.stopPropagation();
-  return
-  if (!rootStore.isBeltConnecting) {
-    //inner outter specific
-    rootStore.startBeltConnect(event, which, props.gs_id);
-  } else {
-    rootStore.compeleteBeltConnect();
-  }
-};
+// 2. 已删除 handleOpenDialog、handleRightClick、handleBeltConnect 所有方法
 </script>
 
 <template>
-  <div class="max-height-width display-flex flex-direation-col justify-content-center" @contextmenu="handleRightClick">
+  <div class="max-height-width display-flex flex-direation-col justify-content-center" @contextmenu="machineStore.handleRightClick($event, props.gs_id)">
     <div class="display-flex flex-direation-row justify-content-center">
       <!-- outer数量 = width=3 -->
       <el-button
-        @click="handleBeltConnect($event, 'outter')"
+        @click="machineStore.handleBeltConnect($event, 'outter', props.gs_id)"
         class="sim-outer-btn"
         round
       ></el-button>
       <el-button
-        @click="handleBeltConnect($event, 'outter')"
+        @click="machineStore.handleBeltConnect($event, 'outter', props.gs_id)"
         class="sim-outer-btn"
         round
       ></el-button>
       <el-button
-        @click="handleBeltConnect($event, 'outter')"
+        @click="machineStore.handleBeltConnect($event, 'outter', props.gs_id)"
         class="sim-outer-btn"
         round
       ></el-button>

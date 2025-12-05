@@ -18,6 +18,7 @@ const handleOpenDialog = () => {};
 //右键删除机器
 const handleRightClick = (event) => {
   event.preventDefault();
+  event.stopPropagation()
   if (rootStore.isBeltConnecting) {
     rootStore.cancelBeltConnect();
     return;

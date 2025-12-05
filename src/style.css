@@ -1,6 +1,15 @@
-:root{
+:root {
   --sheng-self-height: 740px;
-  --sheng-self-simulation-list-height: 740px
+  --sheng-self-simulation-grid-height: 740px;
+  --sheng-self-simulation-list-head-height: 40px;
+  --sheng-self-simulation-list-height: 700px;
+}
+
+body {
+  -webkit-user-select: none; /* Chrome/Safari/Edge */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE/Edge 旧版 */
+  user-select: none; /* 标准属性 */
 }
 
 .text-align-center {
@@ -24,11 +33,11 @@
   width: 100%;
 }
 
-.max-height{
+.max-height {
   height: 100%;
 }
 
-.max-width{
+.max-width {
   width: 100%;
 }
 
@@ -56,24 +65,24 @@
   margin: 0;
 }
 
-.flex-grow-1{
+.flex-grow-1 {
   flex-grow: 1;
 }
 
-.container{
-  height: var(--sheng-self-height)
+.container {
+  height: var(--sheng-self-height);
 }
 
-.position-relative{
+.position-relative {
   position: relative;
 }
 
-.sim-inner-btn{
+.sim-inner-btn {
   background-color: #8bc34a;
   margin-top: 3px;
 }
 
-.sim-outer-btn{
+.sim-outer-btn {
   background-color: #e51c23;
   margin-top: 3px;
 }
