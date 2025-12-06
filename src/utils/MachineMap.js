@@ -1,18 +1,18 @@
 // 导入所有机器组件
-import ConveyerBelt from './ConveyerBelt.vue';
-import RefineryFurnace from './RefineryFurnace.vue';
-import Crusher from './Crusher.vue';
-import AccessoryMachine from './AccessoryMachine.vue';
-import ShapingMachine from './ShapingMachine.vue';
-import SeedHarvester from './SeedHarvester.vue';
-import Planter from './Planter.vue';
-import EquipmentComponentMachine from './EquipmentComponentMachine.vue';
-import FillingMachine from './FillingMachine.vue';
-import PackagingMachine from './PackagingMachine.vue';
-import Grinder from './Grinder.vue';
-import ProtocolStorageBox from './ProtocolStorageBox.vue';
-import WarehouseDepositPort from './WarehouseDepositPort.vue';
-import WarehouseWithdrawalPort from './WarehouseWithdrawalPort.vue';
+import ConveyerBelt from '../components/simulation/ConveyerBelt.vue';
+import RefineryFurnace from '../components/simulation/RefineryFurnace.vue';
+import Crusher from '../components/simulation/Crusher.vue';
+import AccessoryMachine from '../components/simulation/AccessoryMachine.vue';
+import ShapingMachine from '../components/simulation/ShapingMachine.vue';
+import SeedHarvester from '../components/simulation/SeedHarvester.vue';
+import Planter from '../components/simulation/Planter.vue';
+import EquipmentComponentMachine from '../components/simulation/EquipmentComponentMachine.vue';
+import FillingMachine from '../components/simulation/FillingMachine.vue';
+import PackagingMachine from '../components/simulation/PackagingMachine.vue';
+import Grinder from '../components/simulation/Grinder.vue';
+import ProtocolStorageBox from '../components/simulation/ProtocolStorageBox.vue';
+import WarehouseDepositPort from '../components/simulation/WarehouseDepositPort.vue';
+import WarehouseWithdrawalPort from '../components/simulation/WarehouseWithdrawalPort.vue';
 
 // 组件映射表：key 对应机器唯一标识（与之前的 gs_id 前缀一致），value 是组件对象
 export const machineComponentMap = {

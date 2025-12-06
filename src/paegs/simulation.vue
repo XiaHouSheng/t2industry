@@ -11,12 +11,13 @@
         class="sheng-cont-tool-bar max-width sheng-test-border display-flex flex-direation-row justify-content-center"
       >
         <el-radio-group
-          v-model="radioGroupValue"
+          v-model="rootStore.toolbarMode"
           size="large"
           @change="rootStore.handleBeltModeChange"
         >
-          <el-radio-button label="开" value="open" />
-          <el-radio-button label="关" value="close" />
+          <el-radio-button label="传送带" value="belt" />
+          <el-radio-button label="框选" value="select" />
+          <el-radio-button label="无" value="default"></el-radio-button>
         </el-radio-group>
       </div>
       <div class="sheng-cont-list sidebar sheng-test-border">
@@ -164,10 +165,7 @@ import {
 import { GridStack } from "gridstack";
 import { useRootStore } from "../stores/SimStore";
 import { useSelectStore } from "../stores/SelectStore";
-import {
-  machineComponentMap,
-  machineNameMap,
-} from "../components/simulation/MachineMap";
+import { machineComponentMap, machineNameMap } from "../utils/MachineMap"
 import "gridstack/dist/gridstack.min.css";
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();

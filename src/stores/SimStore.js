@@ -4,9 +4,7 @@ import { markRaw } from "vue";
 
 export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
-    isStartSelect: false, //是否处于选择状态
-    isBeltConnecting: false, //是否处于传送带连接状态
-    isDeletingMode: true, //是否处于批量删除模式
+    toolbarMode: "default",
     gridWidgets: {}, //用于所有模拟控件的存储|id->element
     gridWidgets2d: null, //用于模拟控件的存储（适用于1x1的传送带等)|x,y->element
     rootGrid: null, //存储根gridstack对象
@@ -86,13 +84,6 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     //选择是否为传送带放置模式
     handleBeltModeChange() {
-      if (this.isBeltConnecting) {
-        this.isBeltConnecting = false;
-        console.log("belt mode off");
-        return;
-      }
-      this.isBeltConnecting = true;
-      console.log("belt mode on");
     },
 
     //已经计算scroll
@@ -188,7 +179,7 @@ export const useRootStore = defineStore("sheng-root-store", {
           }
         }
       }
-      if (this.isBeltConnecting) {
+      if (this.toolbarMode == "belt") {
         //判空
         if (this.isCellEmpty(event)) {
           const position = this.getPositionFromClick(event);

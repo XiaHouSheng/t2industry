@@ -7,20 +7,29 @@ export const useSelectStore = defineStore("sheng-select-store", {
     selector: null, //框选元素
     startX: null,
     startY: null,
+    isStartSelect: false,
   }),
 
   actions: {
     initSelector(selector) {
       this.selector = selector;
     },
+
     handleMouseDown(event) {
-      console.log("down");
+      if (!(this.rootStore.toolbarMode == "select")) {
+        return;
+      }
+      console.log("down", event);
       this.setPosition(event);
-      this.rootStore.isStartSelect = true
+      this.isStartSelect = true;
     },
 
     handleMouseMove(event) {
-      if (this.rootStore.isStartSelect) {
+      if (!(this.rootStore.toolbarMode == "select")) {
+        return;
+      }
+      console.log("move", event);
+      if (this.isStartSelect) {
         let newWidth = Math.abs(this.startX - event.clientX);
         let newHeight = Math.abs(this.startY - event.clientY);
         console.log(newWidth, newHeight);
@@ -30,9 +39,22 @@ export const useSelectStore = defineStore("sheng-select-store", {
     },
 
     handleMouseUp(event) {
+      if (!(this.rootStore.toolbarMode == "select")) {
+        return;
+      }
       console.log("up", event);
-      this.rootStore.isStartSelect = false;
+      this.isStartSelect = false;
+      this.rootStore.toolbarMode = "default";
+      let newWidth = Math.abs(this.startX - event.clientX);
+      let newHeight = Math.abs(this.startY - event.clientY);
+      return {
+        startX: this.startX,
+        startY: this.startY,
+        endX: this.startX + newWidth,
+        endY: this.endY + newHeight,
+      };
     },
+
     setPosition(event) {
       this.startX = event.clientX;
       this.startY = event.clientY;
