@@ -3,7 +3,7 @@ import { useRootStore } from "./SimStore";
 
 //test pr new branch
 export const useMachineStore = defineStore("sheng-machine-store", {
-  state: () => ({
+  state: () => ({ 
     rootStore: useRootStore(),
   }),
 
