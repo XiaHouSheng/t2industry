@@ -1,10 +1,22 @@
 <template>
-  <div
-    class="selection-box"
-    @mousedown="selectStore.handleMouseDown"
-    @mousemove="selectStore.handleMouseMove"
-    @mouseup="selectStore.handleMouseUp"
-  ></div>
+  <el-popconfirm
+    title="确认删除当前框选的所有传送带？"
+    :visible="selectStore.showSelectMenu"
+    placement="right-end"
+    @cancel="selectStore.hideSelectorAMenu"
+    @confirm="selectStore.confirmDelete"
+    @hide="selectStore.handleMenuHide"
+  >
+    <template #reference>
+      <div
+        class="selection-box"
+        v-show="selectStore.showSelect"
+        @mousedown="selectStore.handleMouseDown"
+        @mousemove="selectStore.handleMouseMove"
+        @mouseup="selectStore.handleMouseUp"
+      ></div>
+    </template>
+  </el-popconfirm>
   <el-row :gutter="6" class="container">
     <el-col :span="4">
       <div
@@ -165,12 +177,13 @@ import {
 import { GridStack } from "gridstack";
 import { useRootStore } from "../stores/SimStore";
 import { useSelectStore } from "../stores/SelectStore";
-import { machineComponentMap, machineNameMap } from "../utils/MachineMap"
+import { machineComponentMap, machineNameMap } from "../utils/MachineMap";
 import "gridstack/dist/gridstack.min.css";
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
 const selectStore = useSelectStore();
 const radioGroupValue = ref("close");
+const popperRef = ref(null);
 onMounted(async () => {
   await nextTick();
   //初始化
@@ -210,7 +223,7 @@ onMounted(async () => {
 
 <style scoped>
 .sheng-cont-grid {
-  overflow-y: scroll;
+  overflow: scroll;
   height: var(--sheng-self-simulation-grid-height);
 }
 .sheng-cont-tool-bar {
@@ -237,6 +250,13 @@ onMounted(async () => {
   z-index: 999;
   border: 2px dashed #0e0e0e;
   border-radius: 4px;
+}
+
+.grid-stack {
+  background-color: rgba(213, 236, 255, 0.765);
+  background-size: calc(100% / 72) calc(100% / 72);
+  background-image: linear-gradient(to right, #fff 1px, transparent 1px),
+    linear-gradient(to bottom, #fff 1px, transparent 1px);
 }
 
 :deep(.grid-stack-item) {

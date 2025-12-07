@@ -5,6 +5,7 @@ import { markRaw } from "vue";
 export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
     toolbarMode: "default",
+    toolbarModeHistory: "default",
     gridWidgets: {}, //用于所有模拟控件的存储|id->element
     gridWidgets2d: null, //用于模拟控件的存储（适用于1x1的传送带等)|x,y->element
     rootGrid: null, //存储根gridstack对象
@@ -49,11 +50,10 @@ export const useRootStore = defineStore("sheng-root-store", {
       event.stopPropagation();
       //处于连接状态取消连接模式
       if (this.isBeltConnecting) {
-
       } else {
         //否则就进行删除
         const position = this.getPositionFromClick(event);
-        this.deleteOneBelt(position)
+        this.deleteOneBelt(position);
       }
     },
 
@@ -62,7 +62,43 @@ export const useRootStore = defineStore("sheng-root-store", {
       const targetElement = this.gridWidgets2d[position.x][position.y];
       if (targetElement) {
         this.rootGrid.removeWidget(targetElement);
-        delete this.gridWidgets2d[position.x][position.y];
+        this.gridWidgets2d[position.x][position.y] = null;
+      }
+    },
+
+    //删除一些列传送带|2d
+    deleteSeriesBelt2d(midDeleteData) {
+      const { startX, startY, endX, endY } = midDeleteData;
+      const positionStart = this.getPositionFromClick({
+        clientX: startX,
+        clientY: startY,
+      });
+      const positionEnd = this.getPositionFromClick({
+        clientX: endX,
+        clientY: endY,
+      });
+
+      //edit by AI
+      // 计算矩形区域的边界（取x/y的最小/最大值）
+      const minX = Math.min(positionStart.x, positionEnd.x);
+      const maxX = Math.max(positionStart.x, positionEnd.x);
+      const minY = Math.min(positionStart.y, positionEnd.y);
+      const maxY = Math.max(positionStart.y, positionEnd.y);
+
+      // 遍历矩形内所有网格位置，调用deleteOneBelt删除
+      for (let x = minX; x <= maxX; x++) {
+        // 跳过超出网格行范围的位置
+        if (x < 0 || x >= this.gridOptions.minRow) continue;
+
+        for (let y = minY; y <= maxY; y++) {
+          // 跳过超出网格列范围的位置
+          if (y < 0 || y >= this.numColumn) continue;
+
+          // 构造包含x、y的position对象，符合deleteOneBelt参数要求
+          const position = { x, y };
+          // 调用原有deleteOneBelt方法删除单个传送带
+          this.deleteOneBelt(position);
+        }
       }
     },
 
@@ -70,6 +106,10 @@ export const useRootStore = defineStore("sheng-root-store", {
     handleScalingChange(event) {
       event.preventDefault();
       event.stopPropagation();
+      //select模式时禁用滑动
+      if (this.toolbarMode == "select"){
+        return
+      }
       let deltaPlus = event.deltaY * 5;
       let contWidth = this.gridEl.clientWidth + deltaPlus;
       if (deltaPlus < 0) {
@@ -82,8 +122,19 @@ export const useRootStore = defineStore("sheng-root-store", {
       }
     },
 
-    //选择是否为传送带放置模式
-    handleBeltModeChange() {
+    //模式改变回调
+    handleBeltModeChange(value) {
+      console.log("mode change", this.toolbarMode, this.toolbarModeHistory);
+      //select模式下禁用cont的scroll
+      if (value == "select") {
+        this.gridElCont.style.overflow = "hidden"
+      }else{
+        this.gridElCont.style.overflow = "scroll"
+      }
+      if (this.toolbarModeHistory == "belt"){
+        this.connectNodes.length = 0
+      }
+      this.toolbarModeHistory = value;
     },
 
     //已经计算scroll
@@ -135,8 +186,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.isBeltConnecting = false;
       //连接关系清空
     },
-
-
     //开始连接 停用
     //记录第一个节点位置，作为下一个节点的铺垫
     startBeltConnect(event, which, gs_id) {
