@@ -1,0 +1,24 @@
+<svg width="60" height="60" viewBox="0 0 60 60"
+     xmlns="http://www.w3.org/2000/svg">
+
+  <!-- 上下护条 -->
+  <rect x="0" y="0" width="60" height="6"
+        fill="#ffe289"/>
+  <rect x="0" y="54" width="60" height="6"
+        fill="#ffe289"/>
+
+  <!-- 中央运动区域 -->
+  <rect x="0" y="6" width="60" height="48"
+        fill="#e29231"/>
+
+  <!-- 大号方向箭头（水平 + 垂直居中） -->
+  <g fill="#e6e6e6">
+    <!-- 箭头 1 -->
+    <polygon points="26,30 18,22 18,38"/>
+    <!-- 箭头 2（正中心） -->
+    <polygon points="36,30 28,22 28,38"/>
+    <!-- 箭头 3 -->
+    <polygon points="46,30 38,22 38,38"/>
+  </g>
+
+</svg>

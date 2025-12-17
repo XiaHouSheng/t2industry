@@ -1,0 +1,21 @@
+<svg width="59.99999999999999" height="59.99999999999999" xmlns="http://www.w3.org/2000/svg" stroke="null">
+ <g stroke="null">
+  <title stroke="null">Layer 1</title>
+  <path id="svg_18" d="m0.10363,0l60,0l0,6l-60,0l0,-6z" opacity="undefined" stroke-width="0" stroke="#ffe289" fill="#ffe289"/>
+  <rect id="svg_20" height="6" width="60" y="54" x="0" stroke-width="0" stroke="#ffe289" fill="#ffe289"/>
+  <rect id="svg_24" height="60" width="8" y="0" x="0" stroke-width="0" stroke="#ffe289" fill="#767676"/>
+  <rect id="svg_25" height="60" width="8" y="0" x="52" stroke-width="0" stroke="#ffe289" fill="#767676"/>
+  <rect id="svg_26" height="8" width="11" y="52" x="8" stroke-width="0" stroke="#ffe289" fill="#767676"/>
+  <rect id="svg_27" height="8" width="11" y="0" x="8" stroke-width="0" stroke="#ffe289" fill="#767676"/>
+  <rect id="svg_28" height="8" width="11" y="0" x="41" stroke-width="0" stroke="#ffe289" fill="#767676"/>
+  <rect id="svg_29" height="8" width="11" y="52" x="41" stroke-width="0" stroke="#ffe289" fill="#767676"/>
+  <rect stroke="#ffe289" id="svg_35" height="2" width="24.35233" y="6" x="17.44559" stroke-width="0" fill="#767676"/>
+  <rect stroke="#ffe289" id="svg_37" height="2" width="24.35233" y="52" x="17" stroke-width="0" fill="#767676"/>
+  <rect stroke="#ffe289" id="svg_39" height="44" width="44" y="8" x="8" stroke-width="0" fill="#3a3a3a"/>
+  <rect rx="1" stroke="#ffe289" stroke-width="3" id="svg_52" height="10" width="8" y="25" x="26" fill="none"/>
+  <path transform="rotate(90 2.95078 30)" id="svg_56" d="m-8.81088,31.29534l4.41062,-2.59067l14.70207,0l4.41062,2.59067l-23.52332,0z" stroke-width="3" stroke="#ffe289" fill="none"/>
+  <path transform="rotate(90 2.26166 30)" id="svg_57" d="m45.5,32.33161l4.41062,-2.59068l14.70208,0l4.41062,2.59068l-23.52332,0z" stroke-width="3" stroke="#ffe289" fill="none"/>
+  <path transform="rotate(-90 57.2617 30)" id="svg_58" d="m45.5,31.29534l4.41062,-2.59068l14.70208,0l4.41062,2.59068l-23.52332,0z" stroke-width="3" stroke="#ffe289" fill="none"/>
+ </g>
+
+</svg>

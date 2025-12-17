@@ -20,16 +20,29 @@
   <el-row :gutter="6" class="container">
     <el-col :span="4">
       <div
-        class="sheng-cont-tool-bar max-width sheng-test-border display-flex flex-direation-row justify-content-center"
+        class="sheng-cont-tool-bar max-width sheng-test-border display-flex flex-direation-col justify-content-center"
       >
         <el-radio-group
+          class="sheng-radio-group-full"
           v-model="rootStore.toolbarMode"
-          size="large"
+          size="default"
           @change="rootStore.handleBeltModeChange"
         >
-          <el-radio-button label="传送带" value="belt" />
+          <el-radio-button label="单带" value="belt_one" />
+          <el-radio-button label="多带" value="belt" /> 
           <el-radio-button label="框选" value="select" />
-          <el-radio-button label="无" value="default"></el-radio-button>
+          <el-radio-button label="无" value="default" />
+        </el-radio-group>
+
+        <el-radio-group
+          v-model="rootStore.beltSelect"
+          size="splitter"
+          :disabled="rootStore.toolbarMode != 'belt_one'"
+        >
+          <el-radio-button label="一分三" value="splitter" />
+          <el-radio-button label="三合一" value="conveyer" />
+          <el-radio-button label="转弯带" value="turn" />
+          <el-radio-button label="桥" value="cross" />
         </el-radio-group>
       </div>
       <div class="sheng-cont-list sidebar sheng-test-border">
@@ -203,7 +216,7 @@ onMounted(async () => {
     elConfig.id = gsId;
     cloneNode.setAttribute("data-gs-widget", JSON.stringify(elConfig)); // 写回配置
     rootStore.gridWidgets[gsId] = cloneNode; // 存入 store
-    rootStore.gridWidgetsRotate[gsId] = 0 // 将旋转属性存入Store 
+    rootStore.gridWidgetsRotate[gsId] = 0; // 将旋转属性存入Store
     const vnode = createVNode(machineComponentMap[rootId], {
       gs_id: gsId,
       el_name: machineNameMap[rootId],

@@ -1,14 +1,22 @@
 import { GridStack } from "gridstack";
 import { defineStore } from "pinia";
-import { markRaw } from "vue";
+import { createVNode, markRaw, render } from "vue";
+import ConveyerBelt from "../components/simulation/ConveyerBelt.vue";
 
 export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
     toolbarMode: "default",
     toolbarModeHistory: "default",
+    beltSelect: "turn",
+
     gridWidgets: {}, //用于非传送带模拟控件的存储|id->element
     gridWidgets2d: null, //用于模拟控件的存储（适用于1x1的传送带等)|x,y->element
+    
     gridWidgetsRotate: {}, //用于非传送带模拟控件的旋转属性存储|id->rotate
+    
+    gridBeltsRotate: {}, //存储传送带的旋转属性|id->rotate
+    
+
     rootGrid: null, //存储根gridstack对象
     rootGridEngine: null, //gridstack引擎
     gridEl: null, //存储根元素对象
@@ -26,7 +34,8 @@ export const useRootStore = defineStore("sheng-root-store", {
         return true;
       },
     },
-    connectNodes: [], //存储节点
+    lastBaseNode: null, // 上一次的基准点 { x, y }
+    lastDir: null, // 上一次方向（0-3）
   }),
 
   actions: {
@@ -63,7 +72,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       const targetElement = this.gridWidgets2d[position.x][position.y];
       if (targetElement) {
         //待定
-        targetElement.removeEventListener("click");
         this.rootGrid.removeWidget(targetElement);
         this.gridWidgets2d[position.x][position.y] = null;
       }
@@ -135,7 +143,8 @@ export const useRootStore = defineStore("sheng-root-store", {
         this.gridElCont.style.overflow = "scroll";
       }
       if (this.toolbarModeHistory == "belt") {
-        this.connectNodes.length = 0;
+        this.lastBaseNode = null;
+        this.lastDir = null;
       }
       this.toolbarModeHistory = value;
     },
@@ -143,7 +152,7 @@ export const useRootStore = defineStore("sheng-root-store", {
     //已经计算scroll
     getPositionFromClick(event) {
       let clientX = event.clientX + this.gridElCont.scrollLeft - 26; //offset
-      let clientY = event.clientY + this.gridElCont.scrollTop - 80; //offset
+      let clientY = event.clientY + this.gridElCont.scrollTop - 76; //offset
       return this.rootGrid.getCellFromPixel({
         left: clientX,
         top: clientY,
@@ -232,27 +241,30 @@ export const useRootStore = defineStore("sheng-root-store", {
         }
       }
       if (this.toolbarMode == "belt") {
-        //判空
         if (this.isCellEmpty(event)) {
           const position = this.getPositionFromClick(event);
-          const oldNode = this.connectNodes.at(-1);
-          //判断是否有旧的节点
-          if (!oldNode) {
-            this.generateOneBelt(position);
-            this.pushNewNodeFromPosition(position, "conveyer", "conveyerBelt");
-            console.log(this.connectNodes);
-            return;
-          }
-          this.generateBelt(oldNode, position, "conveyerBelt");
+          this.generateBelt(position, "belt");
+        }
+      }
+
+      if (this.toolbarMode == "belt_one") {
+        if (this.isCellEmpty(event)) {
+          const position = this.getPositionFromClick(event);
+          this.generateOneBelt(position, `${this.beltSelect}-img`,0,this.beltSelect)
         }
       }
     },
 
     //生成一个传送带
-    generateOneBelt(position) {
+    generateOneBelt(position, type = "belt-img", rotate = 0, id_in = "belt") {
       let craftElement = document.createElement("div");
-      craftElement.classList.add("cell-img")
-      craftElement.classList.add("three-split-green")
+      let id = `${id_in}_${Date.now()}_${Math.floor(Math.random() * 1000)}`
+      let vnode = createVNode(ConveyerBelt, {
+        gs_id: id,
+        rotate: rotate,
+        type: type,
+      });
+      render(vnode, craftElement);
       craftElement = this.rootGrid.makeWidget(craftElement, {
         x: position.x,
         y: position.y,
@@ -260,80 +272,109 @@ export const useRootStore = defineStore("sheng-root-store", {
         h: 1,
         float: false,
         noResize: true,
-        id: "conveyerBelt",
+        locked: true,
+        id: id,
       });
+      this.rootGrid.movable(craftElement, false);
       this.gridWidgets2d[position.x][position.y] = craftElement;
+
+    },
+
+    replaceNodeAtPosition(position, { type, rotate }, id = "belt") {
+      const el = this.gridWidgets2d[position.x]?.[position.y];
+      if (!el) return;
+      this.rootGrid.removeWidget(el, true);
+      this.gridWidgets2d[position.x][position.y] = null;
+      this.generateOneBelt(position, type, rotate, id);
+    },
+
+    getStraightRotateIndex(dx, dy) {
+      if (dx === 1 && dy === 0) return 0; // →
+      if (dx === 0 && dy === 1) return 1; // ↓
+      if (dx === -1 && dy === 0) return 2; // ←
+      if (dx === 0 && dy === -1) return 3; // ↑
+    },
+
+    getTurnRotateIndex(fromDir, toDir) {
+      const map = {
+        "0-3": 0, // 左 → 上
+        "0-1": 3,
+
+        "1-1": 3, // 右 → 下
+        "1-2": 0,
+        "1-0": 1,
+
+        "3-0": 2, // 上 → 右
+        "3-2": 3,
+        
+        "2-3": 1,
+        "2-1": 2,
+      };
+      return map[`${fromDir}-${toDir}`];
     },
 
     //生成一些列传送带
-    generateBelt(oldNode, newPosition, id) {
-      if (oldNode.x == newPosition.x) {
-        //console.log(oldNode,newPosition)
-        let startY = Math.min(oldNode.y + 1, newPosition.y);
-        let preDelta = Math.abs(oldNode.y - newPosition.y);
-        let index = 0;
-        while (index < preDelta) {
-          console.log(oldNode.x, index + startY);
-          if (!this.isCellEmptyByPosition(oldNode.x, index + startY)) {
-            console.log("not all empty", oldNode.x, index + startY);
-            return;
-          }
-          index += 1;
-        }
-        //可以优化暂定
-        index = 0;
-        while (index < preDelta) {
-          this.generateOneBelt({
-            x: oldNode.x,
-            y: index + startY,
-          });
-          index += 1;
-        }
-        if (startY == newPosition.y) {
-          //return id;
-        }
-        //return id + `-${index - 1}`;
-        this.pushNewNodeFromPosition(newPosition, "convyerBelt", "convyerBelt");
+    generateBelt(newPosition, id = "belt") {
+      // 第一次调用：只记录基准点
+      if (!this.lastBaseNode) {
+        this.lastBaseNode = { ...newPosition };
+        this.lastDir = null;
         return;
       }
-      if (oldNode.y == newPosition.y) {
-        /*
-        这个判断是当时没考虑机器可以旋转，出入口强制垂直进出而不能水平
-        if (oldNode.type != "conveyer") {
-          console.log("not conveyer");
+
+      const oldNode = this.lastBaseNode;
+
+      const dx = newPosition.x - oldNode.x;
+      const dy = newPosition.y - oldNode.y;
+
+      // 只允许直线
+      if (dx !== 0 && dy !== 0) {
+        console.log("not a straight line");
+        return;
+      }
+
+      const stepX = dx === 0 ? 0 : dx > 0 ? 1 : -1;
+      const stepY = dy === 0 ? 0 : dy > 0 ? 1 : -1;
+      const steps = Math.abs(dx + dy);
+
+      const curDir = this.getStraightRotateIndex(stepX, stepY);
+
+      // 拐点：替换基准点为 turn-img
+      if (this.lastDir !== null && this.lastDir !== curDir) {
+        const turnRotate = this.getTurnRotateIndex(this.lastDir, curDir);
+        if (turnRotate === undefined) {
+          console.log("invalid turn");
           return;
         }
-        */
-        //console.log(oldNode,newPosition)
-        let startX = Math.min(oldNode.x + 1, newPosition.x);
-        let preDelta = Math.abs(oldNode.x - newPosition.x);
-        let index = 0;
-        while (index < preDelta) {
-          //console.log(oldNode.x, index + startX);
-          if (!this.isCellEmptyByPosition(index + startX, oldNode.y)) {
-            console.log("not all empty");
-            return;
-          }
-          index += 1;
-        }
-        //可以优化暂定
-        index = 0;
-        while (index < preDelta) {
-          this.generateOneBelt({
-            x: index + startX,
-            y: oldNode.y,
-          });
-          index += 1;
-        }
-        if (startX == newPosition.x) {
-          //return id;
-        }
-        //return id + `-${index - 1}`;
-        this.pushNewNodeFromPosition(newPosition, "convyerBelt", "convyerBelt");
-        return;
+
+        this.replaceNodeAtPosition(oldNode, {
+          type: "turn-img",
+          rotate: turnRotate,
+        });
       }
-      //暂定非直线不行
-      console.log("not a line");
+
+      // 判空
+      for (let i = 1; i <= steps; i++) {
+        const x = oldNode.x + stepX * i;
+        const y = oldNode.y + stepY * i;
+
+        if (!this.isCellEmptyByPosition(x, y)) {
+          console.log("not all empty");
+          return;
+        }
+      }
+
+      // 生成直线 belt
+      for (let i = 1; i <= steps; i++) {
+        const x = oldNode.x + stepX * i;
+        const y = oldNode.y + stepY * i;
+
+        this.generateOneBelt({ x, y }, "belt-img", curDir, id);
+      }
+
+      // 更新基准点
+      this.lastBaseNode = { ...newPosition };
+      this.lastDir = curDir;
     },
   },
 });

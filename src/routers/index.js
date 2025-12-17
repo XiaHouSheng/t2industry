@@ -26,11 +26,6 @@ const routes = [
     component: simulation,
     meta: { title: '生产效率模拟' }
   },
-  // 404 兜底路由（可选）
-  {
-    path: '/:pathMatch(.*)*',
-    redirect: '/home'
-  }
 ]
 
 // 创建路由实例
