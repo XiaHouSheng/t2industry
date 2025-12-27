@@ -6,7 +6,9 @@ import { useRootStore } from "../../stores/SimStore";
 import { computed } from "vue";
 
 const rootStore = useRootStore(); 
-const chooseRecipe = computed(() => rootStore.gridWidgets[rootStore.recipeChooseId].recipe);
+const chooseRecipe = computed(() => {
+  return rootStore.gridWidgets[rootStore.recipeChooseId] ? rootStore.gridWidgets[rootStore.recipeChooseId].recipe : null
+});
 const machineId = computed(()=>rootStore.recipeChooseId.split("_")[0])
 const machineFileId = computed(()=>machineDataFileMap[machineId.value])
 const recipes = computed(()=>Object.values(RecipeData[machineFileId.value]))

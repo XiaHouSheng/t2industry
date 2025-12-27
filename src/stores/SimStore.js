@@ -8,6 +8,7 @@ export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
     appContext: null,
 
+    isBluePrintImport: false,
     isRecipeChoose: false,
     recipeChooseId: "",
     isZomming: false,
@@ -207,9 +208,9 @@ export const useRootStore = defineStore("sheng-root-store", {
     },
 
     //生成一个传送带|对原makeGrid的封装
-    generateOneBelt(position, type = "belt-img", rotate = 0, id_in = "belt") {
+    generateOneBelt(position, type = "belt-img", rotate = 0, id_in = null) {
       let craftElement = document.createElement("div");
-      let id = `${id_in}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      let id = id_in ? id_in : `${id_in}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
       let vnode = createVNode(ConveyerBelt, {
         gs_id: id,
         rotate: rotate,
@@ -370,6 +371,27 @@ export const useRootStore = defineStore("sheng-root-store", {
       }
     },
 
+    //蓝图导入对话框点击
+    handleBluePrintImportDialog() {
+      this.isBluePrintImport = true;
+    },
+
+    handleBluePrintUpload(file) {
+      if (file.status !== 'ready') return
+      const rawFile = file.raw;
+      if (!rawFile) return;
+      if (!rawFile.name.endsWith(".json")) {
+        //ElMessage.error("只能导入 JSON 蓝图文件");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const blueprint = JSON.parse(reader.result);
+        this.importBluePrint(blueprint);
+      };
+      reader.readAsText(rawFile);
+    },
+
     //创建机器|对原makeGrid的封装
     makeMachine(config) {
       const { id, machine_id, recipe, rotate, x, y, w, h } = config;
@@ -437,6 +459,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       }
       output.belt = belts;
       //默认存在localStorage
+      localStorage.removeItem("blueprint");
       localStorage.blueprint = JSON.stringify(output);
       return output;
     },

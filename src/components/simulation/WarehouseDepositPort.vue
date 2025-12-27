@@ -1,5 +1,4 @@
 <script setup>
-import RootMachineCuboid from './RootMachineCuboid.vue';
 import RootSpecificContainer from './RootSpecificContainer.vue';
 const props = defineProps({
   gs_id: {

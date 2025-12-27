@@ -9,11 +9,14 @@ const props = defineProps({
     type: String,
   },
 });
-console.log(props.gs_id);
 const matSelect = (targetItemId) => {
   rootStore.gridWidgets[props.gs_id].recipe = targetItemId;
 };
-const defaultRecipe = computed(() => rootStore.gridWidgets[props.gs_id].recipe);
+const defaultRecipe = computed(() => {
+  return rootStore.gridWidgets[props.gs_id]
+    ? rootStore.gridWidgets[props.gs_id].recipe
+    : null;
+});
 const finalValue = computed(() =>
   defaultRecipe.value
     ? { name: ItemData[defaultRecipe.value].name, icon_id: defaultRecipe.value }

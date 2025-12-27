@@ -1,5 +1,5 @@
 <template>
-
+  <!--这个是框选的Dialog-->
   <el-popconfirm
     title="确认删除当前框选的所有传送带？"
     :visible="selectStore.showSelectMenu"
@@ -19,6 +19,7 @@
     </template>
   </el-popconfirm>
 
+  <!--这个是配平配置的Dialog-->
   <el-dialog
     v-model="rootStore.isRecipeChoose"
     width="50%"
@@ -28,6 +29,25 @@
     <div style="height: 60%">
       <RecipeContent></RecipeContent>
     </div>
+  </el-dialog>
+
+  <!--这个是蓝图导入的Dialog-->
+  <el-dialog
+    v-model="rootStore.isBluePrintImport"
+    width="50%"
+    @close="rootStore.handleDialogRecipeClose"
+    :append-to-body="true"
+  >
+    <el-upload
+      drag
+      accept=".json,application/json"
+      :on-change="rootStore.handleBluePrintUpload"
+    >
+      <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+      <div class="el-upload__text">
+        拖动蓝图文件到此处 <em>或者点击上传</em>
+      </div>
+    </el-upload>
   </el-dialog>
 
   <el-row :gutter="6" class="container">
@@ -212,7 +232,7 @@
                 />
               </template>
             </el-button>
-            <el-button @click="rootStore.importBluePrint" primary>
+            <el-button @click="rootStore.handleBluePrintImportDialog" primary>
               <img
                 src="@/assets/img/import.png"
                 style="width: 18px; height: 18px"
@@ -253,6 +273,7 @@ import {
   createVNode,
   render,
   getCurrentInstance,
+  markRaw,
 } from "vue";
 import { GridStack } from "gridstack";
 import { useRootStore } from "../stores/SimStore";
@@ -271,28 +292,38 @@ onMounted(async () => {
   const selector = document.querySelector(".selection-box");
   selectStore.initSelector(selector);
   rootStore.initGrid(targetGridEl, targetGridCont, appContext);
-  //自定义克隆函数，用于拖拽添加 （提交AI整理后）
+  //拖拽克隆
   const selfClone = (element) => {
-    const cloneNode = element.cloneNode(true); // 克隆节点
-    cloneNode.replaceChildren();
-    cloneNode.classList.remove("sheng-cont-item");
-    cloneNode.classList.remove("sheng-cont-item-spec")
+    const cloneNode = element.cloneNode(true);
+    cloneNode.replaceChildren(); // 清空内容，仅做视觉 clone
+    cloneNode.classList.remove("sheng-cont-item", "sheng-cont-item-spec");
     const elConfig = JSON.parse(cloneNode.getAttribute("data-gs-widget")); // 读取配置
     const rootId = elConfig.id;
-    const gsId = `${rootId}_${Date.now()}_${Math.floor(Math.random() * 1000)}`; // 生成唯一 id
+    const gsId = `${rootId}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     elConfig.id = gsId;
-    cloneNode.setAttribute("data-gs-widget", JSON.stringify(elConfig)); // 写回配置
-    rootStore.gridWidgets[gsId] = { rotate: 0, recipe: "" }; // 存入 store
-    rootStore.gridWidgetElements[gsId] = cloneNode;
-    const vnode = createVNode(machineComponentMap[rootId], {
-      gs_id: gsId,
-      el_name: rootId,
-      el_size: elConfig,
-    }); // 组件渲染
-    vnode.appContext = appContext;
-    render(vnode, cloneNode);
+    cloneNode.setAttribute("data-gs-widget", JSON.stringify(elConfig));
     return cloneNode;
   };
+  //添加回调
+  rootStore.rootGrid.on("added", function (event, items) {
+    const item = items[0];
+    const el = item.el;
+
+    if (!el.classList.contains('sidebar-item')) return;
+
+    const rootId = item.id.split("_")[0]
+     // 存入 store
+    rootStore.gridWidgets[item.id] = { rotate: 0, recipe: "" };
+    rootStore.gridWidgetElements[item.id] = el;
+    // 渲染 Vue 组件
+    const vnode = createVNode(machineComponentMap[rootId], {
+      gs_id: item.id,
+      el_name: rootId,
+      el_size: { w: item.w, h: item.h },
+    });
+    vnode.appContext = appContext;
+    render(vnode, el);
+  });
   //拖拽设置
   GridStack.setupDragIn(".sidebar-item", { helper: selfClone });
 });

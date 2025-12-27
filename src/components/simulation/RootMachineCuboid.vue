@@ -34,7 +34,6 @@ const childContOuter = ref(null);
 const rotateGridEl = (index) => {
   rootStore.gridWidgets[props.gs_id]["rotate"] = index;
   if (index % 2 == 0) {
-    console.log(props.el_size)
     rootStore.rootGrid.update(rootStore.gridWidgetElements[props.gs_id], {
       w: props.el_size.h,
       h: props.el_size.w,
@@ -73,20 +72,11 @@ const hadnleRotate = () => {
   index = index >= 3 ? 0 : index + 1;
 };
 //配方配置对话框
-const targetItemId = computed(() => rootStore.gridWidgets[props.gs_id].recipe);
+const targetItemId = computed(() => {
+  return rootStore.gridWidgets[props.gs_id] ? rootStore.gridWidgets[props.gs_id].recipe : null;
+});
 </script>
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    width="50%"
-    @close="machineStore.handleDialogClose"
-    :append-to-body="true"
-  >
-    <div style="height: 60%">
-      <RecipeList :gs_id="props.gs_id"></RecipeList>
-    </div>
-  </el-dialog>
-
   <div
     class="max-height-width display-flex"
     style="

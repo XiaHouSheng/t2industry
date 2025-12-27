@@ -4,7 +4,6 @@ import { useRootStore } from "../../stores/SimStore";
 import { useMachineStore } from "../../stores/MachineStore";
 import { iconStyle } from "../../utils/DataMap";
 import { objectEntries, useElementSize } from "@vueuse/core";
-import RecipeList from "../original/RecipeContent.vue";
 import WareHouseContent from "../original/WareHouseContent.vue";
 const rootStore = useRootStore();
 const machineStore = useMachineStore();
@@ -32,7 +31,9 @@ const widthEl = ref(defaultWidth);
 const heightEl = ref(1);
 const containerElement = ref(null);
 const indexRef = ref(index);
-const targetItemId = computed(() => rootStore.gridWidgets[props.gs_id].recipe);
+const targetItemId = computed(() => {
+  return rootStore.gridWidgets[props.gs_id] ? rootStore.gridWidgets[props.gs_id].recipe : null;
+});
 
 const { height, width } = useElementSize(containerElement);
 

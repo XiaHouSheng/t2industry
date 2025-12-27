@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { useRootStore } from "./SimStore";
+import { nextTick } from "vue";
 
 //test pr new branch
 export const useMachineStore = defineStore("sheng-machine-store", {
@@ -11,7 +12,7 @@ export const useMachineStore = defineStore("sheng-machine-store", {
     //test
     test() {},
     //左键配方配置
-    handleDialog(event,gs_id) {
+    handleDialog(event, gs_id) {
       event.stopPropagation();
       this.rootStore.recipeChooseId = gs_id;
       this.rootStore.isRecipeChoose = true;

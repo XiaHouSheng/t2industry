@@ -55,10 +55,6 @@ const recipe = computed(() =>
 );
 
 const inputSlots = computed(() => {
-  console.log("machineId", machineId.value);
-  console.log("machineField", machineFileId.value);
-  console.log("targetId", props.targetId);
-  console.log("recipe", recipe.value);
   const entries = Object.entries(recipe.value.in);
   return [
     entries[0] ? toSlot(entries[0]) : null,
@@ -67,8 +63,6 @@ const inputSlots = computed(() => {
 });
 
 const outputSlots = computed(() => {
-  console.log(props.targetId);
-  console.log(recipe.value);
   const entries = Object.entries(recipe.value.out);
   return [
     entries[0] ? toSlot(entries[0]) : null,

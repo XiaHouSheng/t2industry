@@ -28,7 +28,9 @@ const hadnleRotate = () => {
   rootStore.gridWidgets[props.gs_id]["rotate"] = rotateAngle.value / 90;
 };
 //配方配置对话框
-const targetItemId = computed(() => rootStore.gridWidgets[props.gs_id].recipe);
+const targetItemId = computed(() => {
+  return rootStore.gridWidgets[props.gs_id] ? rootStore.gridWidgets[props.gs_id].recipe : null;
+});
 </script>
 
 <template>
