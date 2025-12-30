@@ -4,7 +4,6 @@ import { useRootStore } from "../../stores/SimStore";
 import { useMachineStore } from "../../stores/MachineStore";
 import { iconStyle } from "../../utils/DataMap";
 import { objectEntries, useElementSize } from "@vueuse/core";
-import WareHouseContent from "../original/WareHouseContent.vue";
 const rootStore = useRootStore();
 const machineStore = useMachineStore();
 const props = defineProps({
@@ -26,13 +25,14 @@ const props = defineProps({
 
 let index = 0;
 let defaultWidth = props.el_size.w;
-const dialogVisible = ref(false);
 const widthEl = ref(defaultWidth);
 const heightEl = ref(1);
 const containerElement = ref(null);
 const indexRef = ref(index);
 const targetItemId = computed(() => {
-  return rootStore.gridWidgets[props.gs_id] ? rootStore.gridWidgets[props.gs_id].recipe : null;
+  return rootStore.gridWidgets[props.gs_id]
+    ? rootStore.gridWidgets[props.gs_id].recipe
+    : null;
 });
 
 const { height, width } = useElementSize(containerElement);
@@ -74,7 +74,8 @@ const hadnleRotate = () => {
 //配方配置对话框
 const handleDialog = (event) => {
   event.stopPropagation();
-  dialogVisible.value = true;
+  rootStore.materialChooseId = props.gs_id;
+  rootStore.isWareHouseRecipeChoose = true;
 };
 //AI优化版 ICON大小自适应
 const iconAutoSize = computed(() => {
@@ -92,24 +93,20 @@ const iconAutoSize = computed(() => {
 });
 </script>
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    width="50%"
-    @close="rootStore.handleDialogRecipeClose"
-    :append-to-body="true"
-  >
-    <WareHouseContent :gs_id="props.gs_id"></WareHouseContent>
-  </el-dialog>
-
   <div
     ref="containerElement"
-    class="max-height-width display-flex"
+    class="max-height-width display-flex sheng-machine"
     style="justify-content: center; flex-direction: column"
     :class="props.is_deposit ? 'line-inner' : 'line-outter'"
     @contextmenu="machineStore.handleRightClick($event, props.gs_id)"
     @click="hadnleRotate"
   >
-    <div v-if="!is_deposit" class="recipe-icon" @click="handleDialog" :style="iconAutoSize"></div>
+    <div
+      v-if="!is_deposit"
+      class="recipe-icon"
+      @click="handleDialog"
+      :style="iconAutoSize"
+    ></div>
   </div>
 </template>
 
@@ -121,11 +118,18 @@ const iconAutoSize = computed(() => {
   border-radius: 4px;
   border: 1px solid gray;
 }
+
 .line-inner {
-  background-color: #949494;
+  background-color: #9494948d;
+  background-size: calc(100% / v-bind(widthEl)) calc(100% / v-bind(heightEl));
+  background-image: linear-gradient(to right, #fff 1px, transparent 1px),
+    linear-gradient(to bottom, #fff 1px, transparent 1px);
 }
 
 .line-outter {
-  background-color: #ffe289;
+  background-color: #ffe1898d;
+  background-size: calc(100% / v-bind(widthEl)) calc(100% / v-bind(heightEl));
+  background-image: linear-gradient(to right, #fff 1px, transparent 1px),
+    linear-gradient(to bottom, #fff 1px, transparent 1px);
 }
 </style>

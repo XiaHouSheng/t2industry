@@ -30,7 +30,7 @@ const hadnleRotate = () => {
 
 <template>
   <div
-    class="max-height-width display-flex flex-direation-col"
+    class="max-height-width display-flex flex-direation-col sheng-machine"
     style="justify-content: space-between; background-color: white"
     :style="{ transform: `rotate(${rotateAngle}deg)` }"
     @contextmenu="machineStore.handleRightClick($event, props.gs_id)"
@@ -44,8 +44,11 @@ const hadnleRotate = () => {
     <div
       class="display-flex justify-content-center flex-grow-1 flex-direation-col"
       :style="{ transform: `rotate(${-rotateAngle}deg)` }"
+      style="container-type: inline-size"
     >
-      <el-text>{{ machineNameMap[props.el_name] }}</el-text>
+      <el-text class="self-control-font">{{
+        machineNameMap[props.el_name]
+      }}</el-text>
     </div>
 
     <div
@@ -64,17 +67,24 @@ const hadnleRotate = () => {
   border-radius: 4px;
   border: 1px solid gray;
 }
+
+@container (max-width: 60px) {
+  .self-control-font {
+    font-size: 12px;
+  }
+}
+
 .line-inner {
-  background-color: #949494;
-  background-size: calc(100% / v-bind(widthEl)) calc(100% / v-bind(1));
+  background-color: #9494948d;
+  background-size: calc(100% / v-bind(widthEl)) calc(100% / 1);
   background-image: linear-gradient(to right, #fff 1px, transparent 1px),
-    linear-gradient(to bottom, #fff 1px, transparent 1px);
+    linear-gradient(to top, #fff 1px, transparent 1px);
 }
 
 .line-outter {
-  background-color: #ffe289;
+  background-color: #ffe1898d;
   background-size: calc(100% / v-bind(widthEl)) calc(100% / 1);
-  background-image: linear-gradient(to right, #fff 1px, transparent 1px),
-    linear-gradient(to bottom, #fff 1px, transparent 1px);
+  background-image: linear-gradient(to right, #ffffffa2 1px, transparent 1px),
+    linear-gradient(to bottom, #ffffffa2 1px, transparent 1px);
 }
 </style>

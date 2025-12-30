@@ -10,7 +10,9 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     isBluePrintImport: false,
     isRecipeChoose: false,
+    isWareHouseRecipeChoose: false,
     recipeChooseId: "",
+    materialChooseId: "",
     isZomming: false,
     toolbarMode: "default",
     toolbarModeHistory: "default",
@@ -153,8 +155,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       );
       this.isZomming = false;
       this.rootGrid.setStatic(false);
-      // 1️先清 transform（避免双重缩放）
-      this.gridEl.style.transform = "scale(1)";
       // 2️一次性改真实宽度（只触发一次 layout）
       this.gridEl.style.width = `${finalWidth}px`;
       // 3️重置基准

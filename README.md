@@ -12,7 +12,6 @@
 ## 📄 我们的演示页面
 
 - https://xiahousheng.github.io/EndFieldSimulation
-- 目前还有些在滚动上的问题，但是不影响任何演示，我们会在未来一起修复
 
 ## 📌 项目定位
 

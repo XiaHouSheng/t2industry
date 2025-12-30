@@ -51,7 +51,9 @@ const machineId = computed(() => rootStore.recipeChooseId.split("_")[0]);
 const machineFileId = computed(() => machineDataFileMap[machineId.value]);
 
 const recipe = computed(() =>
-  props.targetId ? RecipeData[machineFileId.value][props.targetId] : defaultRecipe
+  props.targetId
+    ? RecipeData[machineFileId.value][props.targetId]
+    : defaultRecipe
 );
 
 const inputSlots = computed(() => {
@@ -76,8 +78,8 @@ function handleRecipeSelect() {
 </script>
 
 <template>
-  <div class="display-flex flex-direation-col">
-    <el-text style="width: 100%; text-align: start">{{ recipe.name }}</el-text>
+  <div class="display-flex flex-direation-col sheng-recipe-root">
+    <el-text class="recipe-name">{{ recipe.name }}</el-text>
     <div class="display-flex flex-direation-row sheng-recipe-item">
       <div class="display-flex flex-direation-row sheng-recipe-mat">
         <div
@@ -128,7 +130,14 @@ function handleRecipeSelect() {
 </template>
 
 <style scoped>
+.sheng-recipe-root {
+  border: 1px solid var(--sheng-recipe-cont-border);
+  border-radius: 3px;
+}
 .sheng-recipe-item {
+  transition: 0.1s;
+  background-color: var(--sheng-recipe-item-bg);
+  border-radius: 0 0 3px 3px;
   height: 64px;
   gap: 6px;
   padding: 3px;
@@ -146,6 +155,13 @@ function handleRecipeSelect() {
   background-size: auto;
   border-radius: 4px;
   border: 1px solid gray;
+}
+.recipe-name {
+  width: 100%;
+  text-align: start;
+  background-color: var(--sheng-recipe-item-name-bg);
+  color: white;
+  font: bold;
 }
 .sheng-recipe-mat span {
   color: white;

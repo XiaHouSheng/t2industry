@@ -31,6 +31,16 @@
     </div>
   </el-dialog>
 
+  <!--这个是取货口配置的Dialog-->
+  <el-dialog
+    v-model="rootStore.isWareHouseRecipeChoose"
+    width="50%"
+    @close="rootStore.handleDialogRecipeClose"
+    :append-to-body="true"
+  >
+    <WareHouseContent></WareHouseContent>
+  </el-dialog>
+
   <!--这个是蓝图导入的Dialog-->
   <el-dialog
     v-model="rootStore.isBluePrintImport"
@@ -51,202 +61,156 @@
   </el-dialog>
 
   <el-row :gutter="6" class="container">
-    <el-col :span="4">
-      <div class="sheng-cont-list sidebar sheng-test-border">
-        <!--data-gs-widget后续直接生成，目前便于测试先这么整-->
-        <!--data-gs-widget也可以用于传递参数，如inner与outer数量等-->
-        <!-- 3x3 尺寸机器 -->
-        <div
-          data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"refineryFurnace"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">精炼炉</el-text>
-        </div>
-
-        <div
-          data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"crusher"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">粉碎机</el-text>
-        </div>
-
-        <div
-          data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"accessoryMachine"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">配件机</el-text>
-        </div>
-
-        <div
-          data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"shapingMachine"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">塑型机</el-text>
-        </div>
-
-        <div
-          data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"protocolStorageBox"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">协议存储箱</el-text>
-        </div>
-
-        <!-- 5x5 尺寸机器 -->
-        <div
-          data-gs-widget='{"w":5, "h":5, "noResize":true, "id":"seedHarvester"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">采种机</el-text>
-        </div>
-
-        <div
-          data-gs-widget='{"w":5, "h":5, "noResize":true, "id":"planter"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">种植机</el-text>
-        </div>
-
-        <!-- 6x4 尺寸机器 -->
-        <div
-          data-gs-widget='{"w":6, "h":4, "noResize":true, "id":"equipmentComponentMachine"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">装备原件机</el-text>
-        </div>
-
-        <div
-          data-gs-widget='{"w":6, "h":4, "noResize":true, "id":"fillingMachine"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">罐装机</el-text>
-        </div>
-
-        <div
-          data-gs-widget='{"w":6, "h":4, "noResize":true, "id":"packagingMachine"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">封装机</el-text>
-        </div>
-
-        <div
-          data-gs-widget='{"w":6, "h":4, "noResize":true, "id":"grinder"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">研磨机</el-text>
-        </div>
-
-        <!-- 3x1 尺寸机器 -->
-        <div
-          gs-h="1"
-          data-gs-widget='{"w":3, "h":1, "noResize":true, "id":"warehouseDepositPort"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
-        >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">存货口</el-text>
-        </div>
-
+    <el-col :span="3">
+      <div class="display-flex flex-direation-col sheng-cont-list sidebar">
+        
         <div
           data-gs-widget='{"w":3, "h":1, "noResize":true, "id":"warehouseWithdrawalPort"}'
-          class="sheng-cont-item sidebar-item sheng-test-border display-flex flex-direation-row"
+          class="sheng-cont-item sidebar-item display-flex flex-direation-row"
         >
-          <div class="grid-stack-content"></div>
-          <el-text class="list-span">取货口</el-text>
+          <div
+            class="display-flex flex-direation-col justify-content-center"
+            style="margin-left: 3px"
+          >
+            <div class="display-flex flex-direation-col justify-content-center">
+              <span style="font-size: 14px">仓库取货口</span>
+            </div>
+          </div>
+        </div>
+        
+        <div
+          data-gs-widget='{"w":3, "h":1, "noResize":true, "id":"warehouseDepositPort"}'
+          class="sheng-cont-item sidebar-item display-flex flex-direation-row"
+        >
+          <div
+            class="display-flex flex-direation-col justify-content-center"
+            style="margin-left: 3px"
+          >
+            <div class="display-flex flex-direation-col justify-content-center">
+              <span style="font-size: 14px">仓库取货口</span>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-for="machine in MachineData"
+          :data-gs-widget="gridStackDataProcess(machine)"
+          class="sheng-cont-item sidebar-item display-flex flex-direation-row"
+        >
+          <div
+            class="display-flex flex-direation-col justify-content-center"
+            style="margin-left: 3px"
+          >
+            <div
+              style="
+                width: 35px;
+                height: 35px;
+                background-size: 420px auto;
+                border-radius: 3px;
+                margin-left: 6px;
+              "
+              :style="iconStyle(machine.icon, 35)"
+            ></div>
+          </div>
+
+          <div class="display-flex flex-direation-col justify-content-center">
+            <span style="font-size: 14px">{{ machine.name }}</span>
+          </div>
         </div>
       </div>
     </el-col>
-    <el-col :span="20" style="position: relative">
+    <el-col :span="21">
       <div
         class="display-flex flex-direation-row justify-content-center sheng-tool-bar-cont"
       >
-        <div class="sheng-tool-bar display-flex flex-direaiton-row">
-          <el-radio-group
-            v-model="rootStore.toolbarMode"
-            size="default"
-            @change="rootStore.handleBeltModeChange"
-          >
-            <el-radio-button label="多带" value="belts" />
-            <el-radio-button label="框选" value="select" />
-            <el-radio-button label="无" value="default" />
-          </el-radio-group>
+        <div class="display-flex flex-direation-col">
+          <div class="sheng-tool-bar display-flex flex-direaiton-row">
+            <el-radio-group
+              v-model="rootStore.toolbarMode"
+              size="default"
+              @change="rootStore.handleBeltModeChange"
+              style="overflow: hidden"
+            >
+              <el-radio-button label="多带" value="belts" />
+              <el-radio-button label="框选" value="select" />
+              <el-radio-button label="无" value="default" />
+            </el-radio-group>
 
-          <el-radio-group v-model="rootStore.toolbarMode" size="default">
-            <el-radio-button label="转弯带" value="turn">
-              <template #default>
-                <img
-                  src="@/assets/img/turn.png"
-                  style="width: 18px; height: 18px"
-                />
-              </template>
-            </el-radio-button>
-            <el-radio-button label="带" value="belt">
-              <template #default>
-                <img
-                  src="@/assets/img/belt.png"
-                  style="width: 18px; height: 18px"
-                />
-              </template>
-            </el-radio-button>
-            <el-radio-button label="一分三" value="splitter">
-              <template #default>
-                <img
-                  src="@/assets/img/one_to_three.png"
-                  style="width: 18px; height: 18px"
-                />
-              </template>
-            </el-radio-button>
-            <el-radio-button label="三合一" value="conveyer">
-              <template #default>
-                <img
-                  src="@/assets/img/three_to_one.png"
-                  style="width: 18px; height: 18px"
-                />
-              </template>
-            </el-radio-button>
-            <el-radio-button label="桥" value="cross">
-              <template #default>
-                <img
-                  src="@/assets/img/cross.png"
-                  style="width: 18px; height: 18px"
-                />
-              </template>
-            </el-radio-button>
-          </el-radio-group>
+            <el-radio-group
+              v-model="rootStore.toolbarMode"
+              size="default"
+              style="overflow: hidden"
+            >
+              <el-radio-button label="转弯带" value="turn">
+                <template #default>
+                  <img
+                    src="@/assets/img/turn.png"
+                    style="width: 18px; height: 18px"
+                  />
+                </template>
+              </el-radio-button>
+              <el-radio-button label="带" value="belt">
+                <template #default>
+                  <img
+                    src="@/assets/img/belt.png"
+                    style="width: 18px; height: 18px"
+                  />
+                </template>
+              </el-radio-button>
+              <el-radio-button label="一分三" value="splitter">
+                <template #default>
+                  <img
+                    src="@/assets/img/one_to_three.png"
+                    style="width: 18px; height: 18px"
+                  />
+                </template>
+              </el-radio-button>
+              <el-radio-button label="三合一" value="conveyer">
+                <template #default>
+                  <img
+                    src="@/assets/img/three_to_one.png"
+                    style="width: 18px; height: 18px"
+                  />
+                </template>
+              </el-radio-button>
+              <el-radio-button label="桥" value="cross">
+                <template #default>
+                  <img
+                    src="@/assets/img/cross.png"
+                    style="width: 18px; height: 18px"
+                  />
+                </template>
+              </el-radio-button>
+            </el-radio-group>
 
-          <el-button-group>
-            <el-button @click="rootStore.saveBluePrint" primary>
-              <template #icon>
+            <el-button-group style="overflow: hidden">
+              <el-button @click="rootStore.saveBluePrint" primary>
+                <template #icon>
+                  <div>
+                    <img
+                      src="@/assets/img/save.png"
+                      style="width: 18px; height: 18px"
+                    />
+                  </div>
+                </template>
+              </el-button>
+              <el-button @click="rootStore.handleBluePrintImportDialog" primary>
                 <img
-                  src="@/assets/img/save.png"
+                  src="@/assets/img/import.png"
                   style="width: 18px; height: 18px"
                 />
-              </template>
-            </el-button>
-            <el-button @click="rootStore.handleBluePrintImportDialog" primary>
-              <img
-                src="@/assets/img/import.png"
-                style="width: 18px; height: 18px"
-              />
-            </el-button>
-            <el-button @click="rootStore.exportBluePrint" primary>
-              <img
-                src="@/assets/img/export.png"
-                style="width: 18px; height: 18px"
-              />
-            </el-button>
-          </el-button-group>
+              </el-button>
+              <el-button @click="rootStore.exportBluePrint" primary>
+                <img
+                  src="@/assets/img/export.png"
+                  style="width: 18px; height: 18px"
+                />
+              </el-button>
+            </el-button-group>
+          </div>
         </div>
       </div>
+
       <div
         class="sheng-cont-grid"
         @wheel="rootStore.handleScalingChange_"
@@ -280,6 +244,8 @@ import { useRootStore } from "../stores/SimStore";
 import { useSelectStore } from "../stores/SelectStore";
 import { machineComponentMap } from "../utils/MachineMap";
 import RecipeContent from "../components/original/RecipeContent.vue";
+import WareHouseContent from "../components/original/WareHouseContent.vue";
+import { MachineData, iconStyle, gridStackDataProcess } from "../utils/DataMap";
 import "gridstack/dist/gridstack.min.css";
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
@@ -309,10 +275,10 @@ onMounted(async () => {
     const item = items[0];
     const el = item.el;
 
-    if (!el.classList.contains('sidebar-item')) return;
+    if (!el.classList.contains("sidebar-item")) return;
 
-    const rootId = item.id.split("_")[0]
-     // 存入 store
+    const rootId = item.id.split("_")[0];
+    // 存入 store
     rootStore.gridWidgets[item.id] = { rotate: 0, recipe: "" };
     rootStore.gridWidgetElements[item.id] = el;
     // 渲染 Vue 组件
@@ -337,20 +303,44 @@ onMounted(async () => {
 .sheng-cont-tool-bar {
   height: var(--sheng-self-simulation-list-head-height);
 }
+
 .sheng-test-border {
   border: 1px dashed #409eff;
   box-sizing: border-box;
   border-radius: 4px;
 }
+
 .sheng-cont-list {
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.08);
   overflow-y: scroll;
   height: var(--sheng-self-simulation-list-height);
-  padding: 0 3px 0 3px;
+  background-color: var(--sheng-sidebar-bg);
+  border-radius: 3px;
+  padding: 6px;
+  gap: 3px;
 }
 .sheng-cont-item {
-  min-height: 60px;
+  min-height: 48px;
   overflow: hidden;
+  transition: 0.1s;
+  color: var(--sheng-item-text);
+  background-color: var(--sheng-item-bg);
+  border: solid 2px #323731;
+  border-radius: 3px;
+  box-sizing: border-box;
+  gap: 12px;
 }
+
+.sheng-cont-item:hover {
+  background: var(--sheng-item-hover-bg);
+  color: var(--sheng-item-hover-text);
+}
+
+.sheng-item--active {
+  background: var(--sheng-item-active-bg);
+  border-left: 2px solid var(--sheng-item-accent);
+}
+
 .selection-box {
   position: fixed;
   z-index: 999;
@@ -358,14 +348,18 @@ onMounted(async () => {
   border-radius: 4px;
 }
 .grid-stack {
-  background-color: rgba(213, 236, 255, 0.765);
+  background-color: var(--sheng-grid-bg);
   background-size: calc(100% / 72) calc(100% / 72);
-  background-image: linear-gradient(to right, #fff 1px, transparent 1px),
-    linear-gradient(to bottom, #fff 1px, transparent 1px);
+  background-image: linear-gradient(
+      to right,
+      var(--sheng-grid-line) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, var(--sheng-grid-line) 1px, transparent 1px);
 }
 :deep(.grid-stack-item) {
   text-align: center;
-  border: 1px dashed #409eff;
+  border: 1px dashed var(--sheng-grid-item-outline);
   border-radius: 4px;
   box-sizing: border-box; /* 确保尺寸不会被边框影响 */
 }
@@ -373,12 +367,13 @@ onMounted(async () => {
 .sheng-tool-bar {
   width: auto;
   height: 30px;
-  z-index: 1;
+  gap: 3px;
 }
 .sheng-tool-bar-cont {
-  position: absolute;
-  width: 98%;
-  height: 30px;
-  top: 10px;
+  width: 100%;
+  padding: 5px;
+  background-color: #e0e3e8; /* 浅灰色，比网格背景稍深 */
+  border-bottom: 1px solid #b0b8c0; /* 可选，增加分隔感 */
+  border-radius: 6px 6px 0 0;
 }
 </style>

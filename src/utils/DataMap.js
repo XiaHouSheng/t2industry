@@ -2,12 +2,23 @@ import recipeData from "./data/recipe.json" assert { type: "json" };
 import itemData from "./data/item.json" assert { type: "json" };
 import iconData from "./data/icon.json" assert { type: "json" };
 import matData from "./data/material.json" assert { type: "json" };
+import machineData from "./data/machine.json" assert { type: "json" };
 import iconImage from "@/assets/img/icons.webp";
+import { datafileToMachine } from "./MachineMap";
 
 export const RecipeData = recipeData;
 export const ItemData = itemData;
 export const IconData = iconData;
 export const MatData = matData;
+export const MachineData = machineData;
+
+export function gridStackDataProcess(machine) {
+  const [width, height] = machine.machine.size ?? [1, 1];
+  console.log(width, height);
+  return `{"w":"${width}", "h":"${height}", "noResize":true, "id":"${
+    datafileToMachine[machine.id]
+  }"}`;
+}
 
 export function toSlot([itemId, count]) {
   const item = ItemData[itemId];
@@ -20,9 +31,10 @@ export function toSlot([itemId, count]) {
 
 export function iconStyle(iconId, cubeSize = 64) {
   const icon = IconData[iconId];
-  if (!icon) return {
-    border: "solid 1px"
-  };
+  if (!icon)
+    return {
+      border: "solid 1px",
+    };
   const BASE_SIZE = 64;
   const scale = cubeSize / BASE_SIZE;
 

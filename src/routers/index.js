@@ -21,10 +21,10 @@ const routes = [
     meta: { title: '物料配平计算' }
   },
   {
-    path: '/simulation',
-    name: 'Simulation',
+    path: '/editor',
+    name: 'Editor',
     component: simulation,
-    meta: { title: '生产效率模拟' }
+    meta: { title: '蓝图编辑' }
   },
 ]
 

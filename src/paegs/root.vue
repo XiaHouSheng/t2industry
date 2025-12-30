@@ -7,7 +7,7 @@
         <el-menu mode="horizontal" :ellipsis="false" :router="true">
           <el-menu-item index="home">EndFieldSimulation</el-menu-item>
           <el-menu-item index="calculate">计算器</el-menu-item>
-          <el-menu-item index="simulation">效率模拟</el-menu-item>
+          <el-menu-item index="editor">蓝图编辑</el-menu-item>
         </el-menu>
       </el-header>
       <el-main>

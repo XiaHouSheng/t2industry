@@ -13,6 +13,7 @@ import Grinder from '../components/simulation/Grinder.vue';
 import ProtocolStorageBox from '../components/simulation/ProtocolStorageBox.vue';
 import WarehouseDepositPort from '../components/simulation/WarehouseDepositPort.vue';
 import WarehouseWithdrawalPort from '../components/simulation/WarehouseWithdrawalPort.vue';
+import PowerStation from '../components/simulation/PowerStation.vue';
 import { markRaw } from 'vue';
 
 // 组件映射表：key 对应机器唯一标识（与之前的 gs_id 前缀一致），value 是组件对象
@@ -31,6 +32,7 @@ export const machineComponentMap = {
   protocolStorageBox: markRaw(ProtocolStorageBox),
   warehouseDepositPort: markRaw(WarehouseDepositPort),
   warehouseWithdrawalPort: markRaw(WarehouseWithdrawalPort),
+  powerStation: markRaw(PowerStation)
 };
 
 export const machineDataFileMap = {
@@ -44,6 +46,7 @@ export const machineDataFileMap = {
   fillingMachine: 'filling_pd_mc_1',
   packagingMachine: 'tools_asm_mc_1',
   grinder: 'thickener_1',
+  powerStation: 'power_sta_1',
   // —— jinlong 专属 —— | 这里还没有做组件，后续直接生成
   dismantlerMachine: 'dismantler_1',
   reactionPool: 'mix_pool_1',
@@ -66,6 +69,7 @@ export const machineNameMap = {
   protocolStorageBox: '存储箱',
   warehouseDepositPort: '存货口',
   warehouseWithdrawalPort: '取货口',
+  powerStation: '热能池' ,
   // —— jinlong 专属 —— | 这里还没有做组件，后续直接生成
   dismantlerMachine: '拆解机',
   reactionPool: '反应池',
@@ -77,4 +81,9 @@ export const machineNameMap = {
 export const machineKeyByCN = Object.fromEntries(
   Object.entries(machineNameMap).map(([key, name]) => [name, key])
 );
+
+// 反向查找
+export const datafileToMachine = Object.fromEntries(
+  Object.entries(machineDataFileMap).map(([key, name]) => [name, key])
+)
 

@@ -1,7 +1,41 @@
 :root {
   --sheng-self-height: 740px;
-  --sheng-self-simulation-grid-height: 740px;
+  --sheng-self-simulation-grid-height: 710px;
   --sheng-self-simulation-list-height: 740px;
+
+  --sheng-grid-bg: #eef1f4;
+  --sheng-grid-line: #d8dee6;
+  --sheng-grid-item-outline: #e4e7ed;
+  --sheng-root-bg: #f5f7fa;
+
+  --sheng-sidebar-bg: #111111;
+  --sheng-sidebar-border: #e2e6ed;
+  --sheng-item-text: #e2e6ed;
+  --sheng-item-bg: #393939;
+  --sheng-item-hover-bg: #EEECEC;
+  --sheng-item-hover-text: #393939;
+  --sheng-item-active-bg: #fffbe6;
+  --sheng-item-accent: #c8b100;
+
+  --sheng-recipe-item-bg: rgba(255, 255, 255, 0.463);
+  --sheng-recipe-item-name-bg: #383838a9;
+  --sheng-recipe-cont-border: #80878f51; 
+  --sheng-mat-grid-bg: #7d7d7d38;
+
+  /* 高级灰主题色 */
+  --el-color-primary: #6c6f76; /* 主色：中性灰，适合选中状态 */
+  --el-color-primary-light-3: #7d7a82; /* hover / 浅色背景 */
+  --el-color-white: #ffffff; /* 文字或背景白色 */
+  --el-bg-color: #e0e3e8;
+  /* 文字颜色 */
+  --el-text-color-primary: #2e3033; /* 主文字颜色，比主色深，保证可读性 */
+  --el-text-color-placeholder: #a0a2a5; /* 占位文字颜色 */
+  /* 边框颜色 */
+  --el-border-color-base: #c0c2c5; /* 默认边框颜色 */
+  --el-border-color-light: #e0e1e3; /* 边框浅色，hover 或分隔用 */
+}
+.html {
+  background-color: var(--sheng-root-bg);
 }
 
 body {
@@ -9,6 +43,25 @@ body {
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* IE/Edge 旧版 */
   user-select: none; /* 标准属性 */
+}
+
+.sheng-machine {
+  background: radial-gradient(
+      ellipse at center,
+      rgba(255, 255, 255, 0.85) 0%,
+      /* 高光更亮 */ rgba(255, 255, 255, 0.5) 40%,
+      /* 中间部分更明显 */ rgba(50, 50, 50, 0.1) 100% /* 增加暗色，增强立体感 */
+    ),
+    repeating-linear-gradient(
+      45deg,
+      rgba(0, 0, 0, 0.05),
+      rgba(0, 0, 0, 0.05) 2px,
+      transparent 2px,
+      transparent 4px
+    ),
+    #c8cdd4; /* 底色加深 */
+
+  border: 1px solid #a0a8b2; /* 边框加深 */
 }
 
 .text-align-center {

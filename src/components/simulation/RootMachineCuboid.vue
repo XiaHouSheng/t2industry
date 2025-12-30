@@ -73,12 +73,14 @@ const hadnleRotate = () => {
 };
 //配方配置对话框
 const targetItemId = computed(() => {
-  return rootStore.gridWidgets[props.gs_id] ? rootStore.gridWidgets[props.gs_id].recipe : null;
+  return rootStore.gridWidgets[props.gs_id]
+    ? rootStore.gridWidgets[props.gs_id].recipe
+    : null;
 });
 </script>
 <template>
   <div
-    class="max-height-width display-flex"
+    class="max-height-width display-flex sheng-machine"
     style="
       justify-content: space-between;
       flex-direction: column;
@@ -97,7 +99,7 @@ const targetItemId = computed(() => {
     <div
       class="display-flex justify-content-center flex-grow-1 flex-direation-col"
     >
-      {{ machineNameMap[props.el_name] }}
+      <el-text>{{ machineNameMap[props.el_name] }}</el-text>
       <div class="display-flex flex-direation-row justify-content-center">
         <div
           class="recipe-icon"
@@ -124,15 +126,16 @@ const targetItemId = computed(() => {
   border-radius: 4px;
   border: 1px solid gray;
 }
+
 .line-inner {
-  background-color: #949494;
+  background-color: #9494948d;
   background-size: calc(100% / v-bind(widthEl)) calc(100% / v-bind(heightEl));
   background-image: linear-gradient(to right, #fff 1px, transparent 1px),
     linear-gradient(to bottom, #fff 1px, transparent 1px);
 }
 
 .line-outter {
-  background-color: #ffe289;
+  background-color: #ffe1898d;
   background-size: calc(100% / v-bind(widthEl)) calc(100% / v-bind(heightEl));
   background-image: linear-gradient(to right, #fff 1px, transparent 1px),
     linear-gradient(to bottom, #fff 1px, transparent 1px);

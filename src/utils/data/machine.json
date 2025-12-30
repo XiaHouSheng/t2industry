@@ -1,0 +1,201 @@
+[
+  {
+    "id": "cmpt_mc_1",
+    "name": "配件机",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 20,
+      "size": [3, 3]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "cmpt_mc_1"
+  },
+  {
+    "id": "filling_pd_mc_1",
+    "name": "灌装机",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 20,
+      "size": [6, 4]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "filling_pd_mc_1"
+  },
+  {
+    "id": "furnance_1",
+    "name": "精炼炉",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 5,
+      "size": [3, 3]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "furnance_1"
+  },
+  {
+    "id": "grinder_1",
+    "name": "粉碎机",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 5,
+      "size": [3, 3]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "grinder_1"
+  },
+  {
+    "id": "planter_1",
+    "name": "种植机",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 20,
+      "size": [5, 5]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "planter_1"
+  },
+  {
+    "id": "power_sta_1",
+    "name": "热能池",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 0,
+      "size": [2, 2]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "power_sta_1"
+  },
+  {
+    "id": "seedcol_1",
+    "name": "采种机",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 10,
+      "size": [5, 5]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "seedcol_1"
+  },
+  {
+    "id": "shaper_1",
+    "name": "塑形机",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 10,
+      "size": [3, 3]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "shaper_1"
+  },
+  {
+    "id": "thickener_1",
+    "name": "研磨机",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 50,
+      "size": [6, 4]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "thickener_1"
+  },
+  {
+    "id": "tools_asm_mc_1",
+    "name": "封装机",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 20,
+      "size": [6, 4]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "tools_asm_mc_1"
+  },
+  {
+    "id": "winder_1",
+    "name": "装备原件机",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 10,
+      "size": [6, 4]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "winder_1"
+  },
+  {
+    "id": "dismantler_1",
+    "name": "拆解机",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 20,
+      "size": [6, 4],
+      "locations": ["jinlong"]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "dismantler_1"
+  },
+  {
+    "id": "mix_pool_1",
+    "name": "反应池",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 50,
+      "size": [5, 5],
+      "locations": ["jinlong"]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "mix_pool_1"
+  },
+  {
+    "id": "xiranite_oven_1",
+    "name": "天有洪炉",
+    "stack": 50,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 50,
+      "size": [5, 5],
+      "locations": ["jinlong"]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "xiranite_oven_1"
+  }
+]

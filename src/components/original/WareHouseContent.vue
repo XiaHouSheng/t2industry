@@ -4,17 +4,12 @@ import { useRootStore } from "../../stores/SimStore";
 import { ItemData, MatData, iconStyle } from "../../utils/DataMap";
 
 const rootStore = useRootStore();
-const props = defineProps({
-  gs_id: {
-    type: String,
-  },
-});
 const matSelect = (targetItemId) => {
-  rootStore.gridWidgets[props.gs_id].recipe = targetItemId;
+  rootStore.gridWidgets[rootStore.materialChooseId].recipe = targetItemId;
 };
 const defaultRecipe = computed(() => {
-  return rootStore.gridWidgets[props.gs_id]
-    ? rootStore.gridWidgets[props.gs_id].recipe
+  return rootStore.gridWidgets[rootStore.materialChooseId]
+    ? rootStore.gridWidgets[rootStore.materialChooseId].recipe
     : null;
 });
 const finalValue = computed(() =>
@@ -26,13 +21,13 @@ const finalValue = computed(() =>
 
 <template>
   <div class="dialog-container">
-    <div class="display-flex flex-direation-row">
+    <div class="display-flex flex-direation-row" style="gap: 6px;">
       <div
         class="flex-grow-1 display-flex flex-direation-col justify-content-center position-relative"
       >
         <div
-          class="position-absolute display-flex flex-direation-row justify-content-center"
-          style="left: 0; top: 0; height: 30px; width: 100%"
+          class="position-absolute display-flex flex-direation-row justify-content-center sheng-ware-house-header"
+          style="left: 0; top: 0;width: 100%"
         >
           <h1>仓库取货口-当前输出</h1>
         </div>
@@ -84,6 +79,9 @@ const finalValue = computed(() =>
   row-gap: 3px;
   column-gap: 3px;
   overflow-y: scroll;
+  padding: 3px;
+  border: 1px solid var(--sheng-recipe-cont-border);
+  background-color: var(--sheng-mat-grid-bg);
 }
 .mat-item {
   height: 64px;
@@ -105,5 +103,15 @@ const finalValue = computed(() =>
 h1 {
   margin: 0;
   text-align: center;
+}
+.sheng-ware-house-header{
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.838),
+    rgb(255, 255, 255) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  border-radius: 3px;
 }
 </style>

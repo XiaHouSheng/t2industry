@@ -40,6 +40,7 @@ export const useSelectStore = defineStore("sheng-select-store", {
 
     //确认删除
     confirmDelete() {
+      console.log(this.midDeleteData)
       this.rootStore.deleteSeriesBelt2d(this.midDeleteData);
       this.hideSelectorAMenu();
     },
@@ -84,7 +85,8 @@ export const useSelectStore = defineStore("sheng-select-store", {
       this.isStartSelect = false;
       this.showMenu();
       let newWidth = Math.abs(this.startX - event.clientX);
-      let newHeight = Math.abs(this.startY - event.clientY);
+      let newHeight = Math.abs(this.startY - event.clientY) / 2
+      console.log(newWidth,newHeight)
       this.endX = this.startX + newWidth;
       this.endY = this.startY + newHeight;
       this.midDeleteData = {

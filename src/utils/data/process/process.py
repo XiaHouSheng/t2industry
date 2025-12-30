@@ -6,12 +6,12 @@ file.close()
 
 output = []
 for item in jsonobj["items"]:
-    if item["category"] == "material":
+    if item["category"] == "machine":
         output.append(item)
 
 
 if 1:
-    name = "material"
+    name = "machine"
     outputFile = open("./{}.json".format(name),"w", encoding="utf-8")
     outputFile.write(json.dumps(output,ensure_ascii=False,indent=2))
 
