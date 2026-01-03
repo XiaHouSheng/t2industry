@@ -1,0 +1,17 @@
+<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg">
+ <!-- 中心导向带（更宽，严格边中点） -->
+
+ <g>
+  <title>Layer 1</title>
+  <rect transform="rotate(90 5.08227 29.9563)" stroke="null" id="svg_20" height="10.64654" width="29.43832" y="24.63299" x="-9.63689" fill="#cadcff"/>
+  <rect stroke="null" id="svg_18" height="9.94105" width="29.43832" y="0.03692" x="15.40813" fill="#cadcff"/>
+  <path id="svg_1" fill="#2A74FF" d="m10,10l40,0a40,40 0 0 1 -40,40l0,-40z"/>
+  <path id="svg_4" fill="rgba(255, 255, 255, 1)" d="m10,10l34,0a34,34 0 0 1 -34,34l0,-34z"/>
+  <path id="svg_2" fill="#cadcff" d="m10,10l34,0a34,34 0 0 1 -34,34l0,-34z"/>
+  <path id="svg_3" fill="#2A74FF" d="m10,10l6,0a6,6 0 0 1 -6,6l0,-6z"/>
+  <rect stroke="null" id="svg_6" height="6" width="10.26173" y="10" x="0" fill="#2A74FF"/>
+  <rect stroke="null" id="svg_7" height="6" width="10.26173" y="44" x="0" fill="#2A74FF"/>
+  <rect stroke="null" id="svg_10" height="10.77481" width="6" y="-0.32327" x="44" fill="#2A74FF"/>
+  <rect stroke="null" id="svg_11" height="10.19759" width="6" y="-0.13086" x="10" fill="#2A74FF"/>
+ </g>
+</svg>

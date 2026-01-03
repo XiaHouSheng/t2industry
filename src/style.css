@@ -17,6 +17,8 @@
   --sheng-item-active-bg: #fffbe6;
   --sheng-item-accent: #c8b100;
 
+  --sheng-grid-cont-item-border: #323731;
+
   --sheng-recipe-item-bg: rgba(255, 255, 255, 0.463);
   --sheng-recipe-item-name-bg: #383838a9;
   --sheng-recipe-cont-border: #80878f51; 
@@ -150,7 +152,7 @@ body {
 .belt-bg {
   width: 100%;
   height: 100%;
-  background-size: 90% 90%;
+  background-size: 100% 100%;
   background-repeat: no-repeat;
   background-position: center;
 }
@@ -161,6 +163,14 @@ body {
 
 .turn-img {
   background-image: url("./assets/svg/turn.svg");
+}
+
+.pipe-img {
+  background-image: url("./assets/svg/pipe.svg");
+}
+
+.turn-pipe-img {
+  background-image: url("./assets/img/pipe-turn.png");
 }
 
 .cross-img {
@@ -177,3 +187,5 @@ body {
   background-size: 100% 100%;
   background-image: url("./assets/svg/conveyer.svg");
 }
+
+

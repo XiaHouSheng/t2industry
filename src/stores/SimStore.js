@@ -11,9 +11,11 @@ export const useRootStore = defineStore("sheng-root-store", {
     isBluePrintImport: false,
     isRecipeChoose: false,
     isWareHouseRecipeChoose: false,
+    isZomming: false,
+    
     recipeChooseId: "",
     materialChooseId: "",
-    isZomming: false,
+
     toolbarMode: "default",
     toolbarModeHistory: "default",
     beltSelect: "turn",
@@ -183,10 +185,12 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.toolbarModeHistory = value;
     },
 
-    //已经计算scroll - Scroll后会导致定位不准确，需要改
+    //点击获取cell的位置
     getPositionFromClick(event) {
-      let clientX = event.clientX + this.gridElCont.scrollLeft;
-      let clientY = event.clientY + this.gridElCont.scrollTop;
+      //console.log("clientX",event.clientX,"clientY",event.clientY)
+      //console.log("scrollLeft",this.gridElCont.scrollLeft,"scrollTop",this.gridElCont.scrollTop)
+      let clientX = event.clientX 
+      let clientY = event.clientY
       return this.rootGrid.getCellFromPixel(
         {
           left: clientX,
@@ -210,7 +214,9 @@ export const useRootStore = defineStore("sheng-root-store", {
     //生成一个传送带|对原makeGrid的封装
     generateOneBelt(position, type = "belt-img", rotate = 0, id_in = null) {
       let craftElement = document.createElement("div");
-      let id = id_in ? id_in : `${id_in}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      let id = id_in
+        ? id_in
+        : `${id_in}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
       let vnode = createVNode(ConveyerBelt, {
         gs_id: id,
         rotate: rotate,
@@ -376,8 +382,9 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.isBluePrintImport = true;
     },
 
+    //蓝图导入回调
     handleBluePrintUpload(file) {
-      if (file.status !== 'ready') return
+      if (file.status !== "ready") return;
       const rawFile = file.raw;
       if (!rawFile) return;
       if (!rawFile.name.endsWith(".json")) {
@@ -502,5 +509,6 @@ export const useRootStore = defineStore("sheng-root-store", {
         console.error("导出 JSON 出错：", error);
       }
     },
+
   },
 });

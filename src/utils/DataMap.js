@@ -14,7 +14,6 @@ export const MachineData = machineData;
 
 export function gridStackDataProcess(machine) {
   const [width, height] = machine.machine.size ?? [1, 1];
-  console.log(width, height);
   return `{"w":"${width}", "h":"${height}", "noResize":true, "id":"${
     datafileToMachine[machine.id]
   }"}`;

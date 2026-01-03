@@ -63,7 +63,6 @@
   <el-row :gutter="6" class="container">
     <el-col :span="3">
       <div class="display-flex flex-direation-col sheng-cont-list sidebar">
-        
         <div
           data-gs-widget='{"w":3, "h":1, "noResize":true, "id":"warehouseWithdrawalPort"}'
           class="sheng-cont-item sidebar-item display-flex flex-direation-row"
@@ -77,7 +76,7 @@
             </div>
           </div>
         </div>
-        
+
         <div
           data-gs-widget='{"w":3, "h":1, "noResize":true, "id":"warehouseDepositPort"}'
           class="sheng-cont-item sidebar-item display-flex flex-direation-row"
@@ -120,94 +119,147 @@
       </div>
     </el-col>
     <el-col :span="21">
-      <div
-        class="display-flex flex-direation-row justify-content-center sheng-tool-bar-cont"
-      >
-        <div class="display-flex flex-direation-col">
-          <div class="sheng-tool-bar display-flex flex-direaiton-row">
-            <el-radio-group
-              v-model="rootStore.toolbarMode"
-              size="default"
-              @change="rootStore.handleBeltModeChange"
-              style="overflow: hidden"
+      <div class="display-flex flex-direation-row sheng-tool-bar-cont">
+        <div class="sheng-tool-bar display-flex flex-direaiton-row">
+          <!--电量显示-->
+          <div
+            style="width: 180px; height: 100%; background-color: #ffffff"
+            class="sheng-test-border"
+          >
+            <div
+              class="display-flex flex-direation-col"
+              style="height: 100%; padding: 3px 12px 3px 12px"
             >
-              <el-radio-button label="多带" value="belts" />
-              <el-radio-button label="框选" value="select" />
-              <el-radio-button label="无" value="default" />
-            </el-radio-group>
+              <div class="display-flex flex-direation-row">
+                <div
+                  class="display-flex flex-direation-col justify-content-center"
+                >
+                  <img
+                    src="@/assets/svg/bleeze.svg"
+                    style="width: 14px; height: 14px"
+                  />
+                </div>
 
-            <el-radio-group
-              v-model="rootStore.toolbarMode"
-              size="default"
-              style="overflow: hidden"
-            >
-              <el-radio-button label="转弯带" value="turn">
-                <template #default>
-                  <img
-                    src="@/assets/img/turn.png"
-                    style="width: 18px; height: 18px"
-                  />
-                </template>
-              </el-radio-button>
-              <el-radio-button label="带" value="belt">
-                <template #default>
-                  <img
-                    src="@/assets/img/belt.png"
-                    style="width: 18px; height: 18px"
-                  />
-                </template>
-              </el-radio-button>
-              <el-radio-button label="一分三" value="splitter">
-                <template #default>
-                  <img
-                    src="@/assets/img/one_to_three.png"
-                    style="width: 18px; height: 18px"
-                  />
-                </template>
-              </el-radio-button>
-              <el-radio-button label="三合一" value="conveyer">
-                <template #default>
-                  <img
-                    src="@/assets/img/three_to_one.png"
-                    style="width: 18px; height: 18px"
-                  />
-                </template>
-              </el-radio-button>
-              <el-radio-button label="桥" value="cross">
-                <template #default>
-                  <img
-                    src="@/assets/img/cross.png"
-                    style="width: 18px; height: 18px"
-                  />
-                </template>
-              </el-radio-button>
-            </el-radio-group>
-
-            <el-button-group style="overflow: hidden">
-              <el-button @click="rootStore.saveBluePrint" primary>
-                <template #icon>
-                  <div>
-                    <img
-                      src="@/assets/img/save.png"
-                      style="width: 18px; height: 18px"
-                    />
-                  </div>
-                </template>
-              </el-button>
-              <el-button @click="rootStore.handleBluePrintImportDialog" primary>
-                <img
-                  src="@/assets/img/import.png"
-                  style="width: 18px; height: 18px"
+                <el-text size="small" :truncated="true">电力负载：</el-text
+                ><el-text size="small" :truncated="true">3000/3000W</el-text>
+              </div>
+              <div>
+                <el-progress
+                  :percentage="50"
+                  :text-inside="true"
+                  style="width: 100%"
                 />
-              </el-button>
-              <el-button @click="rootStore.exportBluePrint" primary>
-                <img
-                  src="@/assets/img/export.png"
-                  style="width: 18px; height: 18px"
-                />
-              </el-button>
-            </el-button-group>
+              </div>
+            </div>
           </div>
+          <!--工具栏-->
+          <el-radio-group
+            v-model="rootStore.toolbarMode"
+            size="default"
+            @change="rootStore.handleBeltModeChange"
+            style="overflow: hidden"
+          >
+            <el-radio-button label="多带" value="belts" />
+            <el-radio-button label="框选" value="select" />
+            <el-radio-button label="无" value="default" />
+          </el-radio-group>
+          <!--便捷放置-->
+          <el-radio-group
+            v-model="rootStore.toolbarMode"
+            size="default"
+            style="overflow: hidden; margin-right: auto"
+          >
+            <el-radio-button label="转弯带" value="turn">
+              <template #default>
+                <img
+                  src="@/assets/img/turn.png"
+                  style="width: 18px; height: 18px"
+                />
+              </template>
+            </el-radio-button>
+            <el-radio-button label="带" value="belt">
+              <template #default>
+                <img
+                  src="@/assets/img/belt.png"
+                  style="width: 18px; height: 18px"
+                />
+              </template>
+            </el-radio-button>
+            <el-radio-button label="一分三" value="splitter">
+              <template #default>
+                <img
+                  src="@/assets/img/one_to_three.png"
+                  style="width: 18px; height: 18px"
+                />
+              </template>
+            </el-radio-button>
+            <el-radio-button label="三合一" value="conveyer">
+              <template #default>
+                <img
+                  src="@/assets/img/three_to_one.png"
+                  style="width: 18px; height: 18px"
+                />
+              </template>
+            </el-radio-button>
+            <el-radio-button label="桥" value="cross">
+              <template #default>
+                <img
+                  src="@/assets/img/cross.png"
+                  style="width: 18px; height: 18px"
+                />
+              </template>
+            </el-radio-button>
+          </el-radio-group>
+          <!--图层查看-->
+          <div
+            style="
+              width: auto;
+              height: 100%;
+              background-color: #ffffff;
+              overflow: hidden;
+            "
+          >
+            <el-dropdown trigger="click">
+              <el-button type="primary">
+                图层设置<el-icon class="el-icon--right"
+                  ><arrow-down
+                /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <div class="display-flex flex-direation-col" style="padding: 6px">
+                    <el-checkbox label="机器" value="Value A" />
+                    <el-checkbox label="传送带" value="Value B" />
+                    <el-checkbox label="管道" value="Value C" />
+                    <el-checkbox label="电力" value="Value C" />
+                </div>
+              </template>
+            </el-dropdown>
+          </div>
+          <!--蓝图存储相关-->
+          <el-button-group style="overflow: hidden">
+            <el-button @click="rootStore.saveBluePrint" primary>
+              <template #icon>
+                <div>
+                  <img
+                    src="@/assets/img/save.png"
+                    style="width: 18px; height: 18px"
+                  />
+                </div>
+              </template>
+            </el-button>
+            <el-button @click="rootStore.handleBluePrintImportDialog" primary>
+              <img
+                src="@/assets/img/import.png"
+                style="width: 18px; height: 18px"
+              />
+            </el-button>
+            <el-button @click="rootStore.exportBluePrint" primary>
+              <img
+                src="@/assets/img/export.png"
+                style="width: 18px; height: 18px"
+              />
+            </el-button>
+          </el-button-group>
         </div>
       </div>
 
@@ -238,6 +290,7 @@ import {
   render,
   getCurrentInstance,
   markRaw,
+  ref,
 } from "vue";
 import { GridStack } from "gridstack";
 import { useRootStore } from "../stores/SimStore";
@@ -250,6 +303,9 @@ import "gridstack/dist/gridstack.min.css";
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
 const selectStore = useSelectStore();
+
+const testRef = ref(null);
+
 onMounted(async () => {
   await nextTick();
   //初始化
@@ -325,7 +381,7 @@ onMounted(async () => {
   transition: 0.1s;
   color: var(--sheng-item-text);
   background-color: var(--sheng-item-bg);
-  border: solid 2px #323731;
+  border: solid 2px var(--sheng-grid-cont-item-border);
   border-radius: 3px;
   box-sizing: border-box;
   gap: 12px;
@@ -365,7 +421,7 @@ onMounted(async () => {
 }
 
 .sheng-tool-bar {
-  width: auto;
+  width: 100%;
   height: 30px;
   gap: 3px;
 }

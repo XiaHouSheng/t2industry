@@ -14,6 +14,9 @@ import ProtocolStorageBox from '../components/simulation/ProtocolStorageBox.vue'
 import WarehouseDepositPort from '../components/simulation/WarehouseDepositPort.vue';
 import WarehouseWithdrawalPort from '../components/simulation/WarehouseWithdrawalPort.vue';
 import PowerStation from '../components/simulation/PowerStation.vue';
+import DismantlerMachine from '../components/simulation/DismantlerMachine.vue'
+import ReactionPool from '../components/simulation/ReactionPool.vue'
+import XiraniteFurnace from '../components/simulation/XiraniteFurnace.vue'
 import { markRaw } from 'vue';
 
 // 组件映射表：key 对应机器唯一标识（与之前的 gs_id 前缀一致），value 是组件对象
@@ -32,7 +35,11 @@ export const machineComponentMap = {
   protocolStorageBox: markRaw(ProtocolStorageBox),
   warehouseDepositPort: markRaw(WarehouseDepositPort),
   warehouseWithdrawalPort: markRaw(WarehouseWithdrawalPort),
-  powerStation: markRaw(PowerStation)
+  powerStation: markRaw(PowerStation),
+  // jinlong 专属
+  dismantlerMachine: markRaw(DismantlerMachine),
+  reactionPool: markRaw(ReactionPool),
+  xiraniteFurnace: markRaw(XiraniteFurnace)
 };
 
 export const machineDataFileMap = {
@@ -50,8 +57,8 @@ export const machineDataFileMap = {
   // —— jinlong 专属 —— | 这里还没有做组件，后续直接生成
   dismantlerMachine: 'dismantler_1',
   reactionPool: 'mix_pool_1',
-  waterPump: 'pump_1',
   xiraniteFurnace: 'xiranite_oven_1',
+  waterPump: 'pump_1', //水泵需要从蓝图区域外拉，暂不添加
 }
 
 export const machineNameMap = {
