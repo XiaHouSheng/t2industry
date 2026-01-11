@@ -60,8 +60,8 @@
     </el-upload>
   </el-dialog>
 
-  <el-row :gutter="6" class="container">
-    <el-col :span="3">
+  <el-row :gutter="6">
+    <el-col :span="4">
       <div class="display-flex flex-direation-col sheng-cont-list sidebar">
         <div
           data-gs-widget='{"w":3, "h":1, "noResize":true, "id":"warehouseWithdrawalPort"}'
@@ -105,7 +105,6 @@
                 width: 35px;
                 height: 35px;
                 background-size: 420px auto;
-                border-radius: 3px;
                 margin-left: 6px;
               "
               :style="iconStyle(machine.icon, 35)"
@@ -118,10 +117,10 @@
         </div>
       </div>
     </el-col>
-    <el-col :span="21">
+    <el-col :span="20">
       <div class="display-flex flex-direation-row sheng-tool-bar-cont">
         <div class="sheng-tool-bar display-flex flex-direaiton-row">
-          <!--电量显示-->
+          <!--电量显示
           <div
             style="width: 180px; height: 100%; background-color: #ffffff"
             class="sheng-test-border"
@@ -152,6 +151,7 @@
               </div>
             </div>
           </div>
+          -->
           <!--工具栏-->
           <el-radio-group
             v-model="rootStore.toolbarMode"
@@ -210,7 +210,33 @@
               </template>
             </el-radio-button>
           </el-radio-group>
-          <!--图层查看-->
+          <!--关联蓝图设置
+          <div
+            style="
+              width: auto;
+              height: 100%;
+              background-color: #ffffff;
+              overflow: hidden;
+            "
+          >
+            <el-dropdown trigger="click">
+              <el-button type="primary">
+                蓝图关联<el-icon class="el-icon--right"
+                  ><arrow-down
+                /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <div class="display-flex flex-direation-col" style="padding: 6px">
+                    <el-checkbox label="xxx-发电模块" value="Value A" />
+                    <el-checkbox label="xxx-冶炼模块" value="Value B" />
+                    <el-checkbox label="xxx-制造模块" value="Value C" />
+                    <el-checkbox label="xxx-制造模块" value="Value C" />
+                </div>
+              </template>
+            </el-dropdown>
+          </div>
+          -->
+          <!--图层查看
           <div
             style="
               width: auto;
@@ -235,6 +261,7 @@
               </template>
             </el-dropdown>
           </div>
+          -->
           <!--蓝图存储相关-->
           <el-button-group style="overflow: hidden">
             <el-button @click="rootStore.saveBluePrint" primary>
@@ -363,7 +390,6 @@ onMounted(async () => {
 .sheng-test-border {
   border: 1px dashed #409eff;
   box-sizing: border-box;
-  border-radius: 4px;
 }
 
 .sheng-cont-list {
@@ -371,9 +397,8 @@ onMounted(async () => {
   overflow-y: scroll;
   height: var(--sheng-self-simulation-list-height);
   background-color: var(--sheng-sidebar-bg);
-  border-radius: 3px;
-  padding: 6px;
-  gap: 3px;
+  padding: 0 6px 0 6px;
+  gap: 6px;
 }
 .sheng-cont-item {
   min-height: 48px;
@@ -382,7 +407,6 @@ onMounted(async () => {
   color: var(--sheng-item-text);
   background-color: var(--sheng-item-bg);
   border: solid 2px var(--sheng-grid-cont-item-border);
-  border-radius: 3px;
   box-sizing: border-box;
   gap: 12px;
 }
@@ -416,7 +440,6 @@ onMounted(async () => {
 :deep(.grid-stack-item) {
   text-align: center;
   border: 1px dashed var(--sheng-grid-item-outline);
-  border-radius: 4px;
   box-sizing: border-box; /* 确保尺寸不会被边框影响 */
 }
 
@@ -426,10 +449,8 @@ onMounted(async () => {
   gap: 3px;
 }
 .sheng-tool-bar-cont {
-  width: 100%;
   padding: 5px;
   background-color: #e0e3e8; /* 浅灰色，比网格背景稍深 */
   border-bottom: 1px solid #b0b8c0; /* 可选，增加分隔感 */
-  border-radius: 6px 6px 0 0;
 }
 </style>
