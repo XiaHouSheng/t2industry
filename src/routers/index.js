@@ -6,13 +6,39 @@ import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router
 import home from '../paegs/home.vue'
 import calculate from '../paegs/calculate.vue'
 import simulation from '../paegs/simulation.vue'
+
+// 导入home页面的子组件
+import homeIndex from '../paegs/home_child/index.vue'
+import homeDiscover from '../paegs/home_child/discover.vue'
+import homeSelf from '../paegs/home_child/self.vue'
+
 // 路由规则（直接映射业务页面）
 const routes = [
   {
     path: '/home',
     name: 'Home',
     component: home,
-    meta: { title: '终末地模拟器 - 首页' }
+    meta: { title: '终末地模拟器 - 首页' },
+    children: [
+      {
+        path: '',
+        name: 'HomeIndex',
+        component: homeIndex,
+        meta: { title: '终末地模拟器 - 首页' }
+      },
+      {
+        path: 'discover',
+        name: 'HomeDiscover',
+        component: homeDiscover,
+        meta: { title: '终末地模拟器 - 发现蓝图' }
+      },
+      {
+        path: 'self',
+        name: 'HomeSelf',
+        component: homeSelf,
+        meta: { title: '终末地模拟器 - 个人蓝图' }
+      }
+    ]
   },
   {
     path: '/calculate',

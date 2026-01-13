@@ -157,56 +157,67 @@
             v-model="rootStore.toolbarMode"
             size="default"
             @change="rootStore.handleBeltModeChange"
-            style="overflow: hidden"
+            class="toolbar-section"
           >
             <el-radio-button label="多带" value="belts" />
             <el-radio-button label="框选" value="select" />
             <el-radio-button label="无" value="default" />
           </el-radio-group>
+          
           <!--便捷放置-->
           <el-radio-group
             v-model="rootStore.toolbarMode"
             size="default"
-            style="overflow: hidden; margin-right: auto"
+            class="toolbar-section"
           >
             <el-radio-button label="转弯带" value="turn">
               <template #default>
-                <img
-                  src="@/assets/img/turn.png"
-                  style="width: 18px; height: 18px"
-                />
+                <div class="toolbar-icon-wrapper">
+                  <img
+                    src="@/assets/img/turn.png"
+                    style="width: 18px; height: 18px"
+                  />
+                </div>
               </template>
             </el-radio-button>
             <el-radio-button label="带" value="belt">
               <template #default>
-                <img
-                  src="@/assets/img/belt.png"
-                  style="width: 18px; height: 18px"
-                />
+                <div class="toolbar-icon-wrapper">
+                  <img
+                    src="@/assets/img/belt.png"
+                    style="width: 18px; height: 18px"
+                  />
+                </div>
               </template>
             </el-radio-button>
             <el-radio-button label="一分三" value="splitter">
               <template #default>
-                <img
-                  src="@/assets/img/one_to_three.png"
-                  style="width: 18px; height: 18px"
-                />
+                <div class="toolbar-icon-wrapper">
+                  <img
+                    src="@/assets/img/one_to_three.png"
+                    style="width: 18px; height: 18px"
+                  />
+                </div>
               </template>
             </el-radio-button>
             <el-radio-button label="三合一" value="conveyer">
               <template #default>
-                <img
-                  src="@/assets/img/three_to_one.png"
-                  style="width: 18px; height: 18px"
-                />
+                <div class="toolbar-icon-wrapper">
+                  <img
+                    src="@/assets/img/three_to_one.png"
+                    style="width: 18px; height: 18px"
+                  />
+                </div>
               </template>
             </el-radio-button>
             <el-radio-button label="桥" value="cross">
               <template #default>
-                <img
-                  src="@/assets/img/cross.png"
-                  style="width: 18px; height: 18px"
-                />
+                <div class="toolbar-icon-wrapper">
+                  <img
+                    src="@/assets/img/cross.png"
+                    style="width: 18px; height: 18px"
+                  />
+                </div>
               </template>
             </el-radio-button>
           </el-radio-group>
@@ -382,9 +393,9 @@ onMounted(async () => {
 .sheng-cont-grid {
   overflow: scroll;
   height: var(--sheng-self-simulation-grid-height);
-}
-.sheng-cont-tool-bar {
-  height: var(--sheng-self-simulation-list-head-height);
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
 }
 
 .sheng-test-border {
@@ -393,40 +404,51 @@ onMounted(async () => {
 }
 
 .sheng-cont-list {
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.08);
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.08);
   overflow-y: scroll;
   height: var(--sheng-self-simulation-list-height);
-  background-color: var(--sheng-sidebar-bg);
-  padding: 0 6px 0 6px;
-  gap: 6px;
+  background-color: #ffffff;
+  padding: 12px;
+  gap: 8px;
+  border-radius: 0 4px 4px 0;
 }
+
 .sheng-cont-item {
-  min-height: 48px;
+  min-height: 56px;
   overflow: hidden;
-  transition: 0.1s;
-  color: var(--sheng-item-text);
-  background-color: var(--sheng-item-bg);
-  border: solid 2px var(--sheng-grid-cont-item-border);
+  transition: all 0.2s ease;
+  color: #333333;
+  background-color: #f9fafc;
+  border: 1px solid #e4e7ed;
   box-sizing: border-box;
   gap: 12px;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
 }
 
 .sheng-cont-item:hover {
-  background: var(--sheng-item-hover-bg);
-  color: var(--sheng-item-hover-text);
+  background: #ecf5ff;
+  color: #409eff;
+  border-color: #c6e2ff;
+  box-shadow: 0 2px 4px rgba(64, 158, 255, 0.1);
+  transform: translateX(2px);
 }
 
 .sheng-item--active {
-  background: var(--sheng-item-active-bg);
-  border-left: 2px solid var(--sheng-item-accent);
+  background: #ecf5ff;
+  border: 1px solid #409eff;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.2);
 }
 
 .selection-box {
   position: fixed;
   z-index: 999;
-  border: 2px dashed #0e0e0e;
+  border: 2px dashed #409eff;
   border-radius: 4px;
+  background-color: rgba(64, 158, 255, 0.1);
 }
+
 .grid-stack {
   background-color: var(--sheng-grid-bg);
   background-size: calc(100% / 72) calc(100% / 72);
@@ -437,20 +459,153 @@ onMounted(async () => {
     ),
     linear-gradient(to bottom, var(--sheng-grid-line) 1px, transparent 1px);
 }
+
 :deep(.grid-stack-item) {
   text-align: center;
   border: 1px dashed var(--sheng-grid-item-outline);
-  box-sizing: border-box; /* 确保尺寸不会被边框影响 */
+  box-sizing: border-box;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+:deep(.grid-stack-item:hover) {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.3);
 }
 
 .sheng-tool-bar {
   width: 100%;
-  height: 30px;
-  gap: 3px;
+  height: 40px;
+  gap: 8px;
+  align-items: center;
+  padding: 0 12px;
 }
+
 .sheng-tool-bar-cont {
-  padding: 5px;
-  background-color: #e0e3e8; /* 浅灰色，比网格背景稍深 */
-  border-bottom: 1px solid #b0b8c0; /* 可选，增加分隔感 */
+  padding: 8px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e4e7ed;
+  border-radius: 4px 4px 0 0;
+}
+
+.toolbar-section {
+  margin-right: 12px;
+  border-radius: 4px;
+  padding: 0;
+}
+
+.toolbar-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+/* 工具栏按钮样式优化 */
+:deep(.el-radio-group) {
+  margin-right: 12px;
+}
+
+:deep(.el-radio-button__inner) {
+  border-radius: 2px;
+  margin-right: 0;
+  padding: 6px 10px;
+  transition: all 0.2s ease;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dcdfe6;
+  background-color: #ffffff;
+}
+
+:deep(.el-radio-button:first-child .el-radio-button__inner) {
+  border-radius: 2px 0 0 2px;
+}
+
+:deep(.el-radio-button:last-child .el-radio-button__inner) {
+  border-radius: 0 2px 2px 0;
+}
+
+:deep(.el-radio-button .toolbar-icon-wrapper) {
+  margin: 0 auto;
+}
+
+:deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  background-color: #409eff;
+  border-color: #409eff;
+  box-shadow: none;
+}
+
+:deep(.el-radio-button__inner:hover) {
+  border-color: #c6e2ff;
+}
+
+:deep(.el-button-group) {
+  margin-left: auto;
+  border-radius: 2px;
+  padding: 0;
+}
+
+:deep(.el-button) {
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  margin: 0;
+  border: 1px solid #dcdfe6;
+  background-color: #ffffff;
+}
+
+:deep(.el-button:hover) {
+  border-color: #c6e2ff;
+  color: #409eff;
+}
+
+:deep(.el-button--primary) {
+  background-color: #409eff;
+  border-color: #409eff;
+}
+
+:deep(.el-button--primary:hover) {
+  background-color: #66b1ff;
+  border-color: #66b1ff;
+  color: #ffffff;
+}
+
+/* 滚动条样式优化 */
+.sheng-cont-list::-webkit-scrollbar,
+.sheng-cont-grid::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.sheng-cont-list::-webkit-scrollbar-track,
+.sheng-cont-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.sheng-cont-list::-webkit-scrollbar-thumb,
+.sheng-cont-grid::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.sheng-cont-list::-webkit-scrollbar-thumb:hover,
+.sheng-cont-grid::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 响应式调整 */
+@media (max-width: 1200px) {
+  .sheng-cont-item {
+    min-height: 48px;
+    padding: 6px 10px;
+  }
+  
+  .sheng-tool-bar {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 8px;
+  }
 }
 </style>

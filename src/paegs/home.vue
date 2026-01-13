@@ -1,9 +1,34 @@
 <script setup>
-import Discover from './home_child/discover.vue';
+import { ref, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { House, Grid, User } from '@element-plus/icons-vue';
 
+const router = useRouter();
+const route = useRoute();
 
+// 计算当前活动的菜单
+const activeMenu = computed(() => {
+  return route.path;
+});
 
+// 计算页面标题
+const pageTitle = computed(() => {
+  switch (route.path) {
+    case '/home':
+      return '首页';
+    case '/home/discover':
+      return '发现蓝图';
+    case '/home/self':
+      return '个人蓝图';
+    default:
+      return '我的';
+  }
+});
 
+// 处理菜单选择
+const handleMenuSelect = (key) => {
+  router.push(key);
+};
 </script>
 
 <template>
@@ -32,39 +57,21 @@ import Discover from './home_child/discover.vue';
         <div class="sheng-menu">
           <div class="sheng-menu-item">
             <el-menu
-              default-active="2"
+              :default-active="activeMenu"
               class="el-menu-vertical-demo"
-              @open="handleOpen"
-              @close="handleClose"
+              @select="handleMenuSelect"
             >
-              <el-sub-menu index="1">
-                <template #title>
-                  <el-icon><location /></el-icon>
-                  <span>Navigator One</span>
-                </template>
-                <el-menu-item-group title="Group One">
-                  <el-menu-item index="1-1">item one</el-menu-item>
-                  <el-menu-item index="1-2">item two</el-menu-item>
-                </el-menu-item-group>
-                <el-menu-item-group title="Group Two">
-                  <el-menu-item index="1-3">item three</el-menu-item>
-                </el-menu-item-group>
-                <el-sub-menu index="1-4">
-                  <template #title>item four</template>
-                  <el-menu-item index="1-4-1">item one</el-menu-item>
-                </el-sub-menu>
-              </el-sub-menu>
-              <el-menu-item index="2">
-                <el-icon><icon-menu /></el-icon>
-                <span>Navigator Two</span>
+              <el-menu-item index="/home">
+                <el-icon><House /></el-icon>
+                <span>首页</span>
               </el-menu-item>
-              <el-menu-item index="3" disabled>
-                <el-icon><document /></el-icon>
-                <span>Navigator Three</span>
+              <el-menu-item index="/home/discover">
+                <el-icon><Grid /></el-icon>
+                <span>发现蓝图</span>
               </el-menu-item>
-              <el-menu-item index="4">
-                <el-icon><setting /></el-icon>
-                <span>Navigator Four</span>
+              <el-menu-item index="/home/self">
+                <el-icon><User /></el-icon>
+                <span>个人蓝图</span>
               </el-menu-item>
             </el-menu>
           </div>
@@ -82,10 +89,10 @@ import Discover from './home_child/discover.vue';
         <div
           class="sheng-main-header test-border display-flex flex-direation-col justify-content-center"
         >
-          <h2 style="margin: 0; margin-left: 12px">发现</h2>
+          <h2 style="margin: 0; margin-left: 12px">{{ pageTitle }}</h2>
         </div>
         <div class="sheng-child-main flex-grow-1">
-            <discover></discover>
+          <router-view></router-view>
         </div>
       </div>
     </el-col>
