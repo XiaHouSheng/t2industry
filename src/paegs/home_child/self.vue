@@ -279,7 +279,7 @@ const areaStats = computed(() => {
 .blueprint-section h3 {
   margin: 0 0 15px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--el-text-color-primary);
 }
 
 .blueprint-grid {
@@ -307,6 +307,7 @@ const areaStats = computed(() => {
 .blueprint-header h4 {
   margin: 0;
   font-size: 16px;
+  color: var(--el-text-color-primary);
 }
 
 .blueprint-tags {
@@ -323,12 +324,13 @@ const areaStats = computed(() => {
 .blueprint-description {
   margin-bottom: 10px;
   flex-grow: 1;
+  color: var(--el-text-color-primary);
 }
 
 .blueprint-meta {
   margin-bottom: 15px;
   font-size: 12px;
-  color: #666;
+  color: var(--el-text-color-placeholder);
 }
 
 .blueprint-stats {
@@ -360,20 +362,20 @@ const areaStats = computed(() => {
   align-items: center;
   justify-content: center;
   padding: 15px;
-  background-color: #f5f7fa;
+  background-color: var(--sheng-root-bg);
   border-radius: 8px;
 }
 
 .stat-value {
   font-size: 24px;
   font-weight: bold;
-  color: #333;
+  color: var(--el-text-color-primary);
   text-align: center;
 }
 
 .stat-label {
   font-size: 14px;
-  color: #666;
+  color: var(--el-text-color-placeholder);
   text-align: center;
 }
 
@@ -401,7 +403,11 @@ const areaStats = computed(() => {
 }
 
 .guide-card {
-  background-color: #f9fafc;
+  background-color: var(--sim-color-primary-bg);
+}
+
+.stats-card {
+  margin-bottom: 15px;
 }
 
 .guide-content {
@@ -413,13 +419,13 @@ const areaStats = computed(() => {
 .guide-item h4 {
   margin: 0 0 10px 0;
   font-size: 16px;
-  color: #333;
+  color: var(--el-text-color-primary);
 }
 
 .guide-item p {
   margin: 0;
   font-size: 14px;
-  color: #666;
+  color: var(--el-text-color-placeholder);
 }
 
 /* 响应式调整 */

@@ -207,7 +207,7 @@ const handleBilibili = (blueprint) => {
 .blueprint-section h3 {
   margin: 20px 0 15px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--el-text-color-primary);
 }
 
 .blueprint-grid {
@@ -235,6 +235,7 @@ const handleBilibili = (blueprint) => {
 .blueprint-header h4 {
   margin: 0;
   font-size: 16px;
+  color: var(--el-text-color-primary);
 }
 
 .blueprint-content {
@@ -246,12 +247,13 @@ const handleBilibili = (blueprint) => {
 .blueprint-description {
   margin-bottom: 15px;
   flex-grow: 1;
+  color: var(--el-text-color-primary);
 }
 
 .blueprint-meta {
   margin-bottom: 15px;
   font-size: 12px;
-  color: #666;
+  color: var(--el-text-color-placeholder);
 }
 
 .author-info {

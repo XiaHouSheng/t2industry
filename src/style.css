@@ -35,6 +35,17 @@
   /* 边框颜色 */
   --el-border-color-base: #c0c2c5; /* 默认边框颜色 */
   --el-border-color-light: #e0e1e3; /* 边框浅色，hover 或分隔用 */
+  
+  /* Simulation页面专用颜色 - 科技蓝主题 */
+  --sim-color-primary: #1e88e5; /* 主色：深蓝色，科技感强 */
+  --sim-color-primary-light: #42a5f5; /* 浅色：浅蓝色 */
+  --sim-color-primary-lighter: #bbdefb; /* 更浅色：极浅蓝色 */
+  --sim-color-primary-bg: #f8f8f8; /* 背景色：浅蓝色背景 */
+  --sim-color-white: #ffffff; /* 白色 */
+  
+  /* 首页卡片颜色 */
+  --home-card-bg: #f9fafc;
+  --home-card-divider: #e4e7ed;
 
 }
 .html {

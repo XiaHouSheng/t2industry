@@ -277,7 +277,7 @@ const handleBilibili = (blueprint) => {
   align-items: center;
   justify-content: center;
   padding: 15px;
-  background-color: #f5f7fa;
+  background-color: var(--sheng-root-bg);
   border-radius: 8px;
 }
 
@@ -304,7 +304,7 @@ const handleBilibili = (blueprint) => {
 .quick-links-section h3 {
   margin: 0 0 15px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--el-text-color-primary);
 }
 
 .quick-links-grid {
@@ -314,20 +314,20 @@ const handleBilibili = (blueprint) => {
 }
 
 .quick-link-card {
-  background-color: #ffffff;
+  background-color: var(--el-color-white);
   border-radius: 10px;
   padding: 20px 15px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 1px solid #e4e7ed;
+  border: 1px solid var(--el-border-color-light);
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.05);
 }
 
 .quick-link-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-color: #409eff;
+  border-color: var(--el-color-primary);
 }
 
 .quick-link-content {
@@ -339,7 +339,7 @@ const handleBilibili = (blueprint) => {
 }
 
 .quick-link-icon {
-  color: #409eff;
+  color: var(--el-color-primary);
   margin-bottom: 5px;
 }
 
@@ -347,20 +347,20 @@ const handleBilibili = (blueprint) => {
   margin: 0;
   font-size: 16px;
   font-weight: bold;
-  color: #333333;
+  color: var(--el-text-color-primary);
 }
 
 .quick-link-card p {
   margin: 0;
   font-size: 12px;
-  color: #666666;
+  color: var(--el-text-color-placeholder);
   line-height: 1.3;
   max-width: 180px;
 }
 
 .quick-link-arrow {
   margin-top: 5px;
-  color: #409eff;
+  color: var(--el-color-primary);
   opacity: 0.7;
   transition: opacity 0.3s ease;
 }
@@ -378,7 +378,7 @@ const handleBilibili = (blueprint) => {
 .blueprint-section h3 {
   margin: 0 0 15px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--el-text-color-primary);
 }
 
 .blueprint-grid {
@@ -406,6 +406,7 @@ const handleBilibili = (blueprint) => {
 .blueprint-header h4 {
   margin: 0;
   font-size: 16px;
+  color: var(--el-text-color-primary);
 }
 
 .blueprint-content {
@@ -417,12 +418,13 @@ const handleBilibili = (blueprint) => {
 .blueprint-description {
   margin-bottom: 10px;
   flex-grow: 1;
+  color: var(--el-text-color-primary);
 }
 
 .blueprint-meta {
   margin-bottom: 15px;
   font-size: 12px;
-  color: #666;
+  color: var(--el-text-color-placeholder);
 }
 
 .author-info {
@@ -446,7 +448,7 @@ const handleBilibili = (blueprint) => {
 }
 
 .intro-card {
-  background-color: #f9fafc;
+  background-color: var(--home-card-bg);
 }
 
 .intro-content {
@@ -458,18 +460,18 @@ const handleBilibili = (blueprint) => {
 .intro-item h4 {
   margin: 0 0 10px 0;
   font-size: 16px;
-  color: #333;
+  color: var(--el-text-color-primary);
 }
 
 .intro-item p {
   margin: 0;
   font-size: 14px;
-  color: #666;
+  color: var(--el-text-color-placeholder);
   line-height: 1.5;
 }
 
 .intro-item a {
-  color: #409eff;
+  color: var(--el-color-primary);
   text-decoration: none;
 }
 

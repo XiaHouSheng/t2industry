@@ -122,7 +122,7 @@
         <div class="sheng-tool-bar display-flex flex-direaiton-row">
           <!--电量显示
           <div
-            style="width: 180px; height: 100%; background-color: #ffffff"
+            style="width: 180px; height: 100%; background-color: var(--el-color-white)"
             class="sheng-test-border"
           >
             <div
@@ -226,7 +226,7 @@
             style="
               width: auto;
               height: 100%;
-              background-color: #ffffff;
+              background-color: var(--el-color-white);
               overflow: hidden;
             "
           >
@@ -252,7 +252,7 @@
             style="
               width: auto;
               height: 100%;
-              background-color: #ffffff;
+              background-color: var(--el-color-white);
               overflow: hidden;
             "
           >
@@ -393,13 +393,13 @@ onMounted(async () => {
 .sheng-cont-grid {
   overflow: scroll;
   height: var(--sheng-self-simulation-grid-height);
-  background-color: #f5f7fa;
+  background-color: var(--sheng-root-bg);
   border-radius: 4px;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
 }
 
 .sheng-test-border {
-  border: 1px dashed #409eff;
+  border: 1px dashed var(--sim-color-primary);
   box-sizing: border-box;
 }
 
@@ -407,7 +407,7 @@ onMounted(async () => {
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.08);
   overflow-y: scroll;
   height: var(--sheng-self-simulation-list-height);
-  background-color: #ffffff;
+  background-color: var(--el-color-white);
   padding: 12px;
   gap: 8px;
   border-radius: 0 4px 4px 0;
@@ -417,9 +417,9 @@ onMounted(async () => {
   min-height: 56px;
   overflow: hidden;
   transition: all 0.2s ease;
-  color: #333333;
-  background-color: #f9fafc;
-  border: 1px solid #e4e7ed;
+  color: var(--el-text-color-primary);
+  background-color: var(--sim-color-primary-bg);
+  border: 1px solid var(--el-border-color-light);
   box-sizing: border-box;
   gap: 12px;
   border-radius: 6px;
@@ -428,23 +428,23 @@ onMounted(async () => {
 }
 
 .sheng-cont-item:hover {
-  background: #ecf5ff;
-  color: #409eff;
-  border-color: #c6e2ff;
+  background: var(--sim-color-primary-bg);
+  color: var(--sim-color-primary);
+  border-color: var(--sim-color-primary-lighter);
   box-shadow: 0 2px 4px rgba(64, 158, 255, 0.1);
   transform: translateX(2px);
 }
 
 .sheng-item--active {
-  background: #ecf5ff;
-  border: 1px solid #409eff;
+  background: var(--sim-color-primary-bg);
+  border: 1px solid var(--sim-color-primary);
   box-shadow: 0 2px 8px rgba(64, 158, 255, 0.2);
 }
 
 .selection-box {
   position: fixed;
   z-index: 999;
-  border: 2px dashed #409eff;
+  border: 2px dashed var(--sim-color-primary);
   border-radius: 4px;
   background-color: rgba(64, 158, 255, 0.1);
 }
@@ -482,8 +482,8 @@ onMounted(async () => {
 
 .sheng-tool-bar-cont {
   padding: 8px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e4e7ed;
+  background-color: var(--sim-color-primary-bg);
+  border-bottom: 1px solid var(--el-border-color-light);
   border-radius: 4px 4px 0 0;
 }
 
@@ -515,8 +515,8 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #dcdfe6;
-  background-color: #ffffff;
+  border: 1px solid var(--el-border-color-light);
+  background-color: var(--el-color-white);
 }
 
 :deep(.el-radio-button:first-child .el-radio-button__inner) {
@@ -532,13 +532,13 @@ onMounted(async () => {
 }
 
 :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-  background-color: #409eff;
-  border-color: #409eff;
+  background-color: var(--sim-color-primary);
+  border-color: var(--sim-color-primary);
   box-shadow: none;
 }
 
 :deep(.el-radio-button__inner:hover) {
-  border-color: #c6e2ff;
+  border-color: var(--sim-color-primary-lighter);
 }
 
 :deep(.el-button-group) {
@@ -551,24 +551,24 @@ onMounted(async () => {
   border-radius: 2px;
   transition: all 0.2s ease;
   margin: 0;
-  border: 1px solid #dcdfe6;
-  background-color: #ffffff;
+  border: 1px solid var(--el-border-color-light);
+  background-color: var(--el-color-white);
 }
 
 :deep(.el-button:hover) {
-  border-color: #c6e2ff;
-  color: #409eff;
+  border-color: var(--sim-color-primary-lighter);
+  color: var(--sim-color-primary);
 }
 
 :deep(.el-button--primary) {
-  background-color: #409eff;
-  border-color: #409eff;
+  background-color: var(--sim-color-primary);
+  border-color: var(--sim-color-primary);
 }
 
 :deep(.el-button--primary:hover) {
-  background-color: #66b1ff;
-  border-color: #66b1ff;
-  color: #ffffff;
+  background-color: var(--sim-color-primary-light);
+  border-color: var(--sim-color-primary-light);
+  color: var(--sim-color-white);
 }
 
 /* 滚动条样式优化 */
