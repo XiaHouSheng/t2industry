@@ -1,101 +1,151 @@
 <script setup>
-import { ref } from "vue";
-import { Search, Share, View, Link } from "@element-plus/icons-vue";
+import { ref, onMounted, computed } from "vue";
+import { Search, Share, View, Link, Loading, Upload } from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
+import apiClient from "../../utils/api-client";
+import { useHomeStore } from "../../stores/HomeStore";
 
-// 搜索关键字
-const searchQuery = ref("");
+// 使用HomeStore
+const homeStore = useHomeStore();
 
-// 地区筛选
-const selectedArea = ref("");
+// 地区筛选选项
 const areas = ref(["", "四号谷地", "武陵"]);
 
-// 模拟蓝图数据
-const blueprints = ref([
-  {
-    id: 1,
-    name: "四号谷地毕业蓝图",
-    description: "四号谷地全资源高效生产布局，包含完整的资源循环系统",
-    author: "XiaHouSheng",
-    avatar: "user",
-    area: "四号谷地",
-    createdAt: "2026-01-12",
-    views: 256,
-    downloads: 89,
-  },
-  {
-    id: 2,
-    name: "武陵高级加工厂",
-    description: "武陵地区高级资源加工优化布局，适合后期资源需求",
-    author: "EndfieldMaster",
-    avatar: "em",
-    area: "武陵",
-    createdAt: "2026-01-11",
-    views: 189,
-    downloads: 67,
-  },
-  {
-    id: 3,
-    name: "四号谷地基础资源生产",
-    description: "四号谷地初期基础资源生产布局，适合新手玩家",
-    author: "NewPlayerGuide",
-    avatar: "np",
-    area: "四号谷地",
-    createdAt: "2026-01-10",
-    views: 320,
-    downloads: 120,
-  },
-  {
-    id: 4,
-    name: "武陵自动化仓储",
-    description: "武陵地区自动化仓储系统，高效管理各类资源",
-    author: "StorageExpert",
-    avatar: "se",
-    area: "武陵",
-    createdAt: "2026-01-09",
-    views: 156,
-    downloads: 45,
-  },
-  {
-    id: 5,
-    name: "四号谷地高级精炼厂",
-    description: "四号谷地高级精炼厂布局，专注于高价值资源生产",
-    author: "RefineMaster",
-    avatar: "rm",
-    area: "四号谷地",
-    createdAt: "2026-01-08",
-    views: 210,
-    downloads: 78,
-  },
-  {
-    id: 6,
-    name: "武陵综合生产基地",
-    description: "武陵地区综合生产基地，多资源并行生产",
-    author: "AllRoundPlayer",
-    avatar: "ar",
-    area: "武陵",
-    createdAt: "2026-01-07",
-    views: 178,
-    downloads: 56,
-  },
-]);
+// 从store获取状态
+const blueprints = computed(() => homeStore.discoverBlueprints);
+const total = computed(() => homeStore.total);
+const currentPage = computed({
+  get: () => homeStore.currentPage,
+  set: (value) => homeStore.setSearchFilters({ page: value })
+});
+const pageSize = computed({
+  get: () => homeStore.pageSize,
+  set: (value) => homeStore.setSearchFilters({ pageSize: value })
+});
+const searchQuery = computed({
+  get: () => homeStore.searchQuery,
+  set: (value) => homeStore.setSearchFilters({ search: value })
+});
+const selectedArea = computed({
+  get: () => homeStore.selectedArea,
+  set: (value) => homeStore.setSearchFilters({ area: value })
+});
+const loading = computed(() => homeStore.loading.discover);
+const error = computed(() => homeStore.error);
+
+// 处理页码变化
+const handlePageChange = (page) => {
+  homeStore.loadDiscoverBlueprints(page);
+};
+
+// 处理搜索和筛选变化
+const handleSearchChange = () => {
+  // 重置到第一页
+  homeStore.loadDiscoverBlueprints(1);
+};
+
+// 处理每页大小变化
+const handleSizeChange = (size) => {
+  homeStore.setSearchFilters({ pageSize: size });
+  homeStore.loadDiscoverBlueprints(1);
+};
 
 // 分享蓝图
-const handleShare = (blueprint) => {
-  console.log("分享蓝图:", blueprint);
-  // 这里可以添加分享蓝图的逻辑
+const handleShare = async (blueprint) => {
+  try {
+    console.log("分享蓝图:", blueprint);
+    // 实际项目中可以调用分享API
+  } catch (err) {
+    console.error('分享蓝图失败:', err);
+  }
 };
 
 // 查看蓝图
-const handleView = (blueprint) => {
-  console.log("查看蓝图:", blueprint);
-  // 这里可以添加查看蓝图的逻辑
+const handleView = async (blueprint) => {
+  try {
+    console.log("查看蓝图:", blueprint);
+    // 实际项目中可以跳转到蓝图详情页
+    // router.push(`/blueprint/${blueprint.id}`);
+  } catch (err) {
+    console.error('查看蓝图失败:', err);
+  }
 };
 
 // 跳转到B站
 const handleBilibili = (blueprint) => {
   console.log("跳转到B站:", blueprint);
-  // 这里可以添加跳转到B站的逻辑
 };
+
+// 格式化时间为 y-m-d 格式
+const formatDate = (dateString) => {
+  if (!dateString) return '未知时间';
+  try {
+    const date = new Date(dateString);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  } catch (err) {
+    return '未知时间';
+  }
+};
+
+// 重新上传蓝图
+const handleReupload = async (blueprint) => {
+  try {
+    // 检查是否登录
+    if (!homeStore.userInfo.isLoggedIn) {
+      ElMessage.warning('请先登录后再重新上传蓝图');
+      return;
+    }
+    
+    // 检查是否是用户自己的蓝图
+    if (!blueprint.creator || blueprint.creator.id !== homeStore.userInfo.id) {
+      ElMessage.warning('只能重新上传自己的蓝图');
+      return;
+    }
+    
+    // 创建文件输入元素
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json'; // 蓝图文件的扩展名是.json
+    
+    // 监听文件选择事件
+    fileInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      try {
+        // 显示加载状态
+        blueprint.uploading = true;
+        
+        // 调用API上传蓝图文件
+        await apiClient.uploadBlueprint(blueprint.id, file);
+        
+        // 上传成功，重新加载蓝图列表
+        await loadBlueprints();
+        
+        // 显示成功提示
+        ElMessage.success('蓝图重新上传成功');
+      } catch (err) {
+        // 显示失败提示
+        ElMessage.error(err.message || '蓝图重新上传失败');
+        console.error('蓝图重新上传失败:', err);
+      } finally {
+        // 隐藏加载状态
+        blueprint.uploading = false;
+      }
+    };
+    
+    // 触发文件选择对话框
+    fileInput.click();
+  } catch (err) {
+    console.error("重新上传蓝图失败:", err);
+    ElMessage.error('操作失败，请重试');
+  }
+};
+
+// 页面加载时获取数据
+onMounted(() => {
+  homeStore.loadDiscoverBlueprints(1);
+});
 </script>
 
 <template>
@@ -109,6 +159,7 @@ const handleBilibili = (blueprint) => {
               :prefix-icon="Search"
               v-model="searchQuery"
               placeholder="输入关键字检索蓝图"
+              @input="handleSearchChange"
             ></el-input>
           </el-col>
           <el-col :span="8">
@@ -116,6 +167,7 @@ const handleBilibili = (blueprint) => {
               v-model="selectedArea"
               placeholder="按地区筛选"
               style="width: 100%"
+              @change="handleSearchChange"
             >
               <el-option
                 v-for="area in areas"
@@ -128,71 +180,131 @@ const handleBilibili = (blueprint) => {
         </el-row>
       </div>
 
+      <!-- 错误提示 -->
+      <el-alert
+        v-if="error"
+        :title="error"
+        type="error"
+        :closable="false"
+        show-icon
+        class="mb-4"
+      >
+        <template #default>
+          <el-button type="primary" size="small" @click="loadBlueprints">重试</el-button>
+        </template>
+      </el-alert>
+
       <!-- 蓝图列表 -->
       <div class="blueprint-section">
-        <h3>热门蓝图</h3>
-        <div class="blueprint-grid">
-          <el-card
-            v-for="blueprint in blueprints"
-            :key="blueprint.id"
-            class="blueprint-card"
-          >
-            <template #header>
-              <div class="blueprint-header">
-                <h4>{{ blueprint.name }}</h4>
-                <el-tag size="small" type="warning">{{
-                  blueprint.area
-                }}</el-tag>
-              </div>
-            </template>
-            <div class="blueprint-content">
-              <div class="blueprint-description">
-                {{ blueprint.description }}
-              </div>
-              <div class="blueprint-meta">
-                <div class="author-info">
-                  <el-avatar :size="24">{{ blueprint.avatar }}</el-avatar>
-                  <el-text size="small" style="margin-left: 8px">{{
-                    blueprint.author
-                  }}</el-text>
+        
+        <el-skeleton :loading="loading" animated>
+          <template #template>
+            <div class="blueprint-grid">
+              <el-card class="blueprint-card" v-for="i in 8" :key="i">
+                <template #header>
+                  <div class="blueprint-header">
+                    <el-skeleton-item variant="text" style="width: 150px; height: 20px;" />
+                    <el-skeleton-item variant="text" style="width: 60px; height: 20px;" />
+                  </div>
+                </template>
+                <div class="blueprint-content">
+                  <el-skeleton-item variant="text" style="width: 100%; height: 16px; margin-bottom: 8px;" />
+                  <el-skeleton-item variant="text" style="width: 100%; height: 16px; margin-bottom: 8px;" />
+                  <el-skeleton-item variant="text" style="width: 80%; height: 16px; margin-bottom: 16px;" />
+                  <div class="author-info">
+                    <el-skeleton-item variant="circle" style="width: 24px; height: 24px;" />
+                    <el-skeleton-item variant="text" style="width: 100px; height: 16px; margin-left: 8px;" />
+                  </div>
+                  <el-skeleton-item variant="text" style="width: 120px; height: 16px; margin-top: 8px;" />
+                  <el-skeleton-item variant="text" style="width: 100px; height: 16px; margin-top: 8px;" />
+                  <div class="blueprint-actions">
+                    <el-skeleton-item variant="text" style="width: 80px; height: 32px;" />
+                    <el-skeleton-item variant="text" style="width: 80px; height: 32px;" />
+                    <el-skeleton-item variant="text" style="width: 80px; height: 32px;" />
+                  </div>
                 </div>
-                <el-text size="small"
-                  >上传时间: {{ blueprint.createdAt }}</el-text
-                >
-                <div class="blueprint-stats">
-                  <el-text size="small" style="margin-right: 10px">
-                    浏览: {{ blueprint.views }}
-                  </el-text>
-                  <el-text size="small">
-                    下载: {{ blueprint.downloads }}
-                  </el-text>
-                </div>
-              </div>
-              <div class="blueprint-actions">
-                <el-button
-                  size="small"
-                  :icon="View"
-                  @click="handleView(blueprint)"
-                >
-                  查看
-                </el-button>
-                <el-button
-                  size="small"
-                  :icon="Share"
-                  @click="handleShare(blueprint)"
-                >
-                  分享
-                </el-button>
-                <el-button
-                  size="small"
-                  :icon="Link"
-                  @click="handleBilibili(blueprint)"
-                >
-                  B站
-                </el-button>
-              </div>
+              </el-card>
             </div>
-          </el-card>
+          </template>
+          <div class="blueprint-grid" v-if="!loading && blueprints.length > 0">
+            <el-card
+              v-for="blueprint in blueprints"
+              :key="blueprint.id"
+              class="blueprint-card"
+            >
+              <template #header>
+                <div class="blueprint-header">
+                  <h4>{{ blueprint.name || '未命名蓝图' }}</h4>
+                  <el-tag size="small" type="warning">{{
+                    blueprint.area || '未知地区'
+                  }}</el-tag>
+                </div>
+              </template>
+              <div class="blueprint-content">
+                <div class="blueprint-description">
+                  {{ blueprint.description || '暂无描述' }}
+                </div>
+                <div class="blueprint-meta">
+                  <div class="author-info">
+                    <el-avatar :size="24">{{ blueprint.creator?.name?.charAt(0) || '用户' }}</el-avatar>
+                    <el-text size="small" style="margin-left: 8px">{{
+                      blueprint.creator?.name || '未知作者'
+                    }}</el-text>
+                  </div>
+                  <el-text size="small"
+                    >上传时间: {{ formatDate(blueprint.createdAt) }}</el-text
+                  >
+                  <div class="blueprint-stats">
+                    <el-text size="small" style="margin-right: 10px">
+                      浏览: {{ blueprint.views || 0 }}
+                    </el-text>
+                    <el-text size="small">
+                      下载: {{ blueprint.downloads || 0 }}
+                    </el-text>
+                  </div>
+                </div>
+                <div class="blueprint-actions">
+                  <el-button
+                    size="small"
+                    :icon="View"
+                    @click="handleView(blueprint)"
+                  >
+                    查看
+                  </el-button>
+                  <el-button
+                    size="small"
+                    :icon="Share"
+                    @click="handleShare(blueprint)"
+                  >
+                    分享
+                  </el-button>
+                  <el-button
+                    size="small"
+                    :icon="Link"
+                    @click="handleBilibili(blueprint)"
+                  >
+                    B站
+                  </el-button>
+                </div>
+              </div>
+            </el-card>
+          </div>
+          <div v-else-if="!loading && blueprints.length === 0" class="empty-state">
+            <el-empty description="暂无符合条件的蓝图" />
+          </div>
+        </el-skeleton>
+        
+        <!-- 分页组件 -->
+        <div v-if="!loading && total > 0" class="pagination-container">
+          <el-pagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="[12, 24, 36]"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total"
+            @size-change="handleSizeChange"
+            @current-change="handlePageChange"
+          />
         </div>
       </div>
     </el-col>
@@ -224,6 +336,20 @@ const handleBilibili = (blueprint) => {
 .blueprint-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-container {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .blueprint-header {
@@ -274,6 +400,13 @@ const handleBilibili = (blueprint) => {
 
 .search-filter-section {
   margin: 20px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* 响应式调整 */

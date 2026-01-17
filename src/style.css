@@ -28,7 +28,7 @@
   --el-color-primary: #6c6f76; /* 主色：中性灰，适合选中状态 */
   --el-color-primary-light-3: #7d7a82; /* hover / 浅色背景 */
   --el-color-white: #ffffff; /* 文字或背景白色 */
-  --el-bg-color: #e0e3e8;
+  --el-bg-color: #ffffff;
   /* 文字颜色 */
   --el-text-color-primary: #2e3033; /* 主文字颜色，比主色深，保证可读性 */
   --el-text-color-placeholder: #a0a2a5; /* 占位文字颜色 */

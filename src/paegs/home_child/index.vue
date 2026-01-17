@@ -1,55 +1,37 @@
 <script setup>
-import { ref, computed } from "vue";
+import { computed, onMounted } from "vue";
 import { View, Share, Link, ArrowRight } from "@element-plus/icons-vue";
+import { useHomeStore } from "../../stores/HomeStore";
 
-// 模拟统计数据
-const totalBlueprints = ref(128);
-const totalUsers = ref(512);
-const totalViews = ref(10240);
-const totalDownloads = ref(3580);
+// 使用HomeStore
+const homeStore = useHomeStore();
+
+// 从store获取状态
+const totalBlueprints = computed(() => homeStore.totalBlueprints);
+const totalUsers = computed(() => homeStore.totalUsers);
+const totalViews = computed(() => homeStore.totalViews);
+const totalDownloads = computed(() => homeStore.totalDownloads);
+const hotBlueprints = computed(() => homeStore.hotBlueprints);
+const loading = computed(() => homeStore.loading.stats);
+const error = computed(() => homeStore.error);
 
 // 地区统计
-const areaStats = ref({
-  四号谷地: 76,
-  武陵: 52
+const areaStats = computed(() => {
+  const stats = {
+    四号谷地: 0,
+    武陵: 0
+  };
+  if (Array.isArray(homeStore.hotBlueprints)) {
+    homeStore.hotBlueprints.forEach(bp => {
+      if (bp.area === "四号谷地") stats.四号谷地++;
+      if (bp.area === "武陵") stats.武陵++;
+    });
+  }
+  return stats;
 });
 
-// 热门蓝图
-const hotBlueprints = ref([
-  {
-    id: 1,
-    name: "四号谷地毕业蓝图",
-    description: "四号谷地全资源高效生产布局，包含完整的资源循环系统",
-    author: "XiaHouSheng",
-    avatar: "user",
-    area: "四号谷地",
-    views: 256,
-    downloads: 89
-  },
-  {
-    id: 2,
-    name: "武陵高级加工厂",
-    description: "武陵地区高级资源加工优化布局，适合后期资源需求",
-    author: "EndfieldMaster",
-    avatar: "em",
-    area: "武陵",
-    views: 189,
-    downloads: 67
-  },
-  {
-    id: 3,
-    name: "四号谷地基础资源生产",
-    description: "四号谷地初期基础资源生产布局，适合新手玩家",
-    author: "NewPlayerGuide",
-    avatar: "np",
-    area: "四号谷地",
-    views: 320,
-    downloads: 120
-  }
-]);
-
 // 快速导航
-const quickLinks = ref([
+const quickLinks = [
   {
     name: "蓝图编辑器",
     icon: "Edit",
@@ -74,54 +56,107 @@ const quickLinks = ref([
     path: "/calculate",
     description: "物料配平计算"
   }
-]);
+];
 
 // 处理蓝图操作
-const handleView = (blueprint) => {
-  console.log("查看蓝图:", blueprint);
+const handleView = async (blueprint) => {
+  try {
+    console.log("查看蓝图:", blueprint);
+    // 实际项目中可以跳转到蓝图详情页
+    // router.push(`/blueprint/${blueprint.id}`);
+  } catch (err) {
+    console.error('查看蓝图失败:', err);
+  }
 };
 
-const handleShare = (blueprint) => {
-  console.log("分享蓝图:", blueprint);
+const handleShare = async (blueprint) => {
+  try {
+    console.log("分享蓝图:", blueprint);
+    // 实际项目中可以调用分享API
+  } catch (err) {
+    console.error('分享蓝图失败:', err);
+  }
 };
 
 const handleBilibili = (blueprint) => {
   console.log("跳转到B站:", blueprint);
+};
+
+// 页面加载时获取数据
+onMounted(() => {
+  // 只有当hotBlueprints为空时才加载数据，否则直接使用已加载的数据
+  if (!Array.isArray(homeStore.hotBlueprints) || homeStore.hotBlueprints.length === 0) {
+    homeStore.loadStats();
+  }
+});
+
+// 重试加载数据
+const handleRetry = () => {
+  // 重试时总是重新加载数据
+  homeStore.loadStats();
 };
 </script>
 
 <template>
   <el-row :gutter="12">
     <el-col :span="24">
+      <!-- 错误提示 -->
+      <el-alert
+        v-if="error"
+        :title="error"
+        type="error"
+        :closable="false"
+        show-icon
+        class="mb-4"
+      >
+        <template #default>
+          <el-button type="primary" size="small" @click="handleRetry">重试</el-button>
+        </template>
+      </el-alert>
+
       <!-- 统计信息卡片 -->
       <div class="stats-section">
         <el-card class="stats-card">
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-content">
-                <div class="stat-value">{{ totalBlueprints }}</div>
-                <div class="stat-label">总蓝图数</div>
+          <template #default>
+            <el-skeleton :loading="loading" animated>
+              <template #template>
+                <div class="stats-grid">
+                  <div class="stat-item" v-for="i in 4" :key="i">
+                    <div class="stat-content">
+                      <el-skeleton-item variant="text" style="width: 80px; height: 30px;" />
+                      <el-skeleton-item variant="text" style="width: 100px; height: 16px; margin-top: 8px;" />
+                    </div>
+                  </div>
+                </div>
+              </template>
+              <div class="stats-grid" v-if="!loading">
+                <div class="stat-item">
+                  <div class="stat-content">
+                    <div class="stat-value">{{ totalBlueprints }}</div>
+                    <div class="stat-label">总蓝图数</div>
+                  </div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-content">
+                    <div class="stat-value">{{ totalUsers }}</div>
+                    <div class="stat-label">总用户数</div>
+                  </div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-content">
+                    <div class="stat-value">{{ totalViews }}</div>
+                    <div class="stat-label">总浏览量</div>
+                  </div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-content">
+                    <div class="stat-value">{{ totalDownloads }}</div>
+                    <div class="stat-label">总下载量</div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-content">
-                <div class="stat-value">{{ totalUsers }}</div>
-                <div class="stat-label">总用户数</div>
-              </div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-content">
-                <div class="stat-value">{{ totalViews }}</div>
-                <div class="stat-label">总浏览量</div>
-              </div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-content">
-                <div class="stat-value">{{ totalDownloads }}</div>
-                <div class="stat-label">总下载量</div>
-              </div>
-            </div>
-          </div>
+            </el-skeleton>
+          </template>
         </el-card>
       </div>
 
@@ -152,66 +187,98 @@ const handleBilibili = (blueprint) => {
       <!-- 热门蓝图 -->
       <div class="blueprint-section">
         <h3>热门蓝图</h3>
-        <div class="blueprint-grid">
-          <el-card
-            v-for="blueprint in hotBlueprints"
-            :key="blueprint.id"
-            class="blueprint-card"
-          >
-            <template #header>
-              <div class="blueprint-header">
-                <h4>{{ blueprint.name }}</h4>
-                <el-tag size="small" type="warning">{{
-                  blueprint.area
-                }}</el-tag>
-              </div>
-            </template>
-            <div class="blueprint-content">
-              <div class="blueprint-description">
-                {{ blueprint.description }}
-              </div>
-              <div class="blueprint-meta">
-                <div class="author-info">
-                  <el-avatar :size="24">{{ blueprint.avatar }}</el-avatar>
-                  <el-text size="small" style="margin-left: 8px">{{
-                    blueprint.author
-                  }}</el-text>
+        <el-skeleton :loading="loading" animated>
+          <template #template>
+            <div class="blueprint-grid">
+              <el-card class="blueprint-card" v-for="i in 4" :key="i">
+                <template #header>
+                  <div class="blueprint-header">
+                    <el-skeleton-item variant="text" style="width: 150px; height: 20px;" />
+                    <el-skeleton-item variant="text" style="width: 60px; height: 20px;" />
+                  </div>
+                </template>
+                <div class="blueprint-content">
+                  <el-skeleton-item variant="text" style="width: 100%; height: 16px; margin-bottom: 8px;" />
+                  <el-skeleton-item variant="text" style="width: 100%; height: 16px; margin-bottom: 8px;" />
+                  <el-skeleton-item variant="text" style="width: 80%; height: 16px; margin-bottom: 16px;" />
+                  <div class="author-info">
+                    <el-skeleton-item variant="circle" style="width: 24px; height: 24px;" />
+                    <el-skeleton-item variant="text" style="width: 100px; height: 16px; margin-left: 8px;" />
+                  </div>
+                  <el-skeleton-item variant="text" style="width: 100px; height: 16px; margin-top: 8px;" />
+                  <div class="blueprint-actions">
+                    <el-skeleton-item variant="text" style="width: 80px; height: 32px;" />
+                    <el-skeleton-item variant="text" style="width: 80px; height: 32px;" />
+                    <el-skeleton-item variant="text" style="width: 80px; height: 32px;" />
+                  </div>
                 </div>
-                <div class="blueprint-stats">
-                  <el-text size="small" style="margin-right: 10px">
-                    浏览: {{ blueprint.views }}
-                  </el-text>
-                  <el-text size="small">
-                    下载: {{ blueprint.downloads }}
-                  </el-text>
-                </div>
-              </div>
-              <div class="blueprint-actions">
-                <el-button
-                  size="small"
-                  :icon="View"
-                  @click="handleView(blueprint)"
-                >
-                  查看
-                </el-button>
-                <el-button
-                  size="small"
-                  :icon="Share"
-                  @click="handleShare(blueprint)"
-                >
-                  分享
-                </el-button>
-                <el-button
-                  size="small"
-                  :icon="Link"
-                  @click="handleBilibili(blueprint)"
-                >
-                  B站
-                </el-button>
-              </div>
+              </el-card>
             </div>
-          </el-card>
-        </div>
+          </template>
+          <div class="blueprint-grid" v-if="!loading && hotBlueprints.length > 0">
+            <el-card
+              v-for="blueprint in hotBlueprints"
+              :key="blueprint.id"
+              class="blueprint-card"
+            >
+              <template #header>
+                <div class="blueprint-header">
+                  <h4>{{ blueprint.name }}</h4>
+                  <el-tag size="small" type="warning">{{
+                    blueprint.area
+                  }}</el-tag>
+                </div>
+              </template>
+              <div class="blueprint-content">
+                <div class="blueprint-description">
+                  {{ blueprint.description }}
+                </div>
+                <div class="blueprint-meta">
+                  <div class="author-info">
+                    <el-avatar :size="24">{{ blueprint.creator?.name?.charAt(0) || '用户' }}</el-avatar>
+                    <el-text size="small" style="margin-left: 8px">{{
+                      blueprint.creator?.name || '未知作者'
+                    }}</el-text>
+                  </div>
+                  <div class="blueprint-stats">
+                    <el-text size="small" style="margin-right: 10px">
+                      浏览: {{ blueprint.views || 0 }}
+                    </el-text>
+                    <el-text size="small">
+                      下载: {{ blueprint.downloads || 0 }}
+                    </el-text>
+                  </div>
+                </div>
+                <div class="blueprint-actions">
+                  <el-button
+                    size="small"
+                    :icon="View"
+                    @click="handleView(blueprint)"
+                  >
+                    查看
+                  </el-button>
+                  <el-button
+                    size="small"
+                    :icon="Share"
+                    @click="handleShare(blueprint)"
+                  >
+                    分享
+                  </el-button>
+                  <el-button
+                    size="small"
+                    :icon="Link"
+                    @click="handleBilibili(blueprint)"
+                  >
+                    B站
+                  </el-button>
+                </div>
+              </div>
+            </el-card>
+          </div>
+          <div v-else-if="!loading && hotBlueprints.length === 0" class="text-center py-8">
+            <el-empty description="暂无热门蓝图" />
+          </div>
+        </el-skeleton>
       </div>
 
       <!-- 站点介绍 -->
