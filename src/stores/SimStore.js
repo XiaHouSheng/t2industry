@@ -12,7 +12,7 @@ export const useRootStore = defineStore("sheng-root-store", {
     isRecipeChoose: false,
     isWareHouseRecipeChoose: false,
     isZomming: false,
-    
+
     recipeChooseId: "",
     materialChooseId: "",
 
@@ -49,6 +49,10 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     lastBaseNode: null, // 上一次的基准点 { x, y }
     lastDir: null, // 上一次方向（0-3）
+
+    observer: null, // IntersectionObserver实例
+    elementCanShow: new Set(), // 当前可见的元素
+
   }),
 
   actions: {
@@ -70,7 +74,7 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     initBelts2d() {
       this.gridBelts2d = Array.from({ length: this.gridOptions.minRow }, () =>
-        Array.from({ length: this.numColumn }, () => ({}))
+        Array.from({ length: this.numColumn }, () => ({})),
       );
     },
 
@@ -137,7 +141,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       const delta = -event.deltaY * 0.001;
       this.gridElContScale = Math.max(
         0.3,
-        Math.min(2, this.gridElContScale + delta)
+        Math.min(2, this.gridElContScale + delta),
       );
       // 合帧（非常关键）
       if (this._zoomRaf) cancelAnimationFrame(this._zoomRaf);
@@ -153,7 +157,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       let finalWidth = this.defaultWidth * this.gridElContScale;
       finalWidth = Math.min(
         this.defaultMaxWidth,
-        Math.max(this.defaultMinWidth, finalWidth)
+        Math.max(this.defaultMinWidth, finalWidth),
       );
       this.isZomming = false;
       this.rootGrid.setStatic(false);
@@ -171,7 +175,7 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     //顶部工具栏模式改变回调
     handleBeltModeChange(value) {
-      console.log("mode change", this.toolbarMode, this.toolbarModeHistory);
+      //console.log("mode change", this.toolbarMode, this.toolbarModeHistory);
       //select模式下禁用cont的scroll
       if (value == "select") {
         this.gridElCont.style.overflow = "hidden";
@@ -187,16 +191,16 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     //点击获取cell的位置
     getPositionFromClick(event) {
-      //console.log("clientX",event.clientX,"clientY",event.clientY)
-      //console.log("scrollLeft",this.gridElCont.scrollLeft,"scrollTop",this.gridElCont.scrollTop)
-      let clientX = event.clientX 
-      let clientY = event.clientY
+      ////console.log("clientX",event.clientX,"clientY",event.clientY)
+      ////console.log("scrollLeft",this.gridElCont.scrollLeft,"scrollTop",this.gridElCont.scrollTop)
+      let clientX = event.clientX;
+      let clientY = event.clientY;
       return this.rootGrid.getCellFromPixel(
         {
           left: clientX,
           top: clientY,
         },
-        true
+        true,
       );
     },
 
@@ -294,7 +298,7 @@ export const useRootStore = defineStore("sheng-root-store", {
 
       // 只允许直线
       if (dx !== 0 && dy !== 0) {
-        console.log("not a straight line");
+        //console.log("not a straight line");
         return;
       }
 
@@ -308,7 +312,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       if (this.lastDir !== null && this.lastDir !== curDir) {
         const turnRotate = this.getTurnRotateIndex(this.lastDir, curDir);
         if (turnRotate === undefined) {
-          console.log("invalid turn");
+          //console.log("invalid turn");
           return;
         }
 
@@ -324,7 +328,7 @@ export const useRootStore = defineStore("sheng-root-store", {
         const y = oldNode.y + stepY * i;
 
         if (!this.isCellEmptyByPosition(x, y)) {
-          console.log("not all empty");
+          //console.log("not all empty");
           return;
         }
       }
@@ -358,7 +362,7 @@ export const useRootStore = defineStore("sheng-root-store", {
             position,
             `${this.toolbarMode}-img`,
             0,
-            this.toolbarMode
+            this.toolbarMode,
           );
         }
       }
@@ -431,7 +435,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       const listBelt = Object.entries(this.gridBelt2dElement);
       const listElement = Object.entries(this.gridWidgetElements);
       const listElementConfig = Object.entries(this.gridWidgets);
-      console.log(listElement, listElementConfig);
+      //console.log(listElement, listElementConfig);
       for (let index = 0; index < listElement.length; index += 1) {
         let [key, { rotate, recipe }] = listElementConfig.at(index);
         let [_, element] = listElement.at(index);
@@ -504,11 +508,73 @@ export const useRootStore = defineStore("sheng-root-store", {
         // 5. 释放 URL 对象
         URL.revokeObjectURL(url);
 
-        console.log("JSON 文件导出成功！");
+        //console.log("JSON 文件导出成功！");
       } catch (error) {
         console.error("导出 JSON 出错：", error);
       }
     },
-
+    
+    // 根据hashCode从URL加载蓝图
+    async loadBlueprintByHashCode(hashCode) {
+      if (!hashCode) return;
+      
+      try {
+        // 构建蓝图URL
+        const blueprintUrl = `http://localhost:3000/download/${hashCode}.json`;
+        
+        // 发送请求获取蓝图数据
+        const response = await fetch(blueprintUrl);
+        
+        if (!response.ok) {
+          throw new Error(`无法获取蓝图: ${response.status}`);
+        }
+        // 解析蓝图数据
+        const blueprintData = await response.json();
+        // 清空当前蓝图数据
+        this.clearBlueprint()
+        // 导入蓝图
+        this.importBluePrint(blueprintData);
+        
+        //console.log(`蓝图 ${hashCode} 加载成功！`);
+        return blueprintData;
+      } catch (error) {
+        console.error("加载蓝图出错：", error);
+        throw error;
+      }
+    },
+    
+    // 清空蓝图数据
+    clearBlueprint() {
+      // 清空gridstack中的所有元素
+      if (this.rootGrid) {
+        this.rootGrid.removeAll();
+      }
+      
+      // 清空存储的元素和配置
+      this.gridWidgetElements = markRaw({});
+      this.gridWidgets = {};
+      this.gridBelt2dElement = markRaw({});
+      this.gridBelts2d = Array.from({ length: this.gridOptions.minRow }, () =>
+        Array.from({ length: this.numColumn }, () => ({})),
+      );
+    },
+    
+    // 加载本地蓝图（从localStorage）
+    loadLocalBlueprint() {
+      if (localStorage.blueprint) {
+        // 清空当前蓝图数据
+        this.clearBlueprint()
+        try {
+          const blueprint = JSON.parse(localStorage.blueprint);
+          this.importBluePrint(blueprint);
+          //console.log("本地蓝图加载成功！");
+          return blueprint;
+        } catch (error) {
+          console.error("加载本地蓝图出错：", error);
+          throw error;
+        }
+      }
+      return null;
+    },
   },
 });

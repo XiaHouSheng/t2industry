@@ -40,7 +40,7 @@ export const useSelectStore = defineStore("sheng-select-store", {
 
     //确认删除
     confirmDelete() {
-      console.log(this.midDeleteData)
+      //console.log(this.midDeleteData)
       this.rootStore.deleteSeriesBelt2d(this.midDeleteData);
       this.hideSelectorAMenu();
     },
@@ -58,7 +58,7 @@ export const useSelectStore = defineStore("sheng-select-store", {
       if (!(this.rootStore.toolbarMode == "select")) {
         return;
       }
-      //console.log("down", event);
+      ////console.log("down", event);
       this.setPosition(event);
       this.showSelector();
       this.isStartSelect = true;
@@ -68,7 +68,7 @@ export const useSelectStore = defineStore("sheng-select-store", {
       if (!(this.rootStore.toolbarMode == "select")) {
         return;
       }
-      //console.log("move", event);
+      ////console.log("move", event);
       if (this.isStartSelect) {
         let newWidth = Math.abs(this.startX - event.clientX);
         let newHeight = Math.abs(this.startY - event.clientY);
@@ -81,12 +81,12 @@ export const useSelectStore = defineStore("sheng-select-store", {
       if (!(this.rootStore.toolbarMode == "select")) {
         return;
       }
-      //console.log("up", event);
+      ////console.log("up", event);
       this.isStartSelect = false;
       this.showMenu();
       let newWidth = Math.abs(this.startX - event.clientX);
       let newHeight = Math.abs(this.startY - event.clientY) / 2
-      console.log(newWidth,newHeight)
+      //console.log(newWidth,newHeight)
       this.endX = this.startX + newWidth;
       this.endY = this.startY + newHeight;
       this.midDeleteData = {

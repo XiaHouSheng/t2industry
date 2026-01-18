@@ -1,11 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { Edit, Upload, Share, Delete } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useHomeStore } from "../../stores/HomeStore";
 import apiClient from "../../utils/api-client";
 
 const homeStore = useHomeStore();
+const router = useRouter();
 
 // 地区筛选
 const selectedArea = ref("");
@@ -15,11 +17,11 @@ const areas = ref(["", "四号谷地", "武陵"]);
 const localBlueprints = ref([
   {
     id: 1,
-    name: "基础生产蓝图",
-    description: "包含基础的资源生产机器",
+    name: "本地蓝图",
+    description: "本地保存的蓝图",
     createdAt: "2026-01-10",
     lastEdited: "2026-01-12",
-    area: "四号谷地",
+    area: "四号谷地/",
     thumbnail: "#",
     type: "local",
   },
@@ -80,16 +82,29 @@ const filteredBlueprints = computed(() => {
 // 编辑蓝图
 const handleEdit = async (blueprint) => {
   try {
-    console.log("编辑蓝图:", blueprint);
-    // 这里可以添加编辑蓝图的逻辑
+    //console.log(blueprint)
+    if (!blueprint.fileHash) {
+      // 没有fileHash，是本地蓝图，跳转到editor页面
+      router.push('/editor');
+    } else {
+      // 有fileHash，是已上传蓝图，跳转到带hash的editor页面
+      router.push(`/editor/${blueprint.fileHash}`);
+    }
   } catch (err) {
     console.error("编辑蓝图失败:", err);
+    ElMessage.error('操作失败，请重试');
   }
 };
 
 // 重新上传蓝图
 const handleReupload = async (blueprint) => {
   try {
+    if (!blueprint.fileHash) {
+      // 没有fileHash，是本地蓝图，提示用户
+      ElMessage.warning('本地蓝图不需要重新上传');
+      return;
+    }
+    
     // 创建文件输入元素
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -133,10 +148,17 @@ const handleReupload = async (blueprint) => {
 // 分享蓝图
 const handleShare = async (blueprint) => {
   try {
-    console.log("分享蓝图:", blueprint);
+    if (!blueprint.fileHash) {
+      // 没有fileHash，是本地蓝图，提示用户
+      ElMessage.warning('本地蓝图无法分享');
+      return;
+    }
+    
+    //console.log("分享蓝图:", blueprint);
     // 这里可以添加分享蓝图的逻辑
   } catch (err) {
     console.error("分享蓝图失败:", err);
+    ElMessage.error('操作失败，请重试');
   }
 };
 
@@ -256,7 +278,7 @@ const submitUploadForm = async () => {
     
     const blueprintResponse = await apiClient.createBlueprint(blueprintData);
     const blueprintId = blueprintResponse.data.id;
-    console.log(blueprintResponse)
+    //console.log(blueprintResponse)
     // 然后上传蓝图文件
     await apiClient.uploadBlueprint(blueprintId, uploadForm.value.file);
     
@@ -438,15 +460,16 @@ onMounted(() => {
                     <div class="blueprint-tags">
                       <el-tag
                         size="small"
-                        :type="blueprint.type === 'local' ? 'info' : 'success'"
+                        :type="!blueprint.fileHash ? 'info' : 'success'"
                       >
-                        {{ blueprint.type === "local" ? "本地" : "已上传" }}
+                        {{ !blueprint.fileHash ? "本地" : "已上传" }}
                       </el-tag>
                       <el-tag size="small" type="warning">{{
                         blueprint.area || '未知地区'
                       }}</el-tag>
                     </div>
                     <el-button
+                      v-if="blueprint.fileHash"
                       size="small"
                       type="danger"
                       circle
@@ -498,6 +521,7 @@ onMounted(() => {
                     :icon="Upload"
                     @click="handleReupload(blueprint)"
                     :loading="blueprint.uploading"
+                    :disabled="!blueprint.fileHash"
                   >
                     重新上传
                   </el-button>
@@ -505,6 +529,7 @@ onMounted(() => {
                     size="small"
                     :icon="Share"
                     @click="handleShare(blueprint)"
+                    :disabled="!blueprint.fileHash"
                   >
                     分享
                   </el-button>

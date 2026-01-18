@@ -47,7 +47,7 @@ const routes = [
     meta: { title: '物料配平计算' }
   },
   {
-    path: '/editor',
+    path: '/editor/:hashCode?',
     name: 'Editor',
     component: simulation,
     meta: { title: '蓝图编辑' }

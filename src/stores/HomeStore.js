@@ -48,7 +48,7 @@ export const useHomeStore = defineStore('home', {
   actions: {
     // 设置用户信息
     setUserInfo(info) {
-      console.log("setUserInfo",info)
+      //console.log("setUserInfo",info)
       this.userInfo = {
         isLoggedIn: true,
         username: info.nickname || '',
@@ -136,7 +136,7 @@ export const useHomeStore = defineStore('home', {
     
     // 检查登录状态
     checkLoginStatus() {
-      console.log("checkLoginStatus")
+      //console.log("checkLoginStatus")
       const token = localStorage.getItem('token');
       if (token) {
         apiClient.setToken(token);
@@ -149,7 +149,7 @@ export const useHomeStore = defineStore('home', {
       try {
         this.loading.user = true;
         const response = await apiClient.getUserInfo();
-        console.log(response)
+        //console.log(response)
         this.setUserInfo(response.data || {});
       } catch (err) {
         console.error('加载用户信息失败:', err);

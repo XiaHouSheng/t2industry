@@ -1,5 +1,6 @@
 <script setup>
 import RootMachine from "./RootMachine.vue";
+import RootMachineCuboid from "./RootMachineCuboid.vue";
 const props = defineProps({
   gs_id: {
     required: true,
@@ -16,11 +17,11 @@ const props = defineProps({
 </script>
 
 <template>
-  <RootMachine
+  <RootMachineCuboid
     :gs_id="props.gs_id"
     :el_name="props.el_name"
     :el_size="props.el_size"
-  ></RootMachine>
+  ></RootMachineCuboid>
 </template>
 
 <style scoped></style>

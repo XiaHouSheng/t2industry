@@ -329,6 +329,8 @@ import {
   getCurrentInstance,
   markRaw,
   ref,
+  watch,
+  onUnmounted
 } from "vue";
 import { GridStack } from "gridstack";
 import { useRootStore } from "../stores/SimStore";
@@ -338,11 +340,15 @@ import RecipeContent from "../components/original/RecipeContent.vue";
 import WareHouseContent from "../components/original/WareHouseContent.vue";
 import { MachineData, iconStyle, gridStackDataProcess } from "../utils/DataMap";
 import "gridstack/dist/gridstack.min.css";
+import { useRoute, useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
+
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
 const selectStore = useSelectStore();
-
-const testRef = ref(null);
+const route = useRoute();
+const router = useRouter();
+const hashCode = route.params.hashCode;
 
 onMounted(async () => {
   await nextTick();
@@ -352,6 +358,30 @@ onMounted(async () => {
   const selector = document.querySelector(".selection-box");
   selectStore.initSelector(selector);
   rootStore.initGrid(targetGridEl, targetGridCont, appContext);
+  
+  // 根据是否有hashCode参数加载相应的蓝图
+  if (hashCode) {
+    try {
+      ElMessage.info(`正在加载蓝图: ${hashCode}`);
+      await rootStore.loadBlueprintByHashCode(hashCode);
+      ElMessage.success(`蓝图 ${hashCode} 加载成功！`);
+    } catch (error) {
+      console.error("加载蓝图失败：", error);
+      ElMessage.error(`加载蓝图失败: ${error.message}`);
+    }
+  } else {
+    // 没有hashCode参数，加载本地蓝图
+    try {
+      const localBlueprint = rootStore.loadLocalBlueprint();
+      if (localBlueprint) {
+        ElMessage.success("本地蓝图加载成功！");
+      }
+    } catch (error) {
+      console.error("加载本地蓝图失败：", error);
+      ElMessage.error(`加载本地蓝图失败: ${error.message}`);
+    }
+  }
+  
   //拖拽克隆
   const selfClone = (element) => {
     const cloneNode = element.cloneNode(true);
@@ -364,6 +394,7 @@ onMounted(async () => {
     cloneNode.setAttribute("data-gs-widget", JSON.stringify(elConfig));
     return cloneNode;
   };
+  
   //添加回调
   rootStore.rootGrid.on("added", function (event, items) {
     const item = items[0];
@@ -384,8 +415,49 @@ onMounted(async () => {
     vnode.appContext = appContext;
     render(vnode, el);
   });
+  
   //拖拽设置
   GridStack.setupDragIn(".sidebar-item", { helper: selfClone });
+});
+
+// 监听路由参数变化，当hashCode变化时重新加载蓝图
+const stopWatcher = watch(
+  () => route.params.hashCode,
+  async (newHashCode, oldHashCode) => {
+    // 清空当前蓝图
+    rootStore.clearBlueprint();
+    
+    if (newHashCode && newHashCode !== oldHashCode) {
+      // 有新的hashCode参数，加载远程蓝图
+      try {
+        ElMessage.info(`正在加载蓝图: ${newHashCode}`);
+        await rootStore.loadBlueprintByHashCode(newHashCode);
+        ElMessage.success(`蓝图 ${newHashCode} 加载成功！`);
+      } catch (error) {
+        console.error("加载蓝图失败：", error);
+        ElMessage.error(`加载蓝图失败: ${error.message}`);
+      }
+    } else if (!newHashCode && oldHashCode) {
+      // 从有hashCode变为无hashCode，加载本地蓝图
+      try {
+        ElMessage.info("正在加载本地蓝图...");
+        const localBlueprint = rootStore.loadLocalBlueprint();
+        if (localBlueprint) {
+          ElMessage.success("本地蓝图加载成功！");
+        } else {
+          ElMessage.info("无本地蓝图数据");
+        }
+      } catch (error) {
+        console.error("加载本地蓝图失败：", error);
+        ElMessage.error(`加载本地蓝图失败: ${error.message}`);
+      }
+    }
+  }
+);
+
+// 组件卸载时停止监听
+onUnmounted(() => {
+  stopWatcher();
 });
 </script>
 

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
 import { Search, Share, View, Link, Loading, Upload } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import apiClient from "../../utils/api-client";
@@ -7,6 +8,7 @@ import { useHomeStore } from "../../stores/HomeStore";
 
 // 使用HomeStore
 const homeStore = useHomeStore();
+const router = useRouter();
 
 // 地区筛选选项
 const areas = ref(["", "四号谷地", "武陵"]);
@@ -53,7 +55,7 @@ const handleSizeChange = (size) => {
 // 分享蓝图
 const handleShare = async (blueprint) => {
   try {
-    console.log("分享蓝图:", blueprint);
+    //console.log("分享蓝图:", blueprint);
     // 实际项目中可以调用分享API
   } catch (err) {
     console.error('分享蓝图失败:', err);
@@ -63,17 +65,23 @@ const handleShare = async (blueprint) => {
 // 查看蓝图
 const handleView = async (blueprint) => {
   try {
-    console.log("查看蓝图:", blueprint);
-    // 实际项目中可以跳转到蓝图详情页
-    // router.push(`/blueprint/${blueprint.id}`);
+    //console.log("查看蓝图:", blueprint);
+    if (blueprint.fileHash) {
+      // 有fileHash，跳转到带hash的editor页面
+      router.push(`/editor/${blueprint.fileHash}`);
+    } else {
+      // 没有fileHash，跳转到editor页面
+      ElMessage.warning('该蓝图缺少文件哈希，无法直接查看');
+    }
   } catch (err) {
     console.error('查看蓝图失败:', err);
+    ElMessage.error('操作失败，请重试');
   }
 };
 
 // 跳转到B站
 const handleBilibili = (blueprint) => {
-  console.log("跳转到B站:", blueprint);
+  //console.log("跳转到B站:", blueprint);
 };
 
 // 格式化时间为 y-m-d 格式
