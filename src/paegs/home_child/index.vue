@@ -294,11 +294,11 @@ const handleRetry = () => {
       <div class="intro-section">
         <el-card class="intro-card">
           <template #header>
-            <h3 style="margin: 0">关于终末地蓝图站</h3>
+            <h3 style="margin: 0">关于本站</h3>
           </template>
           <div class="intro-content">
             <div class="intro-item">
-              <h4>什么是终末地蓝图站？</h4>
+              <h4>什么是"塔卫二工业"？</h4>
               <p>
                 一款面向《明日方舟：终末地》的多功能工具平台，核心能力包含：蓝图分享与管理、生产效率模拟（计划）。
               </p>
