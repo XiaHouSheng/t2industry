@@ -57,13 +57,13 @@
   - [ ] 额外任务——官方蓝图分布显示
   - [ ] 额外任务——蓝图放置
   - [ ] 额外任务——图层？也许以后？
-- [ ] 主界面|Home page 开发
-  - [ ] Home-discover页面前端搭建 doing...!...!
-  - [ ] Home-self页面前端搭建
-  - [ ] Login功能
-  - [ ] UI美化
-  - [ ] 后端接口开发
-  - [ ] 测试
+- [x] 主界面|Home page 开发
+  - [x] Home-discover页面前端搭建 doing...!...!
+  - [x] Home-self页面前端搭建
+  - [x] Login功能
+  - [x] UI美化
+  - [x] 后端接口开发
+  - [x] 测试
 - [ ] 配平计算| Calculate Page 开发
   - [ ] UI 搭建
 

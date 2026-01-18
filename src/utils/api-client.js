@@ -4,7 +4,7 @@
  */
 
 class ApiClient {
-  constructor(baseUrl = 'http://117.72.161.160') {
+  constructor(baseUrl = 'https://117.72.161.160') {
     this.baseUrl = baseUrl;
     this.token = null;
   }
