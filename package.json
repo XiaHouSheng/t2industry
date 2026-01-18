@@ -1,11 +1,11 @@
 {
-  "name": "endfieldsimulation",
+  "name": "t2industry",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --base=/EndFieldSimulation",
+    "build": "vite build --base=/t2industry",
     "preview": "vite preview"
   },
   "dependencies": {
