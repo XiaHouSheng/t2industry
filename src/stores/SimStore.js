@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import { createVNode, markRaw, render } from "vue";
 import { machineComponentMap } from "../utils/MachineMap";
 import ConveyerBelt from "../components/simulation/ConveyerBelt.vue";
+import { ElNotification, ElMessageBox } from "element-plus";
 
 export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
@@ -12,6 +13,10 @@ export const useRootStore = defineStore("sheng-root-store", {
     isRecipeChoose: false,
     isWareHouseRecipeChoose: false,
     isZomming: false,
+    isShowSupplierExtent: true,
+    isShowMachines: true,
+    isShowBelts: true,
+    quickPlaceMode: "belt",
 
     recipeChooseId: "",
     materialChooseId: "",
@@ -19,11 +24,26 @@ export const useRootStore = defineStore("sheng-root-store", {
     toolbarMode: "default",
     toolbarModeHistory: "default",
     beltSelect: "turn",
+    editPartChoose: "part0", //当前编辑的模块
 
     gridWidgetElements: markRaw({}), //用于非传送带模拟控件的存储|id->{element:el}
-    gridWidgets: {}, //用于非传送带模拟控件配置存储|id->{rotate:rotate,recipe:recipe}
+    gridWidgets: {}, //用于非传送带模拟控件配置存储|id->{rotate:rotate,recipe:recipe,part:partName}
     gridBelt2dElement: markRaw({}),
     gridBelts2d: null, //存储传送带的元素|x,y->{rotate:rotate,type:type}
+    partsWidgetId: {
+      part0: new Set(),
+    }, //存储模块对应的widgetId|partName->widgetIdList
+    partsBelts: {
+      part0: new Set(),
+    }, //存储模块对应的传送带|partName->beltIdList
+    // 模块列表，结构：[{name: "模块", code: "", show: true, edited: false}]
+    parts: [
+      {
+        name: "part0",
+        code: "",
+        show: true,
+      },
+    ],
 
     rootGrid: null, //存储根gridstack对象
     rootGridEngine: null, //gridstack引擎
@@ -52,7 +72,6 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     observer: null, // IntersectionObserver实例
     elementCanShow: new Set(), // 当前可见的元素
-
   }),
 
   actions: {
@@ -85,6 +104,8 @@ export const useRootStore = defineStore("sheng-root-store", {
       if (targetElement) {
         //待定
         this.rootGrid.removeWidget(targetElement);
+        let part = this.gridBelts2d[position.x][position.y].part;
+        this.partsBelts[part].delete(`${position.x}-${position.y}`);
         this.gridBelts2d[position.x][position.y] = {};
         delete this.gridBelt2dElement[`${position.x}-${position.y}`];
       }
@@ -239,11 +260,14 @@ export const useRootStore = defineStore("sheng-root-store", {
         id: id,
       });
       this.rootGrid.movable(craftElement, false);
+      // 记录传送带对应的模块
+      this.partsBelts[this.editPartChoose].add(`${position.x}-${position.y}`);
       this.gridBelt2dElement[`${position.x}-${position.y}`] = craftElement;
       this.gridBelts2d[position.x][position.y] = {
         rotate: rotate,
         type: type,
         id: id,
+        part: this.editPartChoose,
       };
     },
 
@@ -414,6 +438,10 @@ export const useRootStore = defineStore("sheng-root-store", {
         el_name: machine_id,
         el_size: { w: w, h: h },
       });
+
+      //测试：将新创建的widget添加到当前编辑的模块中
+      //this.partsWidgetId[this.editPartChoose].push(id);
+
       vnode.appContext = this.appContext;
       const container = document.createElement("div");
       render(vnode, container);
@@ -427,11 +455,102 @@ export const useRootStore = defineStore("sheng-root-store", {
       });
     },
 
+    //添加新模块
+    addNewPart() {
+      const newPart = {
+        name: `part${this.parts.length}`,
+        code: "",
+        show: true,
+      };
+      this.partsBelts[newPart.name] = new Set();
+      this.partsWidgetId[newPart.name] = new Set();
+      this.parts.push(newPart);
+    },
+
+    //选择编辑的模块
+    selectEditPart(partName) {
+      this.editPartChoose = partName;
+    },
+
+    //处理模块显示状态变化
+    handlePartShowChange(part, value) {
+      this.showPartWidgets(part, value);
+    },
+
+    //显示模块对应的widget
+    showPartWidgets(part, value) {
+      for (let widgetId of this.partsWidgetId[part.name]) {
+        this.gridWidgetElements[widgetId].style.opacity = value ? 1 : 0.2;
+      }
+      // 显示模块对应的传送带
+      for (let beltId of this.partsBelts[part.name]) {
+        this.gridBelt2dElement[beltId].style.opacity = value ? 1 : 0.2;
+      }
+    },
+
+    //删除模块
+    deletePart(index) {
+      const part = this.parts[index];
+
+      // 显示确认对话框
+      ElMessageBox.confirm(
+        "是否删除？模块中的机器和传送带会被并入part0",
+        "确认删除",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        },
+      )
+        .then(() => {
+          // 如果模块显示为 true，则不重新赋值 opacity 为 1
+          for (let widgetId of this.partsWidgetId[part.name]) {
+            this.partsWidgetId["part0"].add(widgetId);
+            this.gridWidgetElements[widgetId].style.opacity = this.parts[0].show
+              ? 1
+              : 0.2;
+          }
+          // 删除模块对应的传送带
+          for (let beltId of this.partsBelts[part.name]) {
+            this.partsBelts["part0"].add(beltId);
+            this.gridBelt2dElement[beltId].style.opacity = this.parts[0].show
+              ? 1
+              : 0.2;
+          }
+          // 删除模块
+          this.parts.splice(index, 1);
+          // 将 editPartChoose 重置为 part0
+          this.editPartChoose = "part0";
+        })
+        .catch(() => {
+          // 取消删除
+        });
+    },
+
+    //复制和编辑模块代码
+    copyEditCode(part) {
+      // 显示输入对话框
+      ElMessageBox.prompt("编辑模块代码", "代码编辑", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        inputValue: part.code || "",
+        inputPlaceholder: "请输入模块代码",
+      })
+        .then(({ value }) => {
+          // 更新模块代码
+          part.code = value;
+        })
+        .catch(() => {
+          // 取消编辑
+        });
+    },
+
     //保存蓝图
     saveBluePrint() {
-      let output = { machine: null, belt: null };
+      let output = { machine: null, belt: null, part: null };
       let machines = [];
       let belts = [];
+      let part_dict = {};
       const listBelt = Object.entries(this.gridBelt2dElement);
       const listElement = Object.entries(this.gridWidgetElements);
       const listElementConfig = Object.entries(this.gridWidgets);
@@ -469,20 +588,64 @@ export const useRootStore = defineStore("sheng-root-store", {
         belts.push(storageValue);
       }
       output.belt = belts;
+
+      part_dict["parts"] = this.parts;
+      part_dict["partsWidgetId"] = {};
+      part_dict["partsBelts"] = {};
+      part_dict["editPartChoose"] = this.editPartChoose;
+
+      for (let partName of Object.keys(this.partsWidgetId)) {
+        let widgetIds = Array.from(this.partsWidgetId[partName]);
+        let beltIds = Array.from(this.partsBelts[partName]);
+        part_dict["partsWidgetId"][partName] = widgetIds;
+        part_dict["partsBelts"][partName] = beltIds;
+      }
+      console.log(part_dict);
+
+      output.part = part_dict;
+
       //默认存在localStorage
       localStorage.removeItem("blueprint");
       localStorage.blueprint = JSON.stringify(output);
+      ElNotification.success({
+        title: "成功",
+        message: "蓝图保存成功",
+      });
       return output;
     },
 
     //导入蓝图
     importBluePrint(blueprint) {
-      let { machine, belt } = blueprint;
+      let { machine, belt, part } = blueprint;
       for (let mac of machine) {
         this.makeMachine(mac);
       }
       for (let blt of belt) {
         this.generateOneBelt(blt.position, blt.type, blt.rotate, blt.id);
+      }
+      
+      // 加载 part 数据
+      if (part) {
+        this.parts = part.parts || [];
+        
+        // 加载 partsWidgetId，将数组转换回 Set
+        this.partsWidgetId = {};
+        if (part.partsWidgetId) {
+          for (let partName of Object.keys(part.partsWidgetId)) {
+            this.partsWidgetId[partName] = new Set(part.partsWidgetId[partName]);
+          }
+        }
+        
+        // 加载 partsBelts，将数组转换回 Set
+        this.partsBelts = {};
+        if (part.partsBelts) {
+          for (let partName of Object.keys(part.partsBelts)) {
+            this.partsBelts[partName] = new Set(part.partsBelts[partName]);
+          }
+        }
+        
+        // 加载 editPartChoose
+        this.editPartChoose = part.editPartChoose || "part0";
       }
     },
 
@@ -513,28 +676,28 @@ export const useRootStore = defineStore("sheng-root-store", {
         console.error("导出 JSON 出错：", error);
       }
     },
-    
+
     // 根据hashCode从URL加载蓝图
     async loadBlueprintByHashCode(hashCode) {
       if (!hashCode) return;
-      
+
       try {
         // 构建蓝图URL
         const blueprintUrl = `http://localhost:3000/download/${hashCode}.json`;
-        
+
         // 发送请求获取蓝图数据
         const response = await fetch(blueprintUrl);
-        
+
         if (!response.ok) {
           throw new Error(`无法获取蓝图: ${response.status}`);
         }
         // 解析蓝图数据
         const blueprintData = await response.json();
         // 清空当前蓝图数据
-        this.clearBlueprint()
+        this.clearBlueprint();
         // 导入蓝图
         this.importBluePrint(blueprintData);
-        
+
         //console.log(`蓝图 ${hashCode} 加载成功！`);
         return blueprintData;
       } catch (error) {
@@ -542,14 +705,14 @@ export const useRootStore = defineStore("sheng-root-store", {
         throw error;
       }
     },
-    
+
     // 清空蓝图数据
     clearBlueprint() {
       // 清空gridstack中的所有元素
       if (this.rootGrid) {
         this.rootGrid.removeAll();
       }
-      
+
       // 清空存储的元素和配置
       this.gridWidgetElements = markRaw({});
       this.gridWidgets = {};
@@ -558,12 +721,12 @@ export const useRootStore = defineStore("sheng-root-store", {
         Array.from({ length: this.numColumn }, () => ({})),
       );
     },
-    
+
     // 加载本地蓝图（从localStorage）
     loadLocalBlueprint() {
       if (localStorage.blueprint) {
         // 清空当前蓝图数据
-        this.clearBlueprint()
+        this.clearBlueprint();
         try {
           const blueprint = JSON.parse(localStorage.blueprint);
           this.importBluePrint(blueprint);

@@ -20,6 +20,10 @@ const props = defineProps({
     required: true,
     type: Object,
   },
+  part: {
+    type: Object,
+    required: false,
+  },
 });
 
 let index = 0;

@@ -12,7 +12,7 @@
   --sheng-sidebar-border: #e2e6ed;
   --sheng-item-text: #e2e6ed;
   --sheng-item-bg: #393939;
-  --sheng-item-hover-bg: #EEECEC;
+  --sheng-item-hover-bg: #eeecec;
   --sheng-item-hover-text: #393939;
   --sheng-item-active-bg: #fffbe6;
   --sheng-item-accent: #c8b100;
@@ -21,33 +21,94 @@
 
   --sheng-recipe-item-bg: rgba(255, 255, 255, 0.463);
   --sheng-recipe-item-name-bg: #383838a9;
-  --sheng-recipe-cont-border: #80878f51; 
+  --sheng-recipe-cont-border: #80878f51;
   --sheng-mat-grid-bg: #7d7d7d38;
 
-  /* 高级灰主题色 */
-  --el-color-primary: #6c6f76; /* 主色：中性灰，适合选中状态 */
-  --el-color-primary-light-3: #7d7a82; /* hover / 浅色背景 */
+  --el-color-primary: blue; /* 主色：中性灰，适合选中状态 */
+  --el-color-primary-light-3: rgb(81, 81, 255); /* hover / 浅色背景 */
   --el-color-white: #ffffff; /* 文字或背景白色 */
-  --el-bg-color: #ffffff;
-  /* 文字颜色 */
-  --el-text-color-primary: #2e3033; /* 主文字颜色，比主色深，保证可读性 */
+   /* 文字颜色 */ 
+  --el-text-color-primary: #131313; /* 主文字颜色，比主色深，保证可读性 */
   --el-text-color-placeholder: #a0a2a5; /* 占位文字颜色 */
-  /* 边框颜色 */
-  --el-border-color-base: #c0c2c5; /* 默认边框颜色 */
-  --el-border-color-light: #e0e1e3; /* 边框浅色，hover 或分隔用 */
-  
+  /*--el-menu-active-color: #1e88e5; /* 选中菜单文字颜色 */
+  /*--el-menu-hover-bg-color: #7b8aa1; /* 悬停菜单背景颜色 */
+
   /* Simulation页面专用颜色 - 科技蓝主题 */
   --sim-color-primary: #1e88e5; /* 主色：深蓝色，科技感强 */
   --sim-color-primary-light: #42a5f5; /* 浅色：浅蓝色 */
   --sim-color-primary-lighter: #bbdefb; /* 更浅色：极浅蓝色 */
   --sim-color-primary-bg: #f8f8f8; /* 背景色：浅蓝色背景 */
   --sim-color-white: #ffffff; /* 白色 */
-  
+
   /* 首页卡片颜色 */
   --home-card-bg: #f9fafc;
   --home-card-divider: #e4e7ed;
 
+  /* 按钮颜色 */
+  --sheng-btn-inner-bg: #8bc34a;
+  --sheng-btn-outer-bg: #e51c23;
+
+  /* 模拟页面颜色 */
+  --sim-bg-color: #ffffff00;
+  --sim-shadow-color: rgba(0, 0, 0, 0.05);
+  --sim-shadow-light: rgba(0, 0, 0, 0.08);
+  --sim-shadow-blue: rgba(64, 158, 255, 0.1);
+  --sim-shadow-blue-hover: rgba(64, 158, 255, 0.2);
+  --sim-bg-blue-light: rgba(64, 158, 255, 0.1);
+  --sim-border-blue: rgba(64, 158, 255, 0.3);
+
+  /* ProtocolCore 颜色 */
+  --protocol-inner-bg: #9494948d;
+  --protocol-outer-bg: #ffe1898d;
+  --protocol-border-color: #ffffffa2;
+  --protocol-white: #fff;
+  --protocol-transparent: transparent;
+
+  /* PowerSupplier 颜色 */
+  --power-bg: #0077cc30;
+  --power-stripe: #0077cc20;
+  --power-grid: #0077cc3e;
+
+  /* 其他颜色 */
+  --color-white: #ffffff;
+  --color-gray-light: #f1f1f1;
+  --color-gray-medium: #c1c1c1;
+  --color-gray-dark: #a8a8a8;
+  --color-gray-border: #e4e7ed;
+  --color-gray-hover: #f5f7fa;
+  --color-text-primary: #303133;
+  --color-gray-divider: #f0f2f5;
+  --color-shadow: rgba(0, 0, 0, 0.1);
+  --color-shadow-hover: rgba(0, 0, 0, 0.15);
+
+  /* RecipeContent 和 WareHouseContent 颜色 */
+  --recipe-bg-light: rgba(255, 255, 255, 0.838);
+  --recipe-bg-white: rgb(255, 255, 255);
+  --warehouse-bg-light: rgba(255, 255, 255, 0.379);
+  --warehouse-bg-dark: rgba(0, 0, 0, 0.311);
+
+  /* 自定义的颜色 */
+  --sheng-color-primary: #fffa00 --sheng-color-sidebar-active: #fffa00;
+  --sheng-color-bg-sidebar-active: rgba(0, 0, 0, 0.021);
 }
+
+/*Element Plus UI自定义样式*/
+.el-menu {
+  border-right: none;
+}
+.sheng-side-menu .el-menu-item {
+  transition: all 0.2s ease-in-out;
+  color: #848484;
+}
+.sheng-side-menu .el-menu-item[class*="is-active"] {
+  border-left: solid 5px blue;
+  color: var(--el-text-color-primary);
+  background-color: var(--sheng-color-bg-sidebar-active);
+}
+.sheng-side-menu .el-menu-item:hover {
+  background-color: var(--sheng-color-bg-sidebar-active);
+}
+
 .html {
   background-color: var(--sheng-root-bg);
 }
@@ -61,7 +122,8 @@ body {
 }
 
 .sheng-machine {
-  background: radial-gradient(
+  background:
+    radial-gradient(
       ellipse at center,
       rgba(255, 255, 255, 0.85) 0%,
       /* 高光更亮 */ rgba(255, 255, 255, 0.5) 40%,
@@ -153,12 +215,12 @@ body {
 }
 
 .sim-inner-btn {
-  background-color: #8bc34a;
+  background-color: var(--sheng-btn-inner-bg);
   margin-top: 3px;
 }
 
 .sim-outer-btn {
-  background-color: #e51c23;
+  background-color: var(--sheng-btn-outer-bg);
   margin-top: 3px;
 }
 
@@ -188,17 +250,17 @@ body {
 
 .cross-img {
   background-size: 100% 100%;
-  background-image: url("./assets/svg/cross.svg");
+  background-image: url("./assets/img/bg_logistic_log_connector.png");
 }
 
 .splitter-img {
   background-size: 100% 100%;
-  background-image: url("./assets/svg/splitter.svg");
+  background-image: url("./assets/img/bg_logistic_log_splitter.png");
 }
 
 .conveyer-img {
   background-size: 100% 100%;
-  background-image: url("./assets/svg/conveyer.svg");
+  background-image: url("./assets/img/bg_logistic_log_converger.png");
 }
 
 .test-border {

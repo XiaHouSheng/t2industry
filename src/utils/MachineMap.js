@@ -17,6 +17,8 @@ import PowerStation from '../components/simulation/PowerStation.vue';
 import DismantlerMachine from '../components/simulation/DismantlerMachine.vue'
 import ReactionPool from '../components/simulation/ReactionPool.vue'
 import XiraniteFurnace from '../components/simulation/XiraniteFurnace.vue'
+import ProtocolCore from '../components/simulation/ProtocolCore.vue';
+import PowerSupplier from '../components/simulation/PowerSupplier.vue';
 import { markRaw } from 'vue';
 
 // 组件映射表：key 对应机器唯一标识（与之前的 gs_id 前缀一致），value 是组件对象
@@ -33,9 +35,11 @@ export const machineComponentMap = {
   packagingMachine: markRaw(PackagingMachine),
   grinder: markRaw(Grinder),
   protocolStorageBox: markRaw(ProtocolStorageBox),
+  protocolCore: markRaw(ProtocolCore),
   warehouseDepositPort: markRaw(WarehouseDepositPort),
   warehouseWithdrawalPort: markRaw(WarehouseWithdrawalPort),
   powerStation: markRaw(PowerStation),
+  powerSupplier: markRaw(PowerSupplier),
   // jinlong 专属
   dismantlerMachine: markRaw(DismantlerMachine),
   reactionPool: markRaw(ReactionPool),
@@ -74,9 +78,11 @@ export const machineNameMap = {
   packagingMachine: '封装机',
   grinder: '研磨机',
   protocolStorageBox: '存储箱',
+  protocolCore: '协议核心',
   warehouseDepositPort: '存货口',
   warehouseWithdrawalPort: '取货口',
   powerStation: '热能池' ,
+  powerSupplier: '供电桩',
   // —— jinlong 专属 —— | 这里还没有做组件，后续直接生成
   dismantlerMachine: '拆解机',
   reactionPool: '反应池',

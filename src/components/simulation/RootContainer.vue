@@ -3,7 +3,6 @@ import { ref } from "vue";
 import { useMachineStore } from "../../stores/MachineStore";
 import { useRootStore } from "../../stores/SimStore";
 import { machineNameMap } from "../../utils/MachineMap";
-
 const rootStore = useRootStore();
 const machineStore = useMachineStore();
 const props = defineProps({
@@ -17,6 +16,18 @@ const props = defineProps({
   el_size: {
     required: true,
     type: Object,
+  },
+  port: {
+    required: false,
+    type: Object,
+    default: () => ({
+      top: true,
+      bottom: true,
+    }),
+  },
+  part: {
+    type: Object,
+    required: false,
   },
 });
 //旋转部分
@@ -36,7 +47,7 @@ const hadnleRotate = () => {
     @contextmenu="machineStore.handleRightClick($event, props.gs_id)"
     @click="hadnleRotate"
   >
-    <div
+    <div v-if="port.top"
       class="display-flex justify-content-center line-inner flex-direation-row"
       style="height: 15px"
     ></div>
@@ -51,7 +62,7 @@ const hadnleRotate = () => {
       }}</el-text>
     </div>
 
-    <div
+    <div v-if="port.bottom"
       class="display-flex justify-content-center line-outter flex-direation-col"
       style="height: 15px"
     ></div>

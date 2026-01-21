@@ -15,6 +15,10 @@ import homeSelf from '../paegs/home_child/self.vue'
 // 路由规则（直接映射业务页面）
 const routes = [
   {
+    path: '/',
+    redirect: '/home'
+  },
+  {
     path: '/home',
     name: 'Home',
     component: home,

@@ -34,9 +34,6 @@ const targetItemId = computed(() => {
     ? rootStore.gridWidgets[props.gs_id].recipe
     : null;
 });
-
-const { height, width } = useElementSize(containerElement);
-
 //旋转设置
 const rotateGridEl = (index) => {
   rootStore.gridWidgets[props.gs_id]["rotate"] = index;
@@ -78,6 +75,7 @@ const handleDialog = (event) => {
   rootStore.isWareHouseRecipeChoose = true;
 };
 //AI优化版 ICON大小自适应
+const { height, width } = useElementSize(containerElement);
 const iconAutoSize = computed(() => {
   const h = height.value,
     w = width.value,

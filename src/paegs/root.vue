@@ -22,7 +22,7 @@ onMounted(() => {
 <template>
   <div class="sheng-root-container">
     <el-menu mode="horizontal" :ellipsis="false" :router="true" :default-active="activeIndex">
-      <el-menu-item index="/home">T2Industry</el-menu-item>
+      <el-menu-item index="/home">T2Blueprint</el-menu-item>
       <el-menu-item index="/editor">蓝图编辑</el-menu-item>
       <el-menu-item index="/calculate">计算器</el-menu-item>
     </el-menu>

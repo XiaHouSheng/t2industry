@@ -385,17 +385,6 @@ onMounted(() => {
 
       <!-- 操作按钮和地区筛选 -->
       <div class="action-filter-section">
-        <div class="action-section">
-          <el-button
-            type="primary"
-            :icon="Upload"
-            @click="handleUploadBlueprint"
-            :disabled="!homeStore.userInfo.isLoggedIn"
-            :loading="homeStore.loading.blueprints"
-          >
-            上传蓝图
-          </el-button>
-        </div>
         <div class="filter-section">
           <el-select
             v-model="selectedArea"
@@ -410,11 +399,21 @@ onMounted(() => {
             ></el-option>
           </el-select>
         </div>
+        <div class="action-section">
+          <el-button
+            type="primary"
+            :icon="Upload"
+            @click="handleUploadBlueprint"
+            :disabled="!homeStore.userInfo.isLoggedIn"
+            :loading="homeStore.loading.blueprints"
+          >
+            上传蓝图
+          </el-button>
+        </div>
       </div>
 
       <!-- 所有蓝图（本地在前，上传在后） -->
       <div class="blueprint-section">
-        <h3>我的蓝图</h3>
         <el-skeleton :loading="homeStore.loading.blueprints" animated>
           <template #template>
             <div class="blueprint-grid">
@@ -455,7 +454,7 @@ onMounted(() => {
             >
               <template #header>
                 <div class="blueprint-header">
-                  <h4>{{ blueprint.name || '未命名蓝图' }}</h4>
+                  <h2>{{ blueprint.name || '未命名蓝图' }}</h2>
                   <div class="blueprint-header-actions">
                     <div class="blueprint-tags">
                       <el-tag
@@ -510,26 +509,31 @@ onMounted(() => {
                 </div>
                 <div class="blueprint-actions">
                   <el-button
-                    size="small"
+                    size="medium"
                     :icon="Edit"
                     @click="handleEdit(blueprint)"
+                    type="primary"
                   >
                     编辑
                   </el-button>
                   <el-button
-                    size="small"
+                    size="medium"
                     :icon="Upload"
                     @click="handleReupload(blueprint)"
                     :loading="blueprint.uploading"
                     :disabled="!blueprint.fileHash"
+                    type="primary"
+                    plain
                   >
                     重新上传
                   </el-button>
                   <el-button
-                    size="small"
+                    size="medium"
                     :icon="Share"
                     @click="handleShare(blueprint)"
                     :disabled="!blueprint.fileHash"
+                    type="default"
+                    plain
                   >
                     分享
                   </el-button>
@@ -703,9 +707,9 @@ onMounted(() => {
   margin-left: 5px;
 }
 
-.blueprint-header h4 {
+.blueprint-header h2 {
   margin: 0;
-  font-size: 16px;
+  font-size: 20px;
   color: var(--el-text-color-primary);
 }
 
@@ -738,8 +742,8 @@ onMounted(() => {
 
 .blueprint-actions {
   display: flex;
-  gap: 10px;
   margin-top: auto;
+  justify-content: space-between;
 }
 
 .stats-section {
@@ -781,7 +785,6 @@ onMounted(() => {
 .action-filter-section {
   margin-bottom: 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 15px;
@@ -790,6 +793,7 @@ onMounted(() => {
 .action-section {
   display: flex;
   gap: 10px;
+  margin-left: auto;
 }
 
 .filter-section {
@@ -850,4 +854,7 @@ onMounted(() => {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 }
+
+
+
 </style>

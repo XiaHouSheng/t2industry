@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 import { View, Share, Link, ArrowRight } from "@element-plus/icons-vue";
 import { useHomeStore } from "../../stores/HomeStore";
 import { ElMessage } from "element-plus";
-
+import { Edit, Search, User, Setting } from "@element-plus/icons-vue";
 // 使用HomeStore
 const homeStore = useHomeStore();
 const router = useRouter();
@@ -22,10 +22,10 @@ const error = computed(() => homeStore.error);
 const areaStats = computed(() => {
   const stats = {
     四号谷地: 0,
-    武陵: 0
+    武陵: 0,
   };
   if (Array.isArray(homeStore.hotBlueprints)) {
-    homeStore.hotBlueprints.forEach(bp => {
+    homeStore.hotBlueprints.forEach((bp) => {
       if (bp.area === "四号谷地") stats.四号谷地++;
       if (bp.area === "武陵") stats.武陵++;
     });
@@ -37,28 +37,32 @@ const areaStats = computed(() => {
 const quickLinks = [
   {
     name: "蓝图编辑器",
-    icon: "Edit",
+    text: "Edit",
     path: "/editor",
-    description: "创建和编辑你的蓝图"
+    description: "创建和编辑你的蓝图",
+    icon: Edit,
   },
   {
     name: "发现蓝图",
-    icon: "Grid",
+    text: "Discover",
     path: "/home/discover",
-    description: "浏览其他玩家的蓝图"
+    description: "浏览其他玩家的蓝图",
+    icon: Search
   },
   {
     name: "个人蓝图",
-    icon: "User",
+    text: "User",
     path: "/home/self",
-    description: "管理你的蓝图"
+    description: "管理你的蓝图",
+    icon: User,
   },
   {
     name: "计算器",
-    icon: "Calculator",
+    text: "Calculator",
     path: "/calculate",
-    description: "物料配平计算"
-  }
+    description: "物料配平计算",
+    icon: Setting
+  },
 ];
 
 // 处理蓝图操作
@@ -70,11 +74,11 @@ const handleView = async (blueprint) => {
       router.push(`/editor/${blueprint.fileHash}`);
     } else {
       // 没有fileHash，跳转到editor页面
-      ElMessage.warning('该蓝图缺少文件哈希，无法直接查看');
+      ElMessage.warning("该蓝图缺少文件哈希，无法直接查看");
     }
   } catch (err) {
-    console.error('查看蓝图失败:', err);
-    ElMessage.error('操作失败，请重试');
+    console.error("查看蓝图失败:", err);
+    ElMessage.error("操作失败，请重试");
   }
 };
 
@@ -83,7 +87,7 @@ const handleShare = async (blueprint) => {
     //console.log("分享蓝图:", blueprint);
     // 实际项目中可以调用分享API
   } catch (err) {
-    console.error('分享蓝图失败:', err);
+    console.error("分享蓝图失败:", err);
   }
 };
 
@@ -94,7 +98,10 @@ const handleBilibili = (blueprint) => {
 // 页面加载时获取数据
 onMounted(() => {
   // 只有当hotBlueprints为空时才加载数据，否则直接使用已加载的数据
-  if (!Array.isArray(homeStore.hotBlueprints) || homeStore.hotBlueprints.length === 0) {
+  if (
+    !Array.isArray(homeStore.hotBlueprints) ||
+    homeStore.hotBlueprints.length === 0
+  ) {
     homeStore.loadStats();
   }
 });
@@ -117,11 +124,184 @@ const handleRetry = () => {
         :closable="false"
         show-icon
         class="mb-4"
+        style="margin-bottom: 6px"
       >
         <template #default>
-          <el-button type="primary" size="small" @click="handleRetry">重试</el-button>
+          <el-button type="primary" size="small" @click="handleRetry"
+            >重试</el-button
+          >
         </template>
       </el-alert>
+
+      <!-- 快速导航 -->
+      <div class="quick-links-section">
+        <div class="quick-links-grid">
+          <div
+            v-for="link in quickLinks"
+            :key="link.name"
+            class="quick-link-card"
+            @click="$router.push(link.path)"
+          >
+            <div class="quick-link-content">
+              <div class="quick-link-icon">
+                <el-icon :size="36">{{ link.text }}</el-icon>
+                <div class="quick-link-icon-cont">
+                  <el-icon :size="140">
+                    <component :is="link.icon" />
+                  </el-icon>
+                </div>
+              </div>
+              <h4>{{ link.name }}</h4>
+              <p>{{ link.description }}</p>
+              <div class="quick-link-arrow">
+                <el-icon :size="16"><ArrowRight /></el-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 热门蓝图 -->
+      <div class="blueprint-section">
+        <el-skeleton :loading="loading" animated>
+          <template #template>
+            <div class="blueprint-grid">
+              <el-card class="blueprint-card" v-for="i in 4" :key="i">
+                <template #header>
+                  <div class="blueprint-header">
+                    <el-skeleton-item
+                      variant="text"
+                      style="width: 150px; height: 20px"
+                    />
+                    <el-skeleton-item
+                      variant="text"
+                      style="width: 60px; height: 20px"
+                    />
+                  </div>
+                </template>
+                <div class="blueprint-content">
+                  <el-skeleton-item
+                    variant="text"
+                    style="width: 100%; height: 16px; margin-bottom: 8px"
+                  />
+                  <el-skeleton-item
+                    variant="text"
+                    style="width: 100%; height: 16px; margin-bottom: 8px"
+                  />
+                  <el-skeleton-item
+                    variant="text"
+                    style="width: 80%; height: 16px; margin-bottom: 16px"
+                  />
+                  <div class="author-info">
+                    <el-skeleton-item
+                      variant="circle"
+                      style="width: 24px; height: 24px"
+                    />
+                    <el-skeleton-item
+                      variant="text"
+                      style="width: 100px; height: 16px; margin-left: 8px"
+                    />
+                  </div>
+                  <el-skeleton-item
+                    variant="text"
+                    style="width: 100px; height: 16px; margin-top: 8px"
+                  />
+                  <div class="blueprint-actions">
+                    <el-skeleton-item
+                      variant="text"
+                      style="width: 80px; height: 32px"
+                    />
+                    <el-skeleton-item
+                      variant="text"
+                      style="width: 80px; height: 32px"
+                    />
+                    <el-skeleton-item
+                      variant="text"
+                      style="width: 80px; height: 32px"
+                    />
+                  </div>
+                </div>
+              </el-card>
+            </div>
+          </template>
+          <div
+            class="blueprint-grid"
+            v-if="!loading && hotBlueprints.length > 0"
+          >
+            <el-card
+              v-for="blueprint in hotBlueprints"
+              :key="blueprint.id"
+              class="blueprint-card"
+            >
+              <template #header>
+                <div class="blueprint-header">
+                  <h2>{{ blueprint.name }}</h2>
+                  <el-tag size="small" type="warning">{{
+                    blueprint.area
+                  }}</el-tag>
+                </div>
+              </template>
+              <div class="blueprint-content">
+                <div class="blueprint-description">
+                  {{ blueprint.description }}
+                </div>
+                <div class="blueprint-meta">
+                  <div class="author-info">
+                    <el-avatar :size="24">{{
+                      blueprint.creator?.name?.charAt(0) || "用户"
+                    }}</el-avatar>
+                    <el-text size="small" style="margin-left: 8px">{{
+                      blueprint.creator?.name || "未知作者"
+                    }}</el-text>
+                  </div>
+                  <div class="blueprint-stats">
+                    <el-text size="small" style="margin-right: 10px">
+                      浏览: {{ blueprint.views || 0 }}
+                    </el-text>
+                    <el-text size="small">
+                      下载: {{ blueprint.downloads || 0 }}
+                    </el-text>
+                  </div>
+                </div>
+                <div class="blueprint-actions">
+                  <el-button
+                    size="medium"
+                    :icon="View"
+                    @click="handleView(blueprint)"
+                    type="primary"
+                  >
+                    查看
+                  </el-button>
+                  <el-button
+                    size="medium"
+                    :icon="Share"
+                    @click="handleShare(blueprint)"
+                    type="default"
+                    plain
+                  >
+                    分享
+                  </el-button>
+                  <el-button
+                    size="medium"
+                    :icon="Link"
+                    @click="handleBilibili(blueprint)"
+                    type="default"
+                    plain
+                  >
+                    B站
+                  </el-button>
+                </div>
+              </div>
+            </el-card>
+          </div>
+          <div
+            v-else-if="!loading && hotBlueprints.length === 0"
+            class="text-center py-8"
+          >
+            <el-empty description="暂无热门蓝图" />
+          </div>
+        </el-skeleton>
+      </div>
 
       <!-- 统计信息卡片 -->
       <div class="stats-section">
@@ -132,8 +312,14 @@ const handleRetry = () => {
                 <div class="stats-grid">
                   <div class="stat-item" v-for="i in 4" :key="i">
                     <div class="stat-content">
-                      <el-skeleton-item variant="text" style="width: 80px; height: 30px;" />
-                      <el-skeleton-item variant="text" style="width: 100px; height: 16px; margin-top: 8px;" />
+                      <el-skeleton-item
+                        variant="text"
+                        style="width: 80px; height: 30px"
+                      />
+                      <el-skeleton-item
+                        variant="text"
+                        style="width: 100px; height: 16px; margin-top: 8px"
+                      />
                     </div>
                   </div>
                 </div>
@@ -169,127 +355,6 @@ const handleRetry = () => {
         </el-card>
       </div>
 
-      <!-- 快速导航 -->
-      <div class="quick-links-section">
-        <h3>快速导航</h3>
-        <div class="quick-links-grid">
-          <div 
-            v-for="link in quickLinks" 
-            :key="link.name" 
-            class="quick-link-card"
-            @click="$router.push(link.path)"
-          >
-            <div class="quick-link-content">
-              <div class="quick-link-icon">
-                <el-icon :size="36">{{ link.icon }}</el-icon>
-              </div>
-              <h4>{{ link.name }}</h4>
-              <p>{{ link.description }}</p>
-              <div class="quick-link-arrow">
-                <el-icon :size="16"><ArrowRight /></el-icon>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 热门蓝图 -->
-      <div class="blueprint-section">
-        <h3>热门蓝图</h3>
-        <el-skeleton :loading="loading" animated>
-          <template #template>
-            <div class="blueprint-grid">
-              <el-card class="blueprint-card" v-for="i in 4" :key="i">
-                <template #header>
-                  <div class="blueprint-header">
-                    <el-skeleton-item variant="text" style="width: 150px; height: 20px;" />
-                    <el-skeleton-item variant="text" style="width: 60px; height: 20px;" />
-                  </div>
-                </template>
-                <div class="blueprint-content">
-                  <el-skeleton-item variant="text" style="width: 100%; height: 16px; margin-bottom: 8px;" />
-                  <el-skeleton-item variant="text" style="width: 100%; height: 16px; margin-bottom: 8px;" />
-                  <el-skeleton-item variant="text" style="width: 80%; height: 16px; margin-bottom: 16px;" />
-                  <div class="author-info">
-                    <el-skeleton-item variant="circle" style="width: 24px; height: 24px;" />
-                    <el-skeleton-item variant="text" style="width: 100px; height: 16px; margin-left: 8px;" />
-                  </div>
-                  <el-skeleton-item variant="text" style="width: 100px; height: 16px; margin-top: 8px;" />
-                  <div class="blueprint-actions">
-                    <el-skeleton-item variant="text" style="width: 80px; height: 32px;" />
-                    <el-skeleton-item variant="text" style="width: 80px; height: 32px;" />
-                    <el-skeleton-item variant="text" style="width: 80px; height: 32px;" />
-                  </div>
-                </div>
-              </el-card>
-            </div>
-          </template>
-          <div class="blueprint-grid" v-if="!loading && hotBlueprints.length > 0">
-            <el-card
-              v-for="blueprint in hotBlueprints"
-              :key="blueprint.id"
-              class="blueprint-card"
-            >
-              <template #header>
-                <div class="blueprint-header">
-                  <h4>{{ blueprint.name }}</h4>
-                  <el-tag size="small" type="warning">{{
-                    blueprint.area
-                  }}</el-tag>
-                </div>
-              </template>
-              <div class="blueprint-content">
-                <div class="blueprint-description">
-                  {{ blueprint.description }}
-                </div>
-                <div class="blueprint-meta">
-                  <div class="author-info">
-                    <el-avatar :size="24">{{ blueprint.creator?.name?.charAt(0) || '用户' }}</el-avatar>
-                    <el-text size="small" style="margin-left: 8px">{{
-                      blueprint.creator?.name || '未知作者'
-                    }}</el-text>
-                  </div>
-                  <div class="blueprint-stats">
-                    <el-text size="small" style="margin-right: 10px">
-                      浏览: {{ blueprint.views || 0 }}
-                    </el-text>
-                    <el-text size="small">
-                      下载: {{ blueprint.downloads || 0 }}
-                    </el-text>
-                  </div>
-                </div>
-                <div class="blueprint-actions">
-                  <el-button
-                    size="small"
-                    :icon="View"
-                    @click="handleView(blueprint)"
-                  >
-                    查看
-                  </el-button>
-                  <el-button
-                    size="small"
-                    :icon="Share"
-                    @click="handleShare(blueprint)"
-                  >
-                    分享
-                  </el-button>
-                  <el-button
-                    size="small"
-                    :icon="Link"
-                    @click="handleBilibili(blueprint)"
-                  >
-                    B站
-                  </el-button>
-                </div>
-              </div>
-            </el-card>
-          </div>
-          <div v-else-if="!loading && hotBlueprints.length === 0" class="text-center py-8">
-            <el-empty description="暂无热门蓝图" />
-          </div>
-        </el-skeleton>
-      </div>
-
       <!-- 站点介绍 -->
       <div class="intro-section">
         <el-card class="intro-card">
@@ -298,16 +363,14 @@ const handleRetry = () => {
           </template>
           <div class="intro-content">
             <div class="intro-item">
-              <h4>什么是"塔卫二工业"？</h4>
+              <h4>什么是"塔卫二蓝图"？</h4>
               <p>
                 一款面向《明日方舟：终末地》的多功能工具平台，核心能力包含：蓝图分享与管理、生产效率模拟（计划）。
               </p>
               <p>
                 玩家可以手动通过本站提供的蓝图编辑器进行蓝图编辑并上传，也可以查看其他玩家的蓝图。
               </p>
-              <p>
-                站点旨在搭建一个蓝图汇总库以便于玩家进行查找。
-              </p>
+              <p>站点旨在搭建一个蓝图汇总库以便于玩家进行查找。</p>
             </div>
             <div class="intro-item">
               <h4>公告</h4>
@@ -318,8 +381,12 @@ const handleRetry = () => {
             <div class="intro-item">
               <h4>联系我们</h4>
               <p>
-                企鹅群：615187598<br>
-                仓库主页：<a href="https://github.com/XiaHouSheng/EndFieldSimulation" target="_blank">https://github.com/XiaHouSheng/EndFieldSimulation</a>
+                企鹅群：615187598<br />
+                仓库主页：<a
+                  href="https://github.com/XiaHouSheng/t2industry"
+                  target="_blank"
+                  >https://github.com/XiaHouSheng/t2industry</a
+                >
               </p>
             </div>
             <div class="intro-item">
@@ -401,8 +468,7 @@ const handleRetry = () => {
 }
 
 .quick-link-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
   border-color: var(--el-color-primary);
 }
 
@@ -417,6 +483,15 @@ const handleRetry = () => {
 .quick-link-icon {
   color: var(--el-color-primary);
   margin-bottom: 5px;
+  position: relative;
+}
+
+.quick-link-icon-cont {
+  transition: all 0.3s ease;
+  position: absolute;
+  opacity: 0.1;
+  top: 25px;
+  left: 50px;
 }
 
 .quick-link-card h4 {
@@ -438,7 +513,15 @@ const handleRetry = () => {
   margin-top: 5px;
   color: var(--el-color-primary);
   opacity: 0.7;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+.quick-link-icon {
+  color: blue
+}
+
+.quick-link-card:hover .quick-link-icon-cont {
+  opacity: 0.3;
 }
 
 .quick-link-card:hover .quick-link-arrow {
@@ -465,7 +548,9 @@ const handleRetry = () => {
 
 .blueprint-card {
   height: 100%;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .blueprint-card:hover {
@@ -479,9 +564,9 @@ const handleRetry = () => {
   align-items: center;
 }
 
-.blueprint-header h4 {
+.blueprint-header h2 {
   margin: 0;
-  font-size: 16px;
+  font-size: 20px;
   color: var(--el-text-color-primary);
 }
 
@@ -515,12 +600,12 @@ const handleRetry = () => {
 
 .blueprint-actions {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
   margin-top: auto;
 }
 
 .intro-section {
-  margin-bottom: 30px;
+  margin-bottom: 12px;
 }
 
 .intro-card {
@@ -560,15 +645,15 @@ const handleRetry = () => {
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
-  
+
   .quick-links-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .blueprint-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .intro-content {
     grid-template-columns: 1fr;
   }

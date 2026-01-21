@@ -28,11 +28,10 @@ export function toSlot([itemId, count]) {
   };
 }
 
-export function iconStyle(iconId, cubeSize = 64) {
+export function iconStyle(iconId, cubeSize = 64, color = null) {
   const icon = IconData[iconId];
   if (!icon)
     return {
-      border: "solid 1px",
     };
   const BASE_SIZE = 64;
   const scale = cubeSize / BASE_SIZE;
@@ -42,7 +41,7 @@ export function iconStyle(iconId, cubeSize = 64) {
 
   return {
     backgroundImage: `url(${iconImage})`,
-    backgroundColor: icon.color,
+    backgroundColor: color ?? icon.color,
 
     // 只修改 position
     backgroundPosition: `${x * scale}px ${y * scale}px`,

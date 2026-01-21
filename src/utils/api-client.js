@@ -4,7 +4,7 @@
  */
 
 class ApiClient {
-  constructor(baseUrl = 'https://117.72.161.160') {
+  constructor(baseUrl = 'http://localhost:3000') {
     this.baseUrl = baseUrl;
     this.token = null;
   }
@@ -174,6 +174,10 @@ class ApiClient {
   /**
    * 创建蓝图
    * @param {Object} blueprintData - 蓝图数据
+   * @param {string} blueprintData.name - 蓝图名称
+   * @param {string} blueprintData.description - 蓝图描述
+   * @param {string} blueprintData.area - 蓝图地区
+   * @param {string} [blueprintData.biliHref] - Bilibili链接
    * @returns {Promise<any>} 创建的蓝图
    */
   async createBlueprint(blueprintData) {
@@ -193,6 +197,10 @@ class ApiClient {
    * 更新蓝图
    * @param {number} id - 蓝图ID
    * @param {Object} blueprintData - 蓝图数据
+   * @param {string} [blueprintData.name] - 蓝图名称
+   * @param {string} [blueprintData.description] - 蓝图描述
+   * @param {string} [blueprintData.area] - 蓝图地区
+   * @param {string} [blueprintData.biliHref] - Bilibili链接
    * @returns {Promise<any>} 更新后的蓝图
    */
   async updateBlueprint(id, blueprintData) {

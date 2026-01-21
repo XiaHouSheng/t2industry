@@ -63,6 +63,21 @@
   <el-row :gutter="6">
     <el-col :span="4">
       <div class="display-flex flex-direation-col sheng-cont-list sidebar">
+        <!--协议核心-->
+        <div
+          data-gs-widget='{"w":9, "h":9, "noResize":true, "id":"protocolCore"}'
+          class="sheng-cont-item sidebar-item display-flex flex-direation-row"
+        >
+          <div
+            class="display-flex flex-direation-col justify-content-center"
+            style="margin-left: 3px"
+          >
+            <div class="display-flex flex-direation-col justify-content-center">
+              <span style="font-size: 14px">协议核心</span>
+            </div>
+          </div>
+        </div>
+        <!--仓库取货口-->
         <div
           data-gs-widget='{"w":3, "h":1, "noResize":true, "id":"warehouseWithdrawalPort"}'
           class="sheng-cont-item sidebar-item display-flex flex-direation-row"
@@ -76,7 +91,7 @@
             </div>
           </div>
         </div>
-
+        <!--仓库存货口-->
         <div
           data-gs-widget='{"w":3, "h":1, "noResize":true, "id":"warehouseDepositPort"}'
           class="sheng-cont-item sidebar-item display-flex flex-direation-row"
@@ -86,16 +101,49 @@
             style="margin-left: 3px"
           >
             <div class="display-flex flex-direation-col justify-content-center">
-              <span style="font-size: 14px">仓库取货口</span>
+              <span style="font-size: 14px">仓库存货口</span>
             </div>
           </div>
         </div>
-
+        <!--供电桩-->
+        <div
+          data-gs-widget='{"w":2, "h":2, "noResize":true, "id":"powerSupplier"}'
+          class="sheng-cont-item sidebar-item display-flex flex-direation-row"
+        >
+          <div
+            class="display-flex flex-direation-col justify-content-center"
+            style="margin-left: 3px"
+          >
+            <div class="display-flex flex-direation-col justify-content-center">
+              <span style="font-size: 14px">供电桩</span>
+            </div>
+          </div>
+        </div>
+        <!--协议存储箱-->
+        <div
+          data-gs-widget='{"w":2, "h":2, "noResize":true, "id":"protocolStorageBox"}'
+          class="sheng-cont-item sidebar-item display-flex flex-direation-row"
+        >
+          <div
+            class="display-flex flex-direation-col justify-content-center"
+            style="margin-left: 3px"
+          >
+            <div class="display-flex flex-direation-col justify-content-center">
+              <span style="font-size: 14px">协议存储箱</span>
+            </div>
+          </div>
+        </div>
+        <!--已有ICON的蓝图-->
         <div
           v-for="machine in MachineData"
           :data-gs-widget="gridStackDataProcess(machine)"
           class="sheng-cont-item sidebar-item display-flex flex-direation-row"
+          style="position: relative"
         >
+          <div
+            class="sheng-cont-item-bg"
+            :style="iconStyle(machine.icon, 120, '#ffffff00')"
+          ></div>
           <div
             class="display-flex flex-direation-col justify-content-center"
             style="margin-left: 3px"
@@ -163,7 +211,7 @@
             <el-radio-button label="框选" value="select" />
             <el-radio-button label="无" value="default" />
           </el-radio-group>
-          
+
           <!--便捷放置-->
           <el-radio-group
             v-model="rootStore.toolbarMode"
@@ -221,6 +269,18 @@
               </template>
             </el-radio-button>
           </el-radio-group>
+
+          <!--快速放置模式-->
+          <div style="margin-right: 12px; opacity: 0">
+            <el-radio-group
+              v-model="rootStore.quickPlaceMode"
+              size="small"
+              disabled
+            >
+              <el-radio-button label="belt">传送带</el-radio-button>
+              <el-radio-button label="pipe">管道</el-radio-button>
+            </el-radio-group>
+          </div>
           <!--关联蓝图设置
           <div
             style="
@@ -247,32 +307,123 @@
             </el-dropdown>
           </div>
           -->
-          <!--图层查看
-          <div
-            style="
-              width: auto;
-              height: 100%;
-              background-color: var(--el-color-white);
-              overflow: hidden;
-            "
-          >
+          <!--图层设置-->
+          <div style="margin-left: auto">
             <el-dropdown trigger="click">
-              <el-button type="primary">
-                图层设置<el-icon class="el-icon--right"
-                  ><arrow-down
-                /></el-icon>
+              <el-button>
+                图层设置<el-icon class="el-icon--right"><arrow-down /></el-icon>
               </el-button>
               <template #dropdown>
-                <div class="display-flex flex-direation-col" style="padding: 6px">
-                    <el-checkbox label="机器" value="Value A" />
-                    <el-checkbox label="传送带" value="Value B" />
-                    <el-checkbox label="管道" value="Value C" />
-                    <el-checkbox label="电力" value="Value C" />
+                <div
+                  class="layer-dropdown"
+                  style="border-radius: 4px; overflow: hidden"
+                >
+                  <div class="layer-item">
+                    <span>供电范围</span>
+                    <el-switch
+                      v-model="rootStore.isShowSupplierExtent"
+                      size="small"
+                    />
+                  </div>
+                  <div class="layer-item">
+                    <span>机器</span>
+                    <el-switch
+                      disabled
+                      v-model="rootStore.isShowMachines"
+                      size="small"
+                      :checked="true"
+                    />
+                  </div>
+                  <div class="layer-item">
+                    <span>传送带</span>
+                    <el-switch
+                      disabled
+                      v-model="rootStore.isShowBelts"
+                      size="small"
+                      :checked="true"
+                    />
+                  </div>
                 </div>
               </template>
             </el-dropdown>
           </div>
-          -->
+
+          <!--模块滤镜-->
+          <div style="margin-right: 12px">
+            <el-dropdown trigger="click">
+              <el-button>
+                模块滤镜<el-icon class="el-icon--right"><arrow-down /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <div
+                  class="module-filter-dropdown"
+                  style="border-radius: 4px; overflow: hidden"
+                >
+                  <div
+                    v-for="(part, index) in rootStore.parts"
+                    :key="index"
+                    class="layer-item"
+                  >
+                    <div style="flex: 1; display: flex; align-items: center">
+                      <el-switch
+                        v-model="part.show"
+                        size="small"
+                        @change="(value) => rootStore.handlePartShowChange(part, value)"
+                      />
+                      <span style="margin-left: 3px;">{{ part.name }}</span>
+                    </div>
+                    <div class="item-actions">
+                      <el-button
+                        size="small"
+                        icon="EditPen"
+                        :type="part.name === rootStore.editPartChoose ? 'primary' : ''"
+                        @click="rootStore.selectEditPart(part.name)"
+                        round
+                      >
+                      </el-button>
+                      <el-button size="small" icon="DocumentCopy" round @click="rootStore.copyEditCode(part)">
+                      </el-button>
+                      <el-button
+                        v-bind="{ disabled: index === 0 }"
+                        size="small"
+                        icon="Delete"
+                        round
+                        @click="rootStore.deletePart(index)"
+                      >
+                      </el-button>
+                    </div>
+                  </div>
+
+                  <!--Toolbar底部控制栏-->
+                  <div class="layer-item" style="background-color: #f9f9f9">
+                    <div style="flex: 1; display: flex; align-items: center">
+                      <span style="font-weight: 500">添加新模块</span>
+                    </div>
+                    <div class="item-actions">
+                      <el-button size="small" icon="EditPen" round disabled>
+                      </el-button>
+                      <el-button
+                        size="small"
+                        icon="DocumentCopy"
+                        round
+                        disabled
+                      >
+                      </el-button>
+                      <el-button
+                        size="small"
+                        type="primary"
+                        icon="Plus"
+                        round
+                        @click="rootStore.addNewPart"
+                      >
+                      </el-button>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </el-dropdown>
+          </div>
+
           <!--蓝图存储相关-->
           <el-button-group style="overflow: hidden">
             <el-button @click="rootStore.saveBluePrint" primary>
@@ -330,7 +481,7 @@ import {
   markRaw,
   ref,
   watch,
-  onUnmounted
+  onUnmounted,
 } from "vue";
 import { GridStack } from "gridstack";
 import { useRootStore } from "../stores/SimStore";
@@ -342,6 +493,16 @@ import { MachineData, iconStyle, gridStackDataProcess } from "../utils/DataMap";
 import "gridstack/dist/gridstack.min.css";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
+import {
+  ArrowDown,
+  View,
+  Hide,
+  DocumentCopy,
+  Delete,
+  Check,
+  EditPen,
+  Plus,
+} from "@element-plus/icons-vue";
 
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
@@ -358,7 +519,7 @@ onMounted(async () => {
   const selector = document.querySelector(".selection-box");
   selectStore.initSelector(selector);
   rootStore.initGrid(targetGridEl, targetGridCont, appContext);
-  
+
   // 根据是否有hashCode参数加载相应的蓝图
   if (hashCode) {
     try {
@@ -381,7 +542,7 @@ onMounted(async () => {
       ElMessage.error(`加载本地蓝图失败: ${error.message}`);
     }
   }
-  
+
   //拖拽克隆
   const selfClone = (element) => {
     const cloneNode = element.cloneNode(true);
@@ -394,7 +555,7 @@ onMounted(async () => {
     cloneNode.setAttribute("data-gs-widget", JSON.stringify(elConfig));
     return cloneNode;
   };
-  
+
   //添加回调
   rootStore.rootGrid.on("added", function (event, items) {
     const item = items[0];
@@ -404,8 +565,9 @@ onMounted(async () => {
 
     const rootId = item.id.split("_")[0];
     // 存入 store
-    rootStore.gridWidgets[item.id] = { rotate: 0, recipe: "" };
+    rootStore.gridWidgets[item.id] = { rotate: 0, recipe: "", part: rootStore.editPartChoose };
     rootStore.gridWidgetElements[item.id] = el;
+    rootStore.partsWidgetId[rootStore.editPartChoose].add(item.id);
     // 渲染 Vue 组件
     const vnode = createVNode(machineComponentMap[rootId], {
       gs_id: item.id,
@@ -415,7 +577,7 @@ onMounted(async () => {
     vnode.appContext = appContext;
     render(vnode, el);
   });
-  
+
   //拖拽设置
   GridStack.setupDragIn(".sidebar-item", { helper: selfClone });
 });
@@ -426,7 +588,7 @@ const stopWatcher = watch(
   async (newHashCode, oldHashCode) => {
     // 清空当前蓝图
     rootStore.clearBlueprint();
-    
+
     if (newHashCode && newHashCode !== oldHashCode) {
       // 有新的hashCode参数，加载远程蓝图
       try {
@@ -452,8 +614,10 @@ const stopWatcher = watch(
         ElMessage.error(`加载本地蓝图失败: ${error.message}`);
       }
     }
-  }
+  },
 );
+
+// 添加新模块
 
 // 组件卸载时停止监听
 onUnmounted(() => {
@@ -507,6 +671,10 @@ onUnmounted(() => {
   transform: translateX(2px);
 }
 
+.sheng-cont-item:hover > .sheng-cont-item-bg {
+  opacity: 0.5;
+}
+
 .sheng-item--active {
   background: var(--sim-color-primary-bg);
   border: 1px solid var(--sim-color-primary);
@@ -524,11 +692,8 @@ onUnmounted(() => {
 .grid-stack {
   background-color: var(--sheng-grid-bg);
   background-size: calc(100% / 72) calc(100% / 72);
-  background-image: linear-gradient(
-      to right,
-      var(--sheng-grid-line) 1px,
-      transparent 1px
-    ),
+  background-image:
+    linear-gradient(to right, var(--sheng-grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--sheng-grid-line) 1px, transparent 1px);
 }
 
@@ -573,75 +738,92 @@ onUnmounted(() => {
   height: 20px;
 }
 
-/* 工具栏按钮样式优化 */
-:deep(.el-radio-group) {
+.toolbar-switch {
   margin-right: 12px;
-}
-
-:deep(.el-radio-button__inner) {
-  border-radius: 2px;
-  margin-right: 0;
-  padding: 6px 10px;
-  transition: all 0.2s ease;
-  min-height: 32px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  border: 1px solid var(--el-border-color-light);
-  background-color: var(--el-color-white);
 }
 
-:deep(.el-radio-button:first-child .el-radio-button__inner) {
-  border-radius: 2px 0 0 2px;
+.layer-dropdown {
+  background-color: #ffffff;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  overflow: hidden;
 }
 
-:deep(.el-radio-button:last-child .el-radio-button__inner) {
-  border-radius: 0 2px 2px 0;
+.layer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  transition: background-color 0.3s;
 }
 
-:deep(.el-radio-button .toolbar-icon-wrapper) {
-  margin: 0 auto;
+.layer-item:hover {
+  background-color: #f5f7fa;
 }
 
-:deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-  background-color: var(--sim-color-primary);
-  border-color: var(--sim-color-primary);
-  box-shadow: none;
+.layer-item span {
+  font-size: 14px;
+  color: #303133;
 }
 
-:deep(.el-radio-button__inner:hover) {
-  border-color: var(--sim-color-primary-lighter);
+.layer-item + .layer-item {
+  border-top: 1px solid #f0f2f5;
 }
 
-:deep(.el-button-group) {
-  margin-left: auto;
-  border-radius: 2px;
-  padding: 0;
+.module-filter-dropdown {
+  background-color: #ffffff;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  overflow: hidden;
 }
 
-:deep(.el-button) {
-  border-radius: 2px;
-  transition: all 0.2s ease;
-  margin: 0;
-  border: 1px solid var(--el-border-color-light);
-  background-color: var(--el-color-white);
+.filter-actions {
+  padding: 8px 16px;
+  border-top: 1px solid #f0f2f5;
+  margin-top: 4px;
 }
 
-:deep(.el-button:hover) {
-  border-color: var(--sim-color-primary-lighter);
-  color: var(--sim-color-primary);
+.filter-actions .el-button {
+  transition: all 0.3s;
 }
 
-:deep(.el-button--primary) {
-  background-color: var(--sim-color-primary);
-  border-color: var(--sim-color-primary);
+.filter-actions .el-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-:deep(.el-button--primary:hover) {
-  background-color: var(--sim-color-primary-light);
-  border-color: var(--sim-color-primary-light);
-  color: var(--sim-color-white);
+.item-actions {
+  display: flex;
+  align-items: center;
 }
+
+.item-actions .el-button {
+  margin-left: 4px;
+  transition: all 0.3s;
+}
+
+.item-actions .el-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sheng-cont-item-bg {
+  background-size: 1440px 1440px;
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  width: 120px;
+  height: 120px;
+  opacity: 0.2;
+  transition: opacity 0.3s ease;
+}
+
 
 /* 滚动条样式优化 */
 .sheng-cont-list::-webkit-scrollbar,
@@ -673,7 +855,7 @@ onUnmounted(() => {
     min-height: 48px;
     padding: 6px 10px;
   }
-  
+
   .sheng-tool-bar {
     height: auto;
     flex-wrap: wrap;

@@ -20,6 +20,7 @@ const props = defineProps({
     :gs_id="props.gs_id"
     :el_name="props.el_name"
     :el_size="props.el_size"
+    :port="{top: true, bottom: false}"
   ></RootContainer>
 </template>
 

@@ -30,6 +30,7 @@
           "thumbnail": "url",
           "views": 100,
           "downloads": 20,
+          "biliHref": "https://www.bilibili.com/video/BV1xx411c7mC",
           "creator": {
             "id": 1,
             "name": "username"
@@ -56,7 +57,8 @@
   {
     "name": "新蓝图名称",
     "description": "蓝图描述",
-    "area": "四号谷地"
+    "area": "四号谷地",
+    "biliHref": "https://www.bilibili.com/video/BV1xx411c7mC"
   }
   ```
 - **响应数据**:
@@ -71,6 +73,7 @@
       "createdAt": "2026-01-14",
       "lastEdited": "2026-01-14",
       "area": "四号谷地",
+      "biliHref": "https://www.bilibili.com/video/BV1xx411c7mC",
       "creator": {
         "id": 1,
         "name": "username"
@@ -95,6 +98,7 @@
       "lastEdited": "2026-01-12",
       "area": "四号谷地",
       "thumbnail": "url",
+      "biliHref": "https://www.bilibili.com/video/BV1xx411c7mC",
       "creator": {
         "id": 1,
         "name": "username"
@@ -116,7 +120,8 @@
   {
     "name": "更新后的蓝图名称",
     "description": "更新后的描述",
-    "area": "四号谷地"
+    "area": "四号谷地",
+    "biliHref": "https://www.bilibili.com/video/BV1xx411c7mC"
   }
   ```
 - **响应数据**:
@@ -131,6 +136,7 @@
       "createdAt": "2026-01-10",
       "lastEdited": "2026-01-14",
       "area": "四号谷地",
+      "biliHref": "https://www.bilibili.com/video/BV1xx411c7mC",
       "creator": {
         "id": 1,
         "name": "username"
@@ -218,6 +224,7 @@
           "thumbnail": "url",
           "views": 100,
           "downloads": 20,
+          "biliHref": "https://www.bilibili.com/video/BV1xx411c7mC",
           "creator": {
             "id": 1,
             "name": "username"
@@ -257,6 +264,7 @@
           "thumbnail": "url",
           "views": 100,
           "downloads": 20,
+          "biliHref": "https://www.bilibili.com/video/BV1xx411c7mC",
           "creator": {
             "id": 1,
             "name": "username"
@@ -275,6 +283,7 @@
           "thumbnail": "url",
           "views": 50,
           "downloads": 10,
+          "biliHref": "https://www.bilibili.com/video/BV1xx411c7mC",
           "creator": {
             "id": 2,
             "name": "user2"
@@ -320,6 +329,7 @@
           "downloads": 20,
           "fileHash": "hash_1",
           "userId": 1,
+          "biliHref": "https://www.bilibili.com/video/BV1xx411c7mC",
           "creator": {
             "id": 1,
             "name": "用户1"
