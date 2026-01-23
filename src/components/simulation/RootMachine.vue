@@ -19,14 +19,14 @@ const props = defineProps({
     required: true,
     type: Object,
   },
-  part: {
-    type: Object,
-    required: false,
+  rotate: {
+    type: Number,
+    default: 0,
   },
 });
 //旋转部分
 const widthEl = ref(props.el_size.w);
-const rotateAngle = ref(0);
+const rotateAngle = ref(props.rotate * 90);
 const hadnleRotate = () => {
   rotateAngle.value = ((rotateAngle.value / 90 + 1) % 4) * 90;
   rootStore.gridWidgets[props.gs_id]["rotate"] = rotateAngle.value / 90;

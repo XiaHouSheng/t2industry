@@ -21,9 +21,13 @@ const props = defineProps({
   is_deposit: {
     type: Boolean,
   },
+  rotate: {
+    type: Number,
+    default: 0,
+  },
 });
 
-let index = 0;
+let index = props.rotate;
 let defaultWidth = props.el_size.w;
 const widthEl = ref(defaultWidth);
 const heightEl = ref(1);

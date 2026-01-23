@@ -59,5 +59,6 @@ const rootStore = useRootStore();
     0 0,
     0 0;
   background-blend-mode: overlay;
+  z-index: 998;
 }
 </style>

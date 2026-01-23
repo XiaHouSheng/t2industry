@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRootStore } from "../../stores/SimStore";
 import { useMachineStore } from "../../stores/MachineStore";
 import { machineNameMap } from "../../utils/MachineMap";
@@ -20,13 +20,13 @@ const props = defineProps({
     required: true,
     type: Object,
   },
-  part: {
-    type: Object,
-    required: false,
+  rotate: {
+    type: Number,
+    default: 0,
   },
 });
 
-let index = 0;
+let index = props.rotate;
 let defaultWidth = props.el_size.w;
 const widthEl = ref(defaultWidth);
 const heightEl = ref(1);
@@ -35,13 +35,8 @@ const childContInner = ref(null);
 const childContOuter = ref(null);
 
 //0->default 1->change 2->default 3->change
-const rotateGridEl = (index) => {
-  rootStore.gridWidgets[props.gs_id]["rotate"] = index;
+const onlyChangeFlexDirection = (index) => {
   if (index % 2 == 0) {
-    rootStore.rootGrid.update(rootStore.gridWidgetElements[props.gs_id], {
-      w: props.el_size.h,
-      h: props.el_size.w,
-    });
     if (index == 0) {
       baseContFlex.value.style["flex-direction"] = "row-reverse";
     } else {
@@ -54,10 +49,6 @@ const rotateGridEl = (index) => {
     childContOuter.value.style["width"] = "15px";
     childContOuter.value.style["height"] = "auto";
   } else {
-    rootStore.rootGrid.update(rootStore.gridWidgetElements[props.gs_id], {
-      w: props.el_size.w,
-      h: props.el_size.h,
-    });
     if (index == 1) {
       baseContFlex.value.style["flex-direction"] = "column-reverse";
     } else {
@@ -71,10 +62,35 @@ const rotateGridEl = (index) => {
     childContOuter.value.style["width"] = "auto";
   }
 };
+
+const onlyChangeWidthAHeight = (index) => {
+  if (index % 2 == 0) {
+    rootStore.rootGrid.update(rootStore.gridWidgetElements[props.gs_id], {
+      w: props.el_size.h,
+      h: props.el_size.w,
+    });
+  } else {
+    rootStore.rootGrid.update(rootStore.gridWidgetElements[props.gs_id], {
+      w: props.el_size.w,
+      h: props.el_size.h,
+    });
+  }
+};
+
+const rotateGridEl = (index) => {
+  rootStore.gridWidgets[props.gs_id]["rotate"] = index;
+  onlyChangeFlexDirection(index);
+  onlyChangeWidthAHeight(index);
+};
 const hadnleRotate = () => {
   rotateGridEl(index);
   index = index >= 3 ? 0 : index + 1;
 };
+
+onMounted(() => {
+  onlyChangeFlexDirection(index);
+});
+
 //配方配置对话框
 const targetItemId = computed(() => {
   return rootStore.gridWidgets[props.gs_id]
@@ -134,14 +150,16 @@ const targetItemId = computed(() => {
 .line-inner {
   background-color: #9494948d;
   background-size: calc(100% / v-bind(widthEl)) calc(100% / v-bind(heightEl));
-  background-image: linear-gradient(to right, #fff 1px, transparent 1px),
+  background-image:
+    linear-gradient(to right, #fff 1px, transparent 1px),
     linear-gradient(to bottom, #fff 1px, transparent 1px);
 }
 
 .line-outter {
   background-color: #ffe1898d;
   background-size: calc(100% / v-bind(widthEl)) calc(100% / v-bind(heightEl));
-  background-image: linear-gradient(to right, #fff 1px, transparent 1px),
+  background-image:
+    linear-gradient(to right, #fff 1px, transparent 1px),
     linear-gradient(to bottom, #fff 1px, transparent 1px);
 }
 </style>

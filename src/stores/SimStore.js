@@ -429,7 +429,7 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     //创建机器|对原makeGrid的封装
     makeMachine(config) {
-      const { id, machine_id, recipe, rotate, x, y, w, h } = config;
+      const { id, machine_id, recipe, rotate, x, y, w, h, part } = config;
       //step1 gridWidgets创建对应id的dict 并导入 rotate和recipe数据
       this.gridWidgets[id] = { rotate: rotate, recipe: recipe };
       //step2 创建元素并指向id对应的element项
@@ -437,6 +437,7 @@ export const useRootStore = defineStore("sheng-root-store", {
         gs_id: id,
         el_name: machine_id,
         el_size: { w: w, h: h },
+        rotate: rotate,
       });
 
       //测试：将新创建的widget添加到当前编辑的模块中
@@ -556,7 +557,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       const listElementConfig = Object.entries(this.gridWidgets);
       //console.log(listElement, listElementConfig);
       for (let index = 0; index < listElement.length; index += 1) {
-        let [key, { rotate, recipe }] = listElementConfig.at(index);
+        let [key, { rotate, recipe, part }] = listElementConfig.at(index);
         let [_, element] = listElement.at(index);
         let storageValue = {
           id: key,
@@ -567,6 +568,7 @@ export const useRootStore = defineStore("sheng-root-store", {
           y: element.gridstackNode.y,
           w: element.gridstackNode.w,
           h: element.gridstackNode.h,
+          part: part,
         };
         machines.push(storageValue);
       }
@@ -683,7 +685,7 @@ export const useRootStore = defineStore("sheng-root-store", {
 
       try {
         // 构建蓝图URL
-        const blueprintUrl = `http://localhost:3000/download/${hashCode}.json`;
+        const blueprintUrl = `http://117.72.161.160:88/download/${hashCode}.json`;
 
         // 发送请求获取蓝图数据
         const response = await fetch(blueprintUrl);
