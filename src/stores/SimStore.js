@@ -4,11 +4,15 @@ import { createVNode, markRaw, render } from "vue";
 import { machineComponentMap } from "../utils/MachineMap";
 import ConveyerBelt from "../components/simulation/ConveyerBelt.vue";
 import { ElNotification, ElMessageBox } from "element-plus";
+import keyboardHandler from "../utils/keyboardHandler";
+import dragScrollHandler from "../utils/dragScrollHandler";
 
 export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
+    // -------------------- 应用上下文 --------------------
     appContext: null,
 
+    // -------------------- 状态标志 --------------------
     isBluePrintImport: false,
     isRecipeChoose: false,
     isWareHouseRecipeChoose: false,
@@ -18,24 +22,30 @@ export const useRootStore = defineStore("sheng-root-store", {
     isShowBelts: true,
     quickPlaceMode: "belt",
 
+    // -------------------- 选择状态 --------------------
     recipeChooseId: "",
     materialChooseId: "",
 
+    // -------------------- 工具栏状态 --------------------
     toolbarMode: "default",
     toolbarModeHistory: "default",
     beltSelect: "turn",
     editPartChoose: "part0", //当前编辑的模块
 
+    // -------------------- 网格和控件存储 --------------------
     gridWidgetElements: markRaw({}), //用于非传送带模拟控件的存储|id->{element:el}
     gridWidgets: {}, //用于非传送带模拟控件配置存储|id->{rotate:rotate,recipe:recipe,part:partName}
     gridBelt2dElement: markRaw({}),
     gridBelts2d: null, //存储传送带的元素|x,y->{rotate:rotate,type:type}
+
+    // -------------------- 模块相关存储 --------------------
     partsWidgetId: {
       part0: new Set(),
     }, //存储模块对应的widgetId|partName->widgetIdList
     partsBelts: {
       part0: new Set(),
     }, //存储模块对应的传送带|partName->beltIdList
+
     // 模块列表，结构：[{name: "模块", code: "", show: true, edited: false}]
     parts: [
       {
@@ -45,18 +55,21 @@ export const useRootStore = defineStore("sheng-root-store", {
       },
     ],
 
+    // -------------------- 网格配置 --------------------
     rootGrid: null, //存储根gridstack对象
     rootGridEngine: null, //gridstack引擎
     gridEl: null, //存储根元素对象
     gridElCont: null, //存储gridstack的父容器
 
+    // -------------------- 缩放相关配置 --------------------
     gridElContScale: 1,
-    defaultWidth: 1578,
-    defaultHeight: 1578,
+    defaultWidth: 3017,
+    defaultHeight: 3017,
     defaultMaxWidth: 3017,
     defaultMinWidth: 1578,
     numColumn: 72, //列个数
 
+    // -------------------- 网格选项 --------------------
     gridOptions: {
       minRow: 72, //行个数
       allowNewRow: false, //可向下扩充行
@@ -67,14 +80,16 @@ export const useRootStore = defineStore("sheng-root-store", {
       },
     },
 
+    // -------------------- 传送带相关状态 --------------------
     lastBaseNode: null, // 上一次的基准点 { x, y }
     lastDir: null, // 上一次方向（0-3）
-
-    observer: null, // IntersectionObserver实例
-    elementCanShow: new Set(), // 当前可见的元素
   }),
 
   actions: {
+    // ======================================================
+    // -------------------- 网格管理 --------------------
+    // ======================================================
+
     initGrid(target_el, target_cont, app_context) {
       this.initBelts2d();
       this.appContext = app_context;
@@ -87,9 +102,77 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.gridEl.style.transformOrigin = "0 0";
       this.gridEl.style.willChange = "transform";
       this.gridElContScale = 1;
-      if (localStorage.blueprint)
+      
+      // 初始化键盘事件监听
+      keyboardHandler.init(this.gridElCont);
+      keyboardHandler.updateScale(this.gridElContScale);
+      // 初始化右键拖动滚动监听
+      dragScrollHandler.init(this.gridElCont);
+      
+      if (localStorage.blueprint) {
         this.importBluePrint(JSON.parse(localStorage.blueprint));
+      }
     },
+
+    getPositionFromClick(event) {
+      ////console.log("clientX",event.clientX,"clientY",event.clientY)
+      ////console.log("scrollLeft",this.gridElCont.scrollLeft,"scrollTop",this.gridElCont.scrollTop)
+      let clientX = event.clientX;
+      let clientY = event.clientY;
+      return this.rootGrid.getCellFromPixel(
+        {
+          left: clientX,
+          top: clientY,
+        },
+        true,
+      );
+    },
+
+    isCellEmpty(event) {
+      const { x, y } = this.getPositionFromClick(event);
+      return this.rootGrid.isAreaEmpty(x, y, 1, 1);
+    },
+
+    isCellEmptyByPosition(x, y) {
+      return this.rootGrid.isAreaEmpty(x, y, 1, 1);
+    },
+
+    // ======================================================
+    // -------------------- 缩放管理 --------------------
+    // ======================================================
+
+    handleScalingChange_(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      // select 模式禁用
+      if (this.toolbarMode === "select" || this.isRecipeChoose) return;
+      // 初始化（只做一次）
+      if (!this.isZomming) {
+        this.isZomming = true;
+        this.rootGrid.setStatic(true);
+      }
+      // Leaflet 风格：小步长
+      const delta = -event.deltaY * 0.001;
+      this.gridElContScale = Math.max(
+        0.3,
+        Math.min(2, this.gridElContScale + delta),
+      );
+      // 更新键盘处理器的缩放比例
+      keyboardHandler.updateScale(this.gridElContScale);
+      // 应用视觉缩放（通过CSS transform: scale()）
+      this.gridEl.style.transform = `scale(${this.gridElContScale})`;
+      // 缩放结束（防抖）
+      clearTimeout(this._zoomEndTimer);
+      this._zoomEndTimer = setTimeout(() => {
+        this.isZomming = false;
+        this.rootGrid.setStatic(false);
+      }, 120);
+    },
+
+
+    // ======================================================
+    // -------------------- 传送带管理 --------------------
+    // ======================================================
 
     initBelts2d() {
       this.gridBelts2d = Array.from({ length: this.gridOptions.minRow }, () =>
@@ -97,7 +180,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       );
     },
 
-    //删除单个传送带
     deleteOneBelt(position) {
       const targetElement =
         this.gridBelt2dElement[`${position.x}-${position.y}`];
@@ -111,7 +193,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       }
     },
 
-    //删除一些列传送带|2d
     deleteSeriesBelt2d(midDeleteData) {
       const { startX, startY, endX, endY } = midDeleteData;
       const positionStart = this.getPositionFromClick({
@@ -147,96 +228,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       }
     },
 
-    //缩放-GPT优化版
-    handleScalingChange_(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      // select 模式禁用
-      if (this.toolbarMode === "select" || this.isRecipeChoose) return;
-      // 初始化（只做一次）
-      if (!this.isZomming) {
-        this._zomming = true;
-        this.rootGrid.setStatic(true);
-      }
-      // Leaflet 风格：小步长
-      const delta = -event.deltaY * 0.001;
-      this.gridElContScale = Math.max(
-        0.3,
-        Math.min(2, this.gridElContScale + delta),
-      );
-      // 合帧（非常关键）
-      if (this._zoomRaf) cancelAnimationFrame(this._zoomRaf);
-      this._zoomRaf = requestAnimationFrame(() => {});
-      // 缩放结束（防抖）
-      clearTimeout(this._zoomEndTimer);
-      this._zoomEndTimer = setTimeout(() => {
-        this._applyZoomEnd();
-      }, 120);
-    },
-    //合帧-GPT优化版
-    _applyZoomEnd() {
-      let finalWidth = this.defaultWidth * this.gridElContScale;
-      finalWidth = Math.min(
-        this.defaultMaxWidth,
-        Math.max(this.defaultMinWidth, finalWidth),
-      );
-      this.isZomming = false;
-      this.rootGrid.setStatic(false);
-      // 2️一次性改真实宽度（只触发一次 layout）
-      this.gridEl.style.width = `${finalWidth}px`;
-      // 3️重置基准
-      this.defaultWidth = finalWidth;
-      this.gridElContScale = 1;
-    },
-
-    //配方配置对话框关闭回调
-    handleDialogRecipeClose() {
-      this.rootGrid.enableMove(true);
-    },
-
-    //顶部工具栏模式改变回调
-    handleBeltModeChange(value) {
-      //console.log("mode change", this.toolbarMode, this.toolbarModeHistory);
-      //select模式下禁用cont的scroll
-      if (value == "select") {
-        this.gridElCont.style.overflow = "hidden";
-      } else {
-        this.gridElCont.style.overflow = "scroll";
-      }
-      if (this.toolbarModeHistory == "belts") {
-        this.lastBaseNode = null;
-        this.lastDir = null;
-      }
-      this.toolbarModeHistory = value;
-    },
-
-    //点击获取cell的位置
-    getPositionFromClick(event) {
-      ////console.log("clientX",event.clientX,"clientY",event.clientY)
-      ////console.log("scrollLeft",this.gridElCont.scrollLeft,"scrollTop",this.gridElCont.scrollTop)
-      let clientX = event.clientX;
-      let clientY = event.clientY;
-      return this.rootGrid.getCellFromPixel(
-        {
-          left: clientX,
-          top: clientY,
-        },
-        true,
-      );
-    },
-
-    //判断单元格是否空|通过事件
-    isCellEmpty(event) {
-      const { x, y } = this.getPositionFromClick(event);
-      return this.rootGrid.isAreaEmpty(x, y, 1, 1);
-    },
-
-    //判断单元格是否为空|通过位置
-    isCellEmptyByPosition(x, y) {
-      return this.rootGrid.isAreaEmpty(x, y, 1, 1);
-    },
-
-    //生成一个传送带|对原makeGrid的封装
     generateOneBelt(position, type = "belt-img", rotate = 0, id_in = null) {
       let craftElement = document.createElement("div");
       let id = id_in
@@ -271,7 +262,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       };
     },
 
-    //替换转弯节点的传送带
     replaceNodeAtPosition(position, { type, rotate }, id = "belt") {
       const el = this.gridBelt2dElement[`${position.x}-${position.y}`];
       if (!el) return;
@@ -287,7 +277,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       if (dx === 0 && dy === -1) return 3; // ↑
     },
 
-    //根据始末得出节点转弯
     getTurnRotateIndex(fromDir, toDir) {
       const map = {
         "0-3": 0, // 左 → 上
@@ -306,7 +295,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       return map[`${fromDir}-${toDir}`];
     },
 
-    //生成一些列传送带
     generateBelt(newPosition, id = "belt") {
       // 第一次调用：只记录基准点
       if (!this.lastBaseNode) {
@@ -370,7 +358,10 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.lastDir = curDir;
     },
 
-    //左键事件
+    // ======================================================
+    // -------------------- 事件处理 --------------------
+    // ======================================================
+
     handleLeftClick(event) {
       if (this.toolbarMode == "belts") {
         if (this.isCellEmpty(event)) {
@@ -392,7 +383,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       }
     },
 
-    //右键事件
     handleRightClick(event) {
       event.preventDefault();
       event.stopPropagation();
@@ -405,29 +395,28 @@ export const useRootStore = defineStore("sheng-root-store", {
       }
     },
 
-    //蓝图导入对话框点击
-    handleBluePrintImportDialog() {
-      this.isBluePrintImport = true;
+    handleDialogRecipeClose() {
+      this.rootGrid.enableMove(true);
     },
 
-    //蓝图导入回调
-    handleBluePrintUpload(file) {
-      if (file.status !== "ready") return;
-      const rawFile = file.raw;
-      if (!rawFile) return;
-      if (!rawFile.name.endsWith(".json")) {
-        //ElMessage.error("只能导入 JSON 蓝图文件");
-        return;
+    handleBeltModeChange(value) {
+      //select模式下禁用cont的scroll
+      if (value == "select") {
+        this.gridElCont.style.overflow = "hidden";
+      } else {
+        this.gridElCont.style.overflow = "scroll";
       }
-      const reader = new FileReader();
-      reader.onload = () => {
-        const blueprint = JSON.parse(reader.result);
-        this.importBluePrint(blueprint);
-      };
-      reader.readAsText(rawFile);
+      if (this.toolbarModeHistory == "belts") {
+        this.lastBaseNode = null;
+        this.lastDir = null;
+      }
+      this.toolbarModeHistory = value;
     },
 
-    //创建机器|对原makeGrid的封装
+    // ======================================================
+    // -------------------- 机器管理 --------------------
+    // ======================================================
+
     makeMachine(config) {
       const { id, machine_id, recipe, rotate, x, y, w, h, part } = config;
       //step1 gridWidgets创建对应id的dict 并导入 rotate和recipe数据
@@ -456,7 +445,10 @@ export const useRootStore = defineStore("sheng-root-store", {
       });
     },
 
-    //添加新模块
+    // ======================================================
+    // -------------------- 模块管理 --------------------
+    // ======================================================
+
     addNewPart() {
       const newPart = {
         name: `part${this.parts.length}`,
@@ -468,17 +460,14 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.parts.push(newPart);
     },
 
-    //选择编辑的模块
     selectEditPart(partName) {
       this.editPartChoose = partName;
     },
 
-    //处理模块显示状态变化
     handlePartShowChange(part, value) {
       this.showPartWidgets(part, value);
     },
 
-    //显示模块对应的widget
     showPartWidgets(part, value) {
       for (let widgetId of this.partsWidgetId[part.name]) {
         this.gridWidgetElements[widgetId].style.opacity = value ? 1 : 0.2;
@@ -489,7 +478,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       }
     },
 
-    //删除模块
     deletePart(index) {
       const part = this.parts[index];
 
@@ -528,8 +516,12 @@ export const useRootStore = defineStore("sheng-root-store", {
         });
     },
 
-    //复制和编辑模块代码
-    copyEditCode(part) {
+    copyEditCode(index) {
+      // 获取对应索引的模块对象
+      console.log("nowpart", this.parts);
+      const part = this.parts[index];
+      if (!part) return;
+
       // 显示输入对话框
       ElMessageBox.prompt("编辑模块代码", "代码编辑", {
         confirmButtonText: "确定",
@@ -538,15 +530,38 @@ export const useRootStore = defineStore("sheng-root-store", {
         inputPlaceholder: "请输入模块代码",
       })
         .then(({ value }) => {
-          // 更新模块代码
-          part.code = value;
+          // 直接通过索引更新parts数组中的对象
+          this.parts[index].code = value;
         })
         .catch(() => {
           // 取消编辑
         });
     },
 
-    //保存蓝图
+    // ======================================================
+    // -------------------- 蓝图管理 --------------------
+    // ======================================================
+
+    handleBluePrintImportDialog() {
+      this.isBluePrintImport = true;
+    },
+
+    handleBluePrintUpload(file) {
+      if (file.status !== "ready") return;
+      const rawFile = file.raw;
+      if (!rawFile) return;
+      if (!rawFile.name.endsWith(".json")) {
+        //ElMessage.error("只能导入 JSON 蓝图文件");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const blueprint = JSON.parse(reader.result);
+        this.importBluePrint(blueprint);
+      };
+      reader.readAsText(rawFile);
+    },
+
     saveBluePrint() {
       let output = { machine: null, belt: null, part: null };
       let machines = [];
@@ -616,7 +631,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       return output;
     },
 
-    //导入蓝图
     importBluePrint(blueprint) {
       let { machine, belt, part } = blueprint;
       for (let mac of machine) {
@@ -625,19 +639,21 @@ export const useRootStore = defineStore("sheng-root-store", {
       for (let blt of belt) {
         this.generateOneBelt(blt.position, blt.type, blt.rotate, blt.id);
       }
-      
+
       // 加载 part 数据
       if (part) {
         this.parts = part.parts || [];
-        
+        console.log("nowpart import", this.parts);
         // 加载 partsWidgetId，将数组转换回 Set
         this.partsWidgetId = {};
         if (part.partsWidgetId) {
           for (let partName of Object.keys(part.partsWidgetId)) {
-            this.partsWidgetId[partName] = new Set(part.partsWidgetId[partName]);
+            this.partsWidgetId[partName] = new Set(
+              part.partsWidgetId[partName],
+            );
           }
         }
-        
+
         // 加载 partsBelts，将数组转换回 Set
         this.partsBelts = {};
         if (part.partsBelts) {
@@ -645,13 +661,12 @@ export const useRootStore = defineStore("sheng-root-store", {
             this.partsBelts[partName] = new Set(part.partsBelts[partName]);
           }
         }
-        
+
         // 加载 editPartChoose
         this.editPartChoose = part.editPartChoose || "part0";
       }
     },
 
-    //导出蓝图|By GPT
     exportBluePrint(blueprint, fileName = "blueprint.json") {
       blueprint = this.saveBluePrint();
       try {
@@ -679,7 +694,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       }
     },
 
-    // 根据hashCode从URL加载蓝图
     async loadBlueprintByHashCode(hashCode) {
       if (!hashCode) return;
 
@@ -708,7 +722,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       }
     },
 
-    // 清空蓝图数据
     clearBlueprint() {
       // 清空gridstack中的所有元素
       if (this.rootGrid) {
@@ -722,9 +735,25 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.gridBelts2d = Array.from({ length: this.gridOptions.minRow }, () =>
         Array.from({ length: this.numColumn }, () => ({})),
       );
+
+      // 清空模块相关数据
+      this.partsWidgetId = {
+        part0: new Set(),
+      };
+      this.partsBelts = {
+        part0: new Set(),
+      };
+      this.parts = [
+        {
+          name: "part0",
+          code: "",
+          show: true,
+        },
+      ];
+      this.editPartChoose = "part0";
+      console.log("clear", this.parts);
     },
 
-    // 加载本地蓝图（从localStorage）
     loadLocalBlueprint() {
       if (localStorage.blueprint) {
         // 清空当前蓝图数据

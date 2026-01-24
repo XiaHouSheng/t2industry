@@ -381,7 +381,7 @@
                         round
                       >
                       </el-button>
-                      <el-button size="small" icon="DocumentCopy" round @click="rootStore.copyEditCode(part)">
+                      <el-button size="small" icon="DocumentCopy" round @click="rootStore.copyEditCode(index)">
                       </el-button>
                       <el-button
                         v-bind="{ disabled: index === 0 }"
@@ -632,6 +632,10 @@ onUnmounted(() => {
   background-color: var(--sheng-root-bg);
   border-radius: 4px;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.grid-stack {
+  margin: 400px 0 0 400px;
 }
 
 .sheng-test-border {

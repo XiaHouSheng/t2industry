@@ -34,7 +34,7 @@ onMounted(() => {
         <el-divider style="margin: 0 0 12px 0" />
         <div class="display-flex justify-content-center">
           <el-text
-            >EndFieldSimulation | 基于 Vue3 + Element Plus + Gridstack.js 开发 |
+            >T2Blueprint | 基于 Vue3 + Element Plus + Gridstack.js 开发 |
             MIT 开源协议</el-text
           >
         </div>

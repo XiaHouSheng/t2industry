@@ -26,7 +26,7 @@ const props = defineProps({
   },
 });
 
-let index = props.rotate;
+let index = props.rotate || 0;
 let defaultWidth = props.el_size.w;
 const widthEl = ref(defaultWidth);
 const heightEl = ref(1);
@@ -36,6 +36,44 @@ const childContOuter = ref(null);
 
 //0->default 1->change 2->default 3->change
 const onlyChangeFlexDirection = (index) => {
+  console.log(index);
+  if (index == 0) {
+    baseContFlex.value.style["flex-direction"] = "column";
+    heightEl.value = 1;
+    widthEl.value = 6;
+    childContInner.value.style["width"] = "auto";
+    childContInner.value.style["height"] = "15px";
+    childContOuter.value.style["width"] = "auto";
+    childContOuter.value.style["height"] = "15px";
+  }
+  if (index == 1) {
+    baseContFlex.value.style["flex-direction"] = "row-reverse";
+    heightEl.value = 6;
+    widthEl.value = 1;
+    childContInner.value.style["width"] = "15px";
+    childContInner.value.style["height"] = "auto";
+    childContOuter.value.style["width"] = "15px";
+    childContOuter.value.style["height"] = "auto";
+  }
+  if (index == 2) {
+    baseContFlex.value.style["flex-direction"] = "column-reverse";
+    heightEl.value = 1;
+    widthEl.value = 6;
+    childContInner.value.style["width"] = "auto";
+    childContInner.value.style["height"] = "15px";
+    childContOuter.value.style["width"] = "auto";
+    childContOuter.value.style["height"] = "15px";
+  }
+  if (index == 3) {
+    baseContFlex.value.style["flex-direction"] = "row";
+    heightEl.value = 6;
+    widthEl.value = 1;
+    childContInner.value.style["width"] = "15px";
+    childContInner.value.style["height"] = "auto";
+    childContOuter.value.style["width"] = "15px";
+    childContOuter.value.style["height"] = "auto";
+  }
+  /*
   if (index % 2 == 0) {
     if (index == 0) {
       baseContFlex.value.style["flex-direction"] = "row-reverse";
@@ -61,42 +99,47 @@ const onlyChangeFlexDirection = (index) => {
     childContOuter.value.style["height"] = "15px";
     childContOuter.value.style["width"] = "auto";
   }
+    */
 };
 
 const onlyChangeWidthAHeight = (index) => {
   if (index % 2 == 0) {
     rootStore.rootGrid.update(rootStore.gridWidgetElements[props.gs_id], {
-      w: props.el_size.h,
-      h: props.el_size.w,
+      w: 6,
+      h: 4,
     });
   } else {
     rootStore.rootGrid.update(rootStore.gridWidgetElements[props.gs_id], {
-      w: props.el_size.w,
-      h: props.el_size.h,
+      w: 4,
+      h: 6,
     });
   }
 };
 
 const rotateGridEl = (index) => {
-  rootStore.gridWidgets[props.gs_id]["rotate"] = index;
   onlyChangeFlexDirection(index);
   onlyChangeWidthAHeight(index);
 };
 const hadnleRotate = () => {
+  if (index >= 3) {
+    index = 0;
+  } else {
+    index++;
+  }
   rotateGridEl(index);
-  index = index >= 3 ? 0 : index + 1;
+  rootStore.gridWidgets[props.gs_id]["rotate"] = index;
 };
 
-onMounted(() => {
-  onlyChangeFlexDirection(index);
-});
-
-//配方配置对话框
 const targetItemId = computed(() => {
   return rootStore.gridWidgets[props.gs_id]
     ? rootStore.gridWidgets[props.gs_id].recipe
     : null;
 });
+
+onMounted(() => {
+  rotateGridEl(index);
+});
+
 </script>
 <template>
   <div
