@@ -25,8 +25,8 @@ const props = defineProps({
     default: 0,
   },
 });
-
 let index = props.rotate || 0;
+const indexRef = ref(index);
 let defaultWidth = props.el_size.w;
 const widthEl = ref(defaultWidth);
 const heightEl = ref(1);
@@ -36,7 +36,6 @@ const childContOuter = ref(null);
 
 //0->default 1->change 2->default 3->change
 const onlyChangeFlexDirection = (index) => {
-  console.log(index);
   if (index == 0) {
     baseContFlex.value.style["flex-direction"] = "column";
     heightEl.value = 1;
@@ -117,8 +116,8 @@ const onlyChangeWidthAHeight = (index) => {
 };
 
 const rotateGridEl = (index) => {
-  onlyChangeFlexDirection(index);
   onlyChangeWidthAHeight(index);
+  onlyChangeFlexDirection(index);
 };
 const hadnleRotate = () => {
   if (index >= 3) {
@@ -137,8 +136,9 @@ const targetItemId = computed(() => {
 });
 
 onMounted(() => {
-  rotateGridEl(index);
-});
+  onlyChangeFlexDirection(index);
+})
+
 
 </script>
 <template>

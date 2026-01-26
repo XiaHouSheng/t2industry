@@ -38,11 +38,8 @@ const hadnleRotate = () => {
       :class="testClass"
       :style="{ transform: `rotate(${rotateAngle}deg)` }"
     ></div>
-    <!-- 这里是准备给管道pipe的，这个管道做起来有点麻烦，因为涉及到传送带的
-     部分方法重写，毕竟相当于再写一个传送带对吧。因此这边先放着了，毕竟管道
-     连接相对简单，现在需要的管道的机器还相对较少。
-    <div class="max-height-width belt-bg position-absolute pipe-img"></div>
-    -->
+
+    <div v-if="false" class="max-height-width belt-bg position-absolute pipe-img"></div>
   </div>
 </template>
 

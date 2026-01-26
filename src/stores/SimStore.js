@@ -6,6 +6,7 @@ import ConveyerBelt from "../components/simulation/ConveyerBelt.vue";
 import { ElNotification, ElMessageBox } from "element-plus";
 import keyboardHandler from "../utils/keyboardHandler";
 import dragScrollHandler from "../utils/dragScrollHandler";
+import beltIndicator from "../utils/beltIndicator";
 
 export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
@@ -60,6 +61,7 @@ export const useRootStore = defineStore("sheng-root-store", {
     rootGridEngine: null, //gridstack引擎
     gridEl: null, //存储根元素对象
     gridElCont: null, //存储gridstack的父容器
+    overlay: null, //存储遮罩层元素对象
 
     // -------------------- 缩放相关配置 --------------------
     gridElContScale: 1,
@@ -90,28 +92,25 @@ export const useRootStore = defineStore("sheng-root-store", {
     // -------------------- 网格管理 --------------------
     // ======================================================
 
-    initGrid(target_el, target_cont, app_context) {
+    initGrid(target_el, target_cont, overlay, app_context) {
       this.initBelts2d();
       this.appContext = app_context;
       this.gridEl = markRaw(target_el);
       this.gridElCont = markRaw(target_cont);
+      this.overlay = markRaw(overlay);
       this.rootGrid = markRaw(GridStack.init(this.gridOptions, target_el));
       this.rootGrid.column(this.numColumn);
       this.gridEl.style.width = `${this.defaultWidth}px`;
       this.gridEl.style.height = `${this.defaultHeight}px`;
-      this.gridEl.style.transformOrigin = "0 0";
-      this.gridEl.style.willChange = "transform";
       this.gridElContScale = 1;
-      
+
       // 初始化键盘事件监听
       keyboardHandler.init(this.gridElCont);
       keyboardHandler.updateScale(this.gridElContScale);
       // 初始化右键拖动滚动监听
       dragScrollHandler.init(this.gridElCont);
-      
-      if (localStorage.blueprint) {
-        this.importBluePrint(JSON.parse(localStorage.blueprint));
-      }
+      // 初始化传送带指示器
+      beltIndicator.init(this.overlay);
     },
 
     getPositionFromClick(event) {
@@ -152,15 +151,17 @@ export const useRootStore = defineStore("sheng-root-store", {
         this.rootGrid.setStatic(true);
       }
       // Leaflet 风格：小步长
-      const delta = -event.deltaY * 0.001;
+      const delta = -event.deltaY * 0.0005;
       this.gridElContScale = Math.max(
-        0.3,
+        0.2,
         Math.min(2, this.gridElContScale + delta),
       );
       // 更新键盘处理器的缩放比例
       keyboardHandler.updateScale(this.gridElContScale);
       // 应用视觉缩放（通过CSS transform: scale()）
-      this.gridEl.style.transform = `scale(${this.gridElContScale})`;
+      this.gridEl.style.transform = `scale(${this.gridElContScale}) translate(100px, 100px)`;
+      // 更新遮罩层的缩放
+      this.overlay.style.transform = `scale(${this.gridElContScale}) translate(100px, 100px)`;
       // 缩放结束（防抖）
       clearTimeout(this._zoomEndTimer);
       this._zoomEndTimer = setTimeout(() => {
@@ -168,7 +169,6 @@ export const useRootStore = defineStore("sheng-root-store", {
         this.rootGrid.setStatic(false);
       }, 120);
     },
-
 
     // ======================================================
     // -------------------- 传送带管理 --------------------
@@ -406,9 +406,13 @@ export const useRootStore = defineStore("sheng-root-store", {
       } else {
         this.gridElCont.style.overflow = "scroll";
       }
+      if (this.toolbarMode == "belts") {
+        beltIndicator.handleStartBelt();
+      }
       if (this.toolbarModeHistory == "belts") {
         this.lastBaseNode = null;
         this.lastDir = null;
+        beltIndicator.handleEndBelt();
       }
       this.toolbarModeHistory = value;
     },
@@ -419,20 +423,23 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     makeMachine(config) {
       const { id, machine_id, recipe, rotate, x, y, w, h, part } = config;
-      //step1 gridWidgets创建对应id的dict 并导入 rotate和recipe数据
-      this.gridWidgets[id] = { rotate: rotate, recipe: recipe };
+      console.log(config);
       //step2 创建元素并指向id对应的element项
+      console.log(machine_id, w, h);
       const vnode = createVNode(machineComponentMap[machine_id], {
         gs_id: id,
         el_name: machine_id,
         el_size: { w: w, h: h },
         rotate: rotate,
       });
+      console.log(vnode)
+      //step1 gridWidgets创建对应id的dict 并导入 rotate和recipe数据
+      this.gridWidgets[id] = { rotate: rotate, recipe: recipe, part: part };
 
       //测试：将新创建的widget添加到当前编辑的模块中
       //this.partsWidgetId[this.editPartChoose].push(id);
+      //vnode.appContext = this.appContext;
 
-      vnode.appContext = this.appContext;
       const container = document.createElement("div");
       render(vnode, container);
       this.gridWidgetElements[id] = this.rootGrid.makeWidget(container, {
@@ -521,7 +528,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       console.log("nowpart", this.parts);
       const part = this.parts[index];
       if (!part) return;
-
+      keyboardHandler.disable();
       // 显示输入对话框
       ElMessageBox.prompt("编辑模块代码", "代码编辑", {
         confirmButtonText: "确定",
@@ -535,6 +542,9 @@ export const useRootStore = defineStore("sheng-root-store", {
         })
         .catch(() => {
           // 取消编辑
+        })
+        .finally(() => {
+          keyboardHandler.enable();
         });
     },
 
@@ -617,7 +627,6 @@ export const useRootStore = defineStore("sheng-root-store", {
         part_dict["partsWidgetId"][partName] = widgetIds;
         part_dict["partsBelts"][partName] = beltIds;
       }
-      console.log(part_dict);
 
       output.part = part_dict;
 
@@ -643,7 +652,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       // 加载 part 数据
       if (part) {
         this.parts = part.parts || [];
-        console.log("nowpart import", this.parts);
         // 加载 partsWidgetId，将数组转换回 Set
         this.partsWidgetId = {};
         if (part.partsWidgetId) {
@@ -751,7 +759,6 @@ export const useRootStore = defineStore("sheng-root-store", {
         },
       ];
       this.editPartChoose = "part0";
-      console.log("clear", this.parts);
     },
 
     loadLocalBlueprint() {

@@ -35,12 +35,12 @@ const rootStore = useRootStore();
 }
 .supplier-extent {
   position: absolute;
-  top: -200%;
-  left: -200%;
-  width: 505%;
-  height: 505%;
+  top: -250%;
+  left: -250%;
+  width: 602%;
+  height: 602%;
   background-color: #0077cc30;
-  background-size: calc(100% / 10) calc(100% / 10);
+  background-size: calc(100% / 12) calc(100% / 12);
   background-image:
     linear-gradient(
       45deg,
@@ -59,6 +59,6 @@ const rootStore = useRootStore();
     0 0,
     0 0;
   background-blend-mode: overlay;
-  z-index: 998;
+  z-index: 1;
 }
 </style>

@@ -60,6 +60,22 @@ class KeyboardHandler {
     this.isListening = false;
     this.gridElCont = null;
   }
+
+  // 暂时禁用键盘事件监听
+  disable() {
+    if (!this.isListening) return;
+    
+    window.removeEventListener('keydown', this.handleKeydown);
+    this.isListening = false;
+  }
+
+  // 重新启用键盘事件监听
+  enable() {
+    if (this.isListening || !this.gridElCont) return;
+    
+    window.addEventListener('keydown', this.handleKeydown);
+    this.isListening = true;
+  }
 }
 
 // 导出单例实例

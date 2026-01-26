@@ -232,16 +232,20 @@ body {
   background-position: center;
 }
 
+.pipe-img {
+  background-image: url("./assets/img/icon_pipe_grid.png");
+}
+
+.turn-pipe {
+  background-image: url("./assets/img/icon_pipe_corner.png");
+}
+
 .belt-img {
   background-image: url("./assets/svg/belt.svg");
 }
 
 .turn-img {
   background-image: url("./assets/svg/turn.svg");
-}
-
-.pipe-img {
-  background-image: url("./assets/svg/pipe.svg");
 }
 
 .turn-pipe-img {

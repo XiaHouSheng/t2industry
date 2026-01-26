@@ -121,7 +121,7 @@
         </div>
         <!--协议存储箱-->
         <div
-          data-gs-widget='{"w":2, "h":2, "noResize":true, "id":"protocolStorageBox"}'
+          data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"protocolStorageBox"}'
           class="sheng-cont-item sidebar-item display-flex flex-direation-row"
         >
           <div
@@ -271,42 +271,15 @@
           </el-radio-group>
 
           <!--快速放置模式-->
-          <div style="margin-right: 12px; opacity: 0">
+          <div style="margin-right: 12px">
             <el-radio-group
               v-model="rootStore.quickPlaceMode"
               size="small"
-              disabled
             >
               <el-radio-button label="belt">传送带</el-radio-button>
               <el-radio-button label="pipe">管道</el-radio-button>
             </el-radio-group>
           </div>
-          <!--关联蓝图设置
-          <div
-            style="
-              width: auto;
-              height: 100%;
-              background-color: var(--el-color-white);
-              overflow: hidden;
-            "
-          >
-            <el-dropdown trigger="click">
-              <el-button type="primary">
-                蓝图关联<el-icon class="el-icon--right"
-                  ><arrow-down
-                /></el-icon>
-              </el-button>
-              <template #dropdown>
-                <div class="display-flex flex-direation-col" style="padding: 6px">
-                    <el-checkbox label="xxx-发电模块" value="Value A" />
-                    <el-checkbox label="xxx-冶炼模块" value="Value B" />
-                    <el-checkbox label="xxx-制造模块" value="Value C" />
-                    <el-checkbox label="xxx-制造模块" value="Value C" />
-                </div>
-              </template>
-            </el-dropdown>
-          </div>
-          -->
           <!--图层设置-->
           <div style="margin-left: auto">
             <el-dropdown trigger="click">
@@ -368,20 +341,31 @@
                       <el-switch
                         v-model="part.show"
                         size="small"
-                        @change="(value) => rootStore.handlePartShowChange(part, value)"
+                        @change="
+                          (value) => rootStore.handlePartShowChange(part, value)
+                        "
                       />
-                      <span style="margin-left: 3px;">{{ part.name }}</span>
+                      <span style="margin-left: 3px">{{ part.name }}</span>
                     </div>
                     <div class="item-actions">
                       <el-button
                         size="small"
                         icon="EditPen"
-                        :type="part.name === rootStore.editPartChoose ? 'primary' : ''"
+                        :type="
+                          part.name === rootStore.editPartChoose
+                            ? 'primary'
+                            : ''
+                        "
                         @click="rootStore.selectEditPart(part.name)"
                         round
                       >
                       </el-button>
-                      <el-button size="small" icon="DocumentCopy" round @click="rootStore.copyEditCode(index)">
+                      <el-button
+                        size="small"
+                        icon="DocumentCopy"
+                        round
+                        @click="rootStore.copyEditCode(index)"
+                      >
                       </el-button>
                       <el-button
                         v-bind="{ disabled: index === 0 }"
@@ -460,6 +444,7 @@
         @mousemove="selectStore.handleMouseMove"
         @mouseup="selectStore.handleMouseUp"
       >
+        <div class="sheng-overlay" @click="beltIndicator.handleOverlayClick"></div>
         <div
           @click="rootStore.handleLeftClick"
           ref="targetGrid"
@@ -491,18 +476,10 @@ import RecipeContent from "../components/original/RecipeContent.vue";
 import WareHouseContent from "../components/original/WareHouseContent.vue";
 import { MachineData, iconStyle, gridStackDataProcess } from "../utils/DataMap";
 import "gridstack/dist/gridstack.min.css";
+import beltIndicator from "../utils/beltIndicator";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
-import {
-  ArrowDown,
-  View,
-  Hide,
-  DocumentCopy,
-  Delete,
-  Check,
-  EditPen,
-  Plus,
-} from "@element-plus/icons-vue";
+import { ArrowDown } from "@element-plus/icons-vue";
 
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
@@ -517,9 +494,9 @@ onMounted(async () => {
   const targetGridEl = document.querySelector("#grid-stack");
   const targetGridCont = document.querySelector(".sheng-cont-grid");
   const selector = document.querySelector(".selection-box");
+  const overLay = document.querySelector(".sheng-overlay");
   selectStore.initSelector(selector);
-  rootStore.initGrid(targetGridEl, targetGridCont, appContext);
-
+  rootStore.initGrid(targetGridEl, targetGridCont, overLay, appContext);
   // 根据是否有hashCode参数加载相应的蓝图
   if (hashCode) {
     try {
@@ -565,7 +542,11 @@ onMounted(async () => {
 
     const rootId = item.id.split("_")[0];
     // 存入 store
-    rootStore.gridWidgets[item.id] = { rotate: 0, recipe: "", part: rootStore.editPartChoose };
+    rootStore.gridWidgets[item.id] = {
+      rotate: 0,
+      recipe: "",
+      part: rootStore.editPartChoose,
+    };
     rootStore.gridWidgetElements[item.id] = el;
     rootStore.partsWidgetId[rootStore.editPartChoose].add(item.id);
     // 渲染 Vue 组件
@@ -627,6 +608,7 @@ onUnmounted(() => {
 
 <style scoped>
 .sheng-cont-grid {
+  position: relative;
   overflow: scroll;
   height: var(--sheng-self-simulation-grid-height);
   background-color: var(--sheng-root-bg);
@@ -635,7 +617,22 @@ onUnmounted(() => {
 }
 
 .grid-stack {
-  margin: 400px 0 0 400px;
+  /*margin: 400px 0 0 400px;*/
+  position: absolute;
+  transform-origin: 0 0;
+  left: 0;
+  right: 0;
+}
+
+.sheng-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 3017px;
+  height: 3017px;
+  transform-origin: 0 0;
+  pointer-events: auto;
+  background-color: rgba(0, 0, 0, 0);
 }
 
 .sheng-test-border {
@@ -827,7 +824,6 @@ onUnmounted(() => {
   opacity: 0.2;
   transition: opacity 0.3s ease;
 }
-
 
 /* 滚动条样式优化 */
 .sheng-cont-list::-webkit-scrollbar,
