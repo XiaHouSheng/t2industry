@@ -7,7 +7,7 @@ import Pipe from "../components/simulation/Pipe.vue";
 import { ElNotification, ElMessageBox, treeEmits } from "element-plus";
 import keyboardHandler from "../utils/keyboardHandler";
 import dragScrollHandler from "../utils/dragScrollHandler";
-import beltIndicator from "../utils/beltIndicator";
+import BeltIndicator from "../utils/BeltIndicator";
 
 export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
@@ -126,7 +126,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       // 初始化右键拖动滚动监听
       dragScrollHandler.init(this.gridElCont);
       // 初始化传送带指示器
-      beltIndicator.init(this.overlay);
+      BeltIndicator.init(this.overlay);
     },
 
     initPipeGrid(pipeGrid) {
@@ -635,12 +635,12 @@ export const useRootStore = defineStore("sheng-root-store", {
         this.gridElCont.style.overflow = "scroll";
       }
       if (this.toolbarMode == "belts") {
-        beltIndicator.handleStartBelt();
+        BeltIndicator.handleStartBelt();
       }
       if (this.toolbarModeHistory == "belts") {
         this.lastBaseNode = null;
         this.lastDir = null;
-        beltIndicator.handleEndBelt();
+        BeltIndicator.handleEndBelt();
       }
       this.toolbarModeHistory = value;
     },
