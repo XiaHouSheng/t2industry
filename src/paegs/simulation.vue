@@ -505,7 +505,7 @@ import RecipeContent from "../components/original/RecipeContent.vue";
 import WareHouseContent from "../components/original/WareHouseContent.vue";
 import { MachineData, iconStyle, gridStackDataProcess } from "../utils/DataMap";
 import "gridstack/dist/gridstack.min.css";
-import BeltIndicator from "../utils/beltIndicator";
+import BeltIndicator from "../utils/BeltIndicator";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
