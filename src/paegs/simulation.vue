@@ -458,7 +458,7 @@
       >
         <div
           class="sheng-overlay"
-          @click="beltIndicator.handleOverlayClick"
+          @click="BeltIndicator.handleOverlayClick"
         ></div>
         <div
           @click="rootStore.handleLeftClick"
@@ -505,7 +505,7 @@ import RecipeContent from "../components/original/RecipeContent.vue";
 import WareHouseContent from "../components/original/WareHouseContent.vue";
 import { MachineData, iconStyle, gridStackDataProcess } from "../utils/DataMap";
 import "gridstack/dist/gridstack.min.css";
-import beltIndicator from "../utils/beltIndicator";
+import BeltIndicator from "../utils/beltIndicator";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
