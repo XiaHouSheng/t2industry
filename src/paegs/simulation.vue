@@ -473,7 +473,7 @@
         <div
           @click="rootStore.handleLeftClick"
           id="grid-stack"
-          class="grid-stack"
+          class="grid-stack bottom-grid-bg"
           style="background-color: transparent"
           :style="{
             pointerEvents:
@@ -652,6 +652,14 @@ onUnmounted(() => {
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
 }
 
+.bottom-grid-bg {
+  background-color: var(--sheng-grid-bg);
+  background-size: calc(100% / 72) calc(100% / 72);
+  background-image:
+    linear-gradient(to right, var(--sheng-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--sheng-grid-line) 1px, transparent 1px);
+}
+
 .grid-stack {
   /*margin: 400px 0 0 400px;*/
   position: absolute;
@@ -665,6 +673,7 @@ onUnmounted(() => {
   transform-origin: 0 0;
   left: 0;
   right: 0;
+  z-index: 1;
 }
 
 .sheng-overlay {
@@ -731,14 +740,6 @@ onUnmounted(() => {
   border: 2px dashed var(--sim-color-primary);
   border-radius: 4px;
   background-color: rgba(64, 158, 255, 0.1);
-}
-
-.grid-stack {
-  background-color: var(--sheng-grid-bg);
-  background-size: calc(100% / 72) calc(100% / 72);
-  background-image:
-    linear-gradient(to right, var(--sheng-grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--sheng-grid-line) 1px, transparent 1px);
 }
 
 :deep(.grid-stack-item) {
