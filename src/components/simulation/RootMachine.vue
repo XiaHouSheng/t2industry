@@ -40,7 +40,7 @@ const targetItemId = computed(() => {
 <template>
   <div
     class="max-height-width display-flex flex-direation-col sheng-machine"
-    style="justify-content: space-between; background-color: white;"
+    style="justify-content: space-between; background-color: white;position: relative;"
     :style="{ transform: `rotate(${rotateAngle}deg)` }"
     @contextmenu="machineStore.handleRightClick($event, props.gs_id)"
     @click="hadnleRotate"

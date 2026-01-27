@@ -36,7 +36,6 @@ export const useMachineStore = defineStore("sheng-machine-store", {
         this.rootStore.rootGrid.removeWidget(
           this.rootStore.gridWidgetElements[gs_id]
         );
-        console.log(gs_id,this.rootStore.partsWidgetId)
         let part = this.rootStore.gridWidgets[gs_id].part;
         this.rootStore.partsWidgetId[part].delete(gs_id);
         delete this.rootStore.gridWidgetElements[gs_id];

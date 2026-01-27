@@ -318,6 +318,11 @@ export const useHomeStore = defineStore('home', {
       if (filters.pageSize !== undefined) {
         this.pageSize = filters.pageSize;
       }
-    }
+    },
+
+    async getBlueprintById(blueprintId) {
+      return await apiClient.getBlueprintById(blueprintId);
+    },
+
   }
 });

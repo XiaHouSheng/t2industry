@@ -41,7 +41,11 @@ export const useSelectStore = defineStore("sheng-select-store", {
     //确认删除
     confirmDelete() {
       //console.log(this.midDeleteData)
-      this.rootStore.deleteSeriesBelt2d(this.midDeleteData);
+      if (this.rootStore.quickPlaceMode === 'pipe') {
+        this.rootStore.deleteSeriesPipe2d(this.midDeleteData);
+      } else {
+        this.rootStore.deleteSeriesBelt2d(this.midDeleteData);
+      }
       this.hideSelectorAMenu();
     },
 

@@ -17,6 +17,7 @@ class BeltIndicator {
     // 绑定事件处理方法的this上下文
     this.onMoveMouse = this.onMoveMouse.bind(this);
     this.updateIndicator = this.updateIndicator.bind(this);
+    this.handleOverlayClick = this.handleOverlayClick.bind(this);
   }
 
   // 初始化
@@ -35,7 +36,8 @@ class BeltIndicator {
     this.indicatorElement.style.width = `${this.gridSize * 5}px`;
     this.indicatorElement.style.height = `${this.gridSize * 5}px`;
     // 创建由中心向外发散的网格效果
-    this.indicatorElement.style.background = "linear-gradient(rgba(0,128,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0,128,255,0.3) 1px, transparent 1px)";
+    this.indicatorElement.style.background =
+      "linear-gradient(rgba(0,128,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0,128,255,0.3) 1px, transparent 1px)";
     this.indicatorElement.style.backgroundSize = "20% 20%";
     this.indicatorElement.style.border = "2px solid #0080ff";
     this.indicatorElement.style.borderRadius = "4px";
@@ -54,7 +56,6 @@ class BeltIndicator {
     // 获取网格位置
     const position = this.rootStore.getPositionFromClick(event);
     if (!position) return;
-    console.log(position);
     // 更新指示器位置
     this.updateIndicator(position);
   }
@@ -62,7 +63,6 @@ class BeltIndicator {
   // 更新指示器位置
   updateIndicator(position) {
     if (!this.indicatorElement || !this.rootStore) return;
-    console.log(`position: ${position.x}, ${position.y}`);
     // 计算像素位置
     const pixelX = position.x * this.gridSize - 2 * this.gridSize;
     const pixelY = position.y * this.gridSize - 2 * this.gridSize;
@@ -117,17 +117,19 @@ class BeltIndicator {
 
   // 处理overlay点击事件，传递给底层grid-stack
   handleOverlayClick(event) {
-    const gridStackEl = document.getElementById("grid-stack");
-    if (gridStackEl) {
-      // 创建一个新的点击事件，坐标与原事件相同
-      const newEvent = new MouseEvent("click", {
-        clientX: event.clientX,
-        clientY: event.clientY,
-        bubbles: true,
-        cancelable: true,
-      });
-      // 触发grid-stack的点击事件
-      gridStackEl.dispatchEvent(newEvent);
+    const newEvent = new MouseEvent("click", {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      bubbles: true,
+      cancelable: true,
+    });
+    // 触发grid-stack的点击事件
+    if (this.rootStore.quickPlaceMode === "belt") {
+      this.rootStore.gridEl.dispatchEvent(newEvent);
+    }
+    //pipeGrid点击事件
+    if (this.rootStore.quickPlaceMode === "pipe") {
+      this.rootStore.pipeGrid.dispatchEvent(newEvent)
     }
   }
 }

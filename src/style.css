@@ -232,12 +232,12 @@ body {
   background-position: center;
 }
 
-.pipe-img {
+.belt-img-pipe {
   background-image: url("./assets/img/icon_pipe_grid.png");
 }
 
-.turn-pipe {
-  background-image: url("./assets/img/icon_pipe_corner.png");
+.turn-img-pipe {
+  background-image: url("./assets/img/icon_pipe_corner_1.png");
 }
 
 .belt-img {
@@ -246,10 +246,6 @@ body {
 
 .turn-img {
   background-image: url("./assets/svg/turn.svg");
-}
-
-.turn-pipe-img {
-  background-image: url("./assets/img/pipe-turn.png");
 }
 
 .cross-img {
@@ -265,6 +261,21 @@ body {
 .conveyer-img {
   background-size: 100% 100%;
   background-image: url("./assets/img/bg_logistic_log_converger.png");
+}
+
+.cross-img-pipe {
+  background-size: 100% 100%;
+  background-image: url("./assets/img/bg_logistic_log_pipe_connector.png");
+}
+
+.splitter-img-pipe {
+  background-size: 100% 100%;
+  background-image: url("./assets/img/bg_logistic_log_pipe_splitter.png");
+}
+
+.conveyer-img-pipe {
+  background-size: 100% 100%;
+  background-image: url("./assets/img/bg_logistic_log_pipe_converger.png");
 }
 
 .test-border {

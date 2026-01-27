@@ -32,11 +32,12 @@ onMounted(() => {
       </el-main>
       <el-footer>
         <el-divider style="margin: 0 0 12px 0" />
-        <div class="display-flex justify-content-center">
+        <div class="display-flex flex-direation-col justify-content-center">
           <el-text
             >T2Blueprint | 基于 Vue3 + Element Plus + Gridstack.js 开发 |
             MIT 开源协议</el-text
           >
+          <el-text>网站备案/许可证号 <a href="https://beian.miit.gov.cn/"> 粤ICP备2026009977号</a></el-text>
         </div>
       </el-footer>
     </el-container>

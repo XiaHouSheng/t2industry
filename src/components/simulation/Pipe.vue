@@ -9,7 +9,7 @@ const props = defineProps({
     type: String,
   },
   type: {
-    default: "belt-img",
+    default: "pipe-img",
     type: String,
   },
   rotate: {
@@ -22,25 +22,22 @@ const props = defineProps({
 });
 const rotateAngle = ref(0);
 rotateAngle.value = props.rotate * 90;
-const testClass = ref("belt-img");
+const testClass = ref("pipe-img");
 testClass.value = props.type;
 const hadnleRotate = () => {
   rotateAngle.value = ((rotateAngle.value / 90 + 1) % 4) * 90;
-  rootStore.gridBelts2d[props.position.x][props.position.y]["rotate"] =
+  rootStore.gridPipes2d[props.position.x][props.position.y]["rotate"] =
     rotateAngle.value / 90;
 };
 </script>
 
 <template>
   <div class="max-height-width position-relative" @click="hadnleRotate">
-    <div v-if="rootStore.isShowBelts"
+    <div
       class="max-height-width belt-bg position-absolute"
       :class="testClass"
       :style="{ transform: `rotate(${rotateAngle}deg)` }"
     ></div>
-    <!--
-    <div v-if="rootStore.isShowPipes" class="max-height-width belt-bg position-absolute pipe-img"></div>
-    -->
   </div>
 </template>
 

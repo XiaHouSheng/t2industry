@@ -1,7 +1,7 @@
 <template>
   <!--这个是框选的Dialog-->
   <el-popconfirm
-    title="确认删除当前框选的所有传送带？"
+    title="确认删除当前框选的所有传送带/管道？"
     :visible="selectStore.showSelectMenu"
     placement="right-end"
     @cancel="selectStore.hideSelectorAMenu"
@@ -130,6 +130,20 @@
           >
             <div class="display-flex flex-direation-col justify-content-center">
               <span style="font-size: 14px">协议存储箱</span>
+            </div>
+          </div>
+        </div>
+        <!--储液罐-->
+        <div
+          data-gs-widget='{"w":3, "h":3, "noResize":true, "id":"liquidContainer"}'
+          class="sheng-cont-item sidebar-item display-flex flex-direation-row"
+        >
+          <div
+            class="display-flex flex-direation-col justify-content-center"
+            style="margin-left: 3px"
+          >
+            <div class="display-flex flex-direation-col justify-content-center">
+              <span style="font-size: 14px">储液罐</span>
             </div>
           </div>
         </div>
@@ -272,12 +286,11 @@
 
           <!--快速放置模式-->
           <div style="margin-right: 12px">
-            <el-radio-group
-              v-model="rootStore.quickPlaceMode"
-              size="small"
-            >
-              <el-radio-button label="belt">传送带</el-radio-button>
-              <el-radio-button label="pipe">管道</el-radio-button>
+            <el-radio-group v-model="rootStore.quickPlaceMode" size="small">
+              <el-radio-button label="belt" value="belt"
+                >传送带</el-radio-button
+              >
+              <el-radio-button label="pipe" value="pipe">管道</el-radio-button>
             </el-radio-group>
           </div>
           <!--图层设置-->
@@ -296,22 +309,21 @@
                     <el-switch
                       v-model="rootStore.isShowSupplierExtent"
                       size="small"
-                    />
-                  </div>
-                  <div class="layer-item">
-                    <span>机器</span>
-                    <el-switch
-                      disabled
-                      v-model="rootStore.isShowMachines"
-                      size="small"
-                      :checked="true"
+                      :checked="false"
                     />
                   </div>
                   <div class="layer-item">
                     <span>传送带</span>
                     <el-switch
-                      disabled
                       v-model="rootStore.isShowBelts"
+                      size="small"
+                      :checked="true"
+                    />
+                  </div>
+                  <div class="layer-item">
+                    <span>液体管口</span>
+                    <el-switch
+                      v-model="rootStore.isShowPipePort"
                       size="small"
                       :checked="true"
                     />
@@ -444,12 +456,29 @@
         @mousemove="selectStore.handleMouseMove"
         @mouseup="selectStore.handleMouseUp"
       >
-        <div class="sheng-overlay" @click="beltIndicator.handleOverlayClick"></div>
+        <div
+          class="sheng-overlay"
+          @click="beltIndicator.handleOverlayClick"
+        ></div>
         <div
           @click="rootStore.handleLeftClick"
-          ref="targetGrid"
+          class="pipe-grid"
+          id="pipe-grid"
+          style="background-color: transparent"
+          :style="{
+            pointerEvents:
+              rootStore.quickPlaceMode === 'pipe' ? 'auto' : 'none',
+          }"
+        ></div>
+        <div
+          @click="rootStore.handleLeftClick"
           id="grid-stack"
           class="grid-stack"
+          style="background-color: transparent"
+          :style="{
+            pointerEvents:
+              rootStore.quickPlaceMode === 'belt' ? 'auto' : 'none',
+          }"
         ></div>
       </div>
     </el-col>
@@ -485,7 +514,6 @@ const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
 const selectStore = useSelectStore();
 const route = useRoute();
-const router = useRouter();
 const hashCode = route.params.hashCode;
 
 onMounted(async () => {
@@ -495,8 +523,10 @@ onMounted(async () => {
   const targetGridCont = document.querySelector(".sheng-cont-grid");
   const selector = document.querySelector(".selection-box");
   const overLay = document.querySelector(".sheng-overlay");
+  const pipeGrid = document.querySelector("#pipe-grid");
   selectStore.initSelector(selector);
   rootStore.initGrid(targetGridEl, targetGridCont, overLay, appContext);
+  rootStore.initPipeGrid(pipeGrid);
   // 根据是否有hashCode参数加载相应的蓝图
   if (hashCode) {
     try {
@@ -534,14 +564,20 @@ onMounted(async () => {
   };
 
   //添加回调
-  rootStore.rootGrid.on("added", function (event, items) {
+  rootStore.rootGrid.on("dropped", (event, prev, next) => {
+    if (!rootStore.rootPipeGrid.isAreaEmpty(next.x, next.y, next.w, next.h)) {
+      rootStore.rootGrid.removeWidget(next.el, true);
+      ElMessage.error("该位置已被占用，请选择其他位置");
+      return;
+    }
+  });
+  rootStore.rootGrid.on("added", (event, items) => {
     const item = items[0];
     const el = item.el;
-
-    if (!el.classList.contains("sidebar-item")) return;
-
     const rootId = item.id.split("_")[0];
     // 存入 store
+    if (!el.classList.contains("sidebar-item")) return;
+
     rootStore.gridWidgets[item.id] = {
       rotate: 0,
       recipe: "",
@@ -618,6 +654,13 @@ onUnmounted(() => {
 
 .grid-stack {
   /*margin: 400px 0 0 400px;*/
+  position: absolute;
+  transform-origin: 0 0;
+  left: 0;
+  right: 0;
+}
+
+.pipe-grid {
   position: absolute;
   transform-origin: 0 0;
   left: 0;

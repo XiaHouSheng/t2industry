@@ -3,13 +3,16 @@ import { defineStore } from "pinia";
 import { createVNode, markRaw, render } from "vue";
 import { machineComponentMap } from "../utils/MachineMap";
 import ConveyerBelt from "../components/simulation/ConveyerBelt.vue";
-import { ElNotification, ElMessageBox } from "element-plus";
+import Pipe from "../components/simulation/Pipe.vue";
+import { ElNotification, ElMessageBox, treeEmits } from "element-plus";
 import keyboardHandler from "../utils/keyboardHandler";
 import dragScrollHandler from "../utils/dragScrollHandler";
 import beltIndicator from "../utils/beltIndicator";
 
 export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
+    // -------------------- 主机地址 --------------------
+    host: "https://api.t2blueprint.xyz",
     // -------------------- 应用上下文 --------------------
     appContext: null,
 
@@ -18,11 +21,11 @@ export const useRootStore = defineStore("sheng-root-store", {
     isRecipeChoose: false,
     isWareHouseRecipeChoose: false,
     isZomming: false,
-    isShowSupplierExtent: true,
+    isShowSupplierExtent: false,
     isShowMachines: true,
     isShowBelts: true,
+    isShowPipePort: true,
     quickPlaceMode: "belt",
-
     // -------------------- 选择状态 --------------------
     recipeChooseId: "",
     materialChooseId: "",
@@ -39,6 +42,8 @@ export const useRootStore = defineStore("sheng-root-store", {
     gridBelt2dElement: markRaw({}),
     gridBelts2d: null, //存储传送带的元素|x,y->{rotate:rotate,type:type}
 
+    gridPipe2dElement: markRaw({}),
+    gridPipes2d: null, //存储管道的元素|x,y->{rotate:rotate,type:type}
     // -------------------- 模块相关存储 --------------------
     partsWidgetId: {
       part0: new Set(),
@@ -46,7 +51,9 @@ export const useRootStore = defineStore("sheng-root-store", {
     partsBelts: {
       part0: new Set(),
     }, //存储模块对应的传送带|partName->beltIdList
-
+    partsPipes: {
+      part0: new Set(),
+    }, //存储模块对应的管道|partName -> pipeIdList
     // 模块列表，结构：[{name: "模块", code: "", show: true, edited: false}]
     parts: [
       {
@@ -58,11 +65,11 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     // -------------------- 网格配置 --------------------
     rootGrid: null, //存储根gridstack对象
-    rootGridEngine: null, //gridstack引擎
     gridEl: null, //存储根元素对象
     gridElCont: null, //存储gridstack的父容器
     overlay: null, //存储遮罩层元素对象
-
+    pipeGrid: null, //存储管道网格元素对象
+    rootPipeGrid: null, //管道网格引擎
     // -------------------- 缩放相关配置 --------------------
     gridElContScale: 1,
     defaultWidth: 3017,
@@ -79,6 +86,15 @@ export const useRootStore = defineStore("sheng-root-store", {
       //可以拖入
       acceptWidgets: function (el) {
         return true;
+      },
+    },
+    gridPipeOptions: {
+      minRow: 72, //行个数
+      allowNewRow: false, //可向下扩充行
+      float: true, //可以随意摆放
+      //可以拖入
+      acceptWidgets: function (el) {
+        return false;
       },
     },
 
@@ -113,6 +129,19 @@ export const useRootStore = defineStore("sheng-root-store", {
       beltIndicator.init(this.overlay);
     },
 
+    initPipeGrid(pipeGrid) {
+      this.pipeGrid = markRaw(pipeGrid);
+      this.rootPipeGrid = markRaw(
+        GridStack.init(this.gridPipeOptions, pipeGrid),
+      );
+      this.rootPipeGrid.column(this.numColumn);
+      this.pipeGrid.style.width = `${this.defaultWidth}px`;
+      this.pipeGrid.style.height = `${this.defaultHeight}px`;
+      this.gridPipes2d = Array.from({ length: this.gridOptions.minRow }, () =>
+        Array.from({ length: this.numColumn }, () => ({})),
+      );
+    },
+
     getPositionFromClick(event) {
       ////console.log("clientX",event.clientX,"clientY",event.clientY)
       ////console.log("scrollLeft",this.gridElCont.scrollLeft,"scrollTop",this.gridElCont.scrollTop)
@@ -129,11 +158,35 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     isCellEmpty(event) {
       const { x, y } = this.getPositionFromClick(event);
-      return this.rootGrid.isAreaEmpty(x, y, 1, 1);
+      return this.isCellEmptyByPosition(x, y);
     },
 
     isCellEmptyByPosition(x, y) {
       return this.rootGrid.isAreaEmpty(x, y, 1, 1);
+    },
+
+    isCellEmptyPipe(event) {
+      const { x, y } = this.getPositionFromClick(event);
+      return this.isCellEmptyForPipe(x, y);
+    },
+
+    isCellEmptyForPipe(x, y) {
+      /*
+      机器-判定 传送带-过滤
+      */
+      //这里进行belt-machine的判断
+      let isEmptyMachineOrBelt = this.rootGrid.isAreaEmpty(x, y, 1, 1);
+      let isEmptyBelt = Object.keys(this.gridBelts2d[x][y]).length === 0;
+      let isEmptyPipe = Object.keys(this.gridPipes2d[x][y]).length === 0;
+      //console.log(isEmptyMachineOrBelt,isEmptyBelt,isEmptyPipe)
+      //有管道了 - 不为空
+      if (!isEmptyPipe) return false;
+      //只有机器 - 不为空
+      if (!isEmptyMachineOrBelt && isEmptyBelt) return false;
+      //只有传送带 - 过滤
+      if (!isEmptyMachineOrBelt && !isEmptyBelt) return true;
+      // 没管道 - 允许
+      if (isEmptyPipe) return true;
     },
 
     // ======================================================
@@ -162,6 +215,8 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.gridEl.style.transform = `scale(${this.gridElContScale}) translate(100px, 100px)`;
       // 更新遮罩层的缩放
       this.overlay.style.transform = `scale(${this.gridElContScale}) translate(100px, 100px)`;
+      // 更新管道网格的缩放
+      this.pipeGrid.style.transform = `scale(${this.gridElContScale}) translate(100px, 100px)`;
       // 缩放结束（防抖）
       clearTimeout(this._zoomEndTimer);
       this._zoomEndTimer = setTimeout(() => {
@@ -190,6 +245,19 @@ export const useRootStore = defineStore("sheng-root-store", {
         this.partsBelts[part].delete(`${position.x}-${position.y}`);
         this.gridBelts2d[position.x][position.y] = {};
         delete this.gridBelt2dElement[`${position.x}-${position.y}`];
+      }
+    },
+
+    deleteOnePipe(position) {
+      const targetElement =
+        this.gridPipe2dElement[`${position.x}-${position.y}`];
+      if (targetElement) {
+        //待定
+        this.rootPipeGrid.removeWidget(targetElement);
+        let part = this.gridPipes2d[position.x][position.y].part;
+        this.partsPipes[part].delete(`${position.x}-${position.y}`);
+        this.gridPipes2d[position.x][position.y] = {};
+        delete this.gridPipe2dElement[`${position.x}-${position.y}`];
       }
     },
 
@@ -228,6 +296,41 @@ export const useRootStore = defineStore("sheng-root-store", {
       }
     },
 
+    deleteSeriesPipe2d(midDeleteData) {
+      const { startX, startY, endX, endY } = midDeleteData;
+      const positionStart = this.getPositionFromClick({
+        clientX: startX,
+        clientY: startY,
+      });
+      const positionEnd = this.getPositionFromClick({
+        clientX: endX,
+        clientY: endY,
+      });
+
+      //edit by AI
+      // 计算矩形区域的边界（取x/y的最小/最大值）
+      const minX = Math.min(positionStart.x, positionEnd.x);
+      const maxX = Math.max(positionStart.x, positionEnd.x);
+      const minY = Math.min(positionStart.y, positionEnd.y);
+      const maxY = Math.max(positionStart.y, positionEnd.y);
+
+      // 遍历矩形内所有网格位置，调用deleteOneBelt删除
+      for (let x = minX; x <= maxX; x++) {
+        // 跳过超出网格行范围的位置
+        if (x < 0 || x >= this.gridOptions.minRow) continue;
+
+        for (let y = minY; y <= maxY; y++) {
+          // 跳过超出网格列范围的位置
+          if (y < 0 || y >= this.numColumn) continue;
+
+          // 构造包含x、y的position对象，符合deleteOneBelt参数要求
+          const position = { x, y };
+          // 调用原有deleteOneBelt方法删除单个传送带
+          this.deleteOnePipe(position);
+        }
+      }
+    },
+
     generateOneBelt(position, type = "belt-img", rotate = 0, id_in = null) {
       let craftElement = document.createElement("div");
       let id = id_in
@@ -260,6 +363,53 @@ export const useRootStore = defineStore("sheng-root-store", {
         id: id,
         part: this.editPartChoose,
       };
+    },
+
+    generateOnePipe(
+      position,
+      type = "belt-img-pipe",
+      rotate = 0,
+      id_in = null,
+    ) {
+      let craftElement = document.createElement("div");
+      let id = id_in
+        ? id_in
+        : `${id_in}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      let vnode = createVNode(Pipe, {
+        gs_id: id,
+        rotate: rotate,
+        type: type,
+        position: position,
+      });
+      render(vnode, craftElement);
+      craftElement = this.rootPipeGrid.makeWidget(craftElement, {
+        x: position.x,
+        y: position.y,
+        w: 1,
+        h: 1,
+        float: false,
+        noResize: true,
+        locked: true,
+        id: id,
+      });
+      this.rootPipeGrid.movable(craftElement, false);
+      // 记录传送带对应的模块 - 需要修改part的数据
+      this.partsPipes[this.editPartChoose].add(`${position.x}-${position.y}`);
+      this.gridPipe2dElement[`${position.x}-${position.y}`] = craftElement;
+      this.gridPipes2d[position.x][position.y] = {
+        rotate: rotate,
+        type: type,
+        id: id,
+        part: this.editPartChoose,
+      };
+    },
+
+    replacePipeNodeAtPosition(position, { type, rotate }, id = "pipe") {
+      const el = this.gridPipe2dElement[`${position.x}-${position.y}`];
+      if (!el) return;
+      this.rootPipeGrid.removeWidget(el, true);
+      this.gridPipes2d[position.x][position.y] = {};
+      this.generateOnePipe(position, type, rotate, id);
     },
 
     replaceNodeAtPosition(position, { type, rotate }, id = "belt") {
@@ -358,27 +508,104 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.lastDir = curDir;
     },
 
+    generatePipe(newPosition, id = "pipe") {
+      // 第一次调用：只记录基准点
+      if (!this.lastBaseNode) {
+        this.lastBaseNode = { ...newPosition };
+        this.lastDir = null;
+        return;
+      }
+
+      const oldNode = this.lastBaseNode;
+
+      const dx = newPosition.x - oldNode.x;
+      const dy = newPosition.y - oldNode.y;
+
+      // 只允许直线
+      if (dx !== 0 && dy !== 0) {
+        //console.log("not a straight line");
+        return;
+      }
+
+      const stepX = dx === 0 ? 0 : dx > 0 ? 1 : -1;
+      const stepY = dy === 0 ? 0 : dy > 0 ? 1 : -1;
+      const steps = Math.abs(dx + dy);
+
+      const curDir = this.getStraightRotateIndex(stepX, stepY);
+
+      // 拐点：替换基准点为 turn-img
+      if (this.lastDir !== null && this.lastDir !== curDir) {
+        const turnRotate = this.getTurnRotateIndex(this.lastDir, curDir);
+        if (turnRotate === undefined) {
+          //console.log("invalid turn");
+          return;
+        }
+
+        this.replacePipeNodeAtPosition(oldNode, {
+          type: "turn-img-pipe",
+          rotate: turnRotate,
+        });
+      }
+
+      // 判空
+      for (let i = 1; i <= steps; i++) {
+        const x = oldNode.x + stepX * i;
+        const y = oldNode.y + stepY * i;
+        //这里的判空需要修改
+        if (!this.isCellEmptyForPipe(x, y)) {
+          //console.log("not all empty");
+          return;
+        }
+      }
+
+      // 生成直线 belt
+      for (let i = 1; i <= steps; i++) {
+        const x = oldNode.x + stepX * i;
+        const y = oldNode.y + stepY * i;
+
+        this.generateOnePipe({ x, y }, "belt-img-pipe", curDir, id);
+      }
+
+      // 更新基准点
+      this.lastBaseNode = { ...newPosition };
+      this.lastDir = curDir;
+    },
+
     // ======================================================
     // -------------------- 事件处理 --------------------
     // ======================================================
-
     handleLeftClick(event) {
+      //这里做pipe和belt判断
       if (this.toolbarMode == "belts") {
-        if (this.isCellEmpty(event)) {
-          const position = this.getPositionFromClick(event);
+        const position = this.getPositionFromClick(event);
+        if (this.quickPlaceMode === "belt" && this.isCellEmpty(event)) {
           this.generateBelt(position, "belt");
+        }
+        if (this.quickPlaceMode === "pipe" && this.isCellEmptyPipe(event)) {
+          this.generatePipe(position, "pipe");
+          console.log("test click pipe generate");
         }
       }
 
       if (!["belts", "select", "default"].includes(this.toolbarMode)) {
-        if (this.isCellEmpty(event)) {
-          const position = this.getPositionFromClick(event);
-          this.generateOneBelt(
-            position,
-            `${this.toolbarMode}-img`,
-            0,
-            this.toolbarMode,
-          );
+        //对于pipe模式下需要修改材质
+        const position = this.getPositionFromClick(event);
+        //特殊
+        if (this.quickPlaceMode === "pipe" && ["belt","turn"].includes(this.toolbarMode) &&  this.isCellEmptyPipe(event)) {
+          let name = `${this.toolbarMode}-img-pipe`;
+          this.generateOnePipe(position, name, 0, this.toolbarMode);
+          return
+        }
+        //标准
+        if (this.quickPlaceMode === "pipe" && !["belt","turn"].includes(this.toolbarMode) && this.isCellEmpty(event)) {
+          let name = `${this.toolbarMode}-img-pipe`;
+          this.generateOneBelt(position, name, 0, this.toolbarMode);
+          return
+        }
+        if (this.quickPlaceMode === "belt" && this.isCellEmpty(event)) {
+          let name = `${this.toolbarMode}-img`;
+          this.generateOneBelt(position, name, 0, this.toolbarMode);
+          return
         }
       }
     },
@@ -387,11 +614,12 @@ export const useRootStore = defineStore("sheng-root-store", {
       event.preventDefault();
       event.stopPropagation();
       //处于连接状态取消连接模式
-      if (this.isBeltConnecting) {
-      } else {
-        //否则就进行删除
-        const position = this.getPositionFromClick(event);
+      const position = this.getPositionFromClick(event);
+      if (this.quickPlaceMode === "belt") {
         this.deleteOneBelt(position);
+      }
+      if (this.quickPlaceMode === "pipe") {
+        this.deleteOnePipe(position);
       }
     },
 
@@ -423,16 +651,13 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     makeMachine(config) {
       const { id, machine_id, recipe, rotate, x, y, w, h, part } = config;
-      console.log(config);
       //step2 创建元素并指向id对应的element项
-      console.log(machine_id, w, h);
       const vnode = createVNode(machineComponentMap[machine_id], {
         gs_id: id,
         el_name: machine_id,
         el_size: { w: w, h: h },
         rotate: rotate,
       });
-      console.log(vnode)
       //step1 gridWidgets创建对应id的dict 并导入 rotate和recipe数据
       this.gridWidgets[id] = { rotate: rotate, recipe: recipe, part: part };
 
@@ -464,6 +689,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       };
       this.partsBelts[newPart.name] = new Set();
       this.partsWidgetId[newPart.name] = new Set();
+      this.partsPipes[newPart.name] = new Set();
       this.parts.push(newPart);
     },
 
@@ -482,6 +708,10 @@ export const useRootStore = defineStore("sheng-root-store", {
       // 显示模块对应的传送带
       for (let beltId of this.partsBelts[part.name]) {
         this.gridBelt2dElement[beltId].style.opacity = value ? 1 : 0.2;
+      }
+      //显示模块对应的管道
+      for (let pipeId of this.partsPipes[part.name]) {
+        this.gridPipe2dElement[pipeId].style.opacity = value ? 1 : 0.2;
       }
     },
 
@@ -510,6 +740,13 @@ export const useRootStore = defineStore("sheng-root-store", {
           for (let beltId of this.partsBelts[part.name]) {
             this.partsBelts["part0"].add(beltId);
             this.gridBelt2dElement[beltId].style.opacity = this.parts[0].show
+              ? 1
+              : 0.2;
+          }
+          // 删除模块对应的管道
+          for (let pipeId of this.partsPipes[part.name]) {
+            this.partsPipes["part0"].add(pipeId);
+            this.gridPipe2dElement[pipeId].style.opacity = this.parts[0].show
               ? 1
               : 0.2;
           }
@@ -576,8 +813,10 @@ export const useRootStore = defineStore("sheng-root-store", {
       let output = { machine: null, belt: null, part: null };
       let machines = [];
       let belts = [];
+      let pipes = [];
       let part_dict = {};
       const listBelt = Object.entries(this.gridBelt2dElement);
+      const listPipe = Object.entries(this.gridPipe2dElement);
       const listElement = Object.entries(this.gridWidgetElements);
       const listElementConfig = Object.entries(this.gridWidgets);
       //console.log(listElement, listElementConfig);
@@ -616,16 +855,36 @@ export const useRootStore = defineStore("sheng-root-store", {
       }
       output.belt = belts;
 
+      for (let index = 0; index < listPipe.length; index += 1) {
+        let [position, element] = listPipe.at(index);
+        let [x, y] = position.split("-");
+        let { rotate, type } = this.gridPipes2d[Number(x)][Number(y)];
+        let storageValue = {
+          id: element.gridstackNode.id,
+          type: type,
+          rotate: rotate,
+          position: {
+            x: Number(x),
+            y: Number(y),
+          },
+        };
+        pipes.push(storageValue);
+      }
+      output.pipe = pipes;
+
       part_dict["parts"] = this.parts;
       part_dict["partsWidgetId"] = {};
       part_dict["partsBelts"] = {};
+      part_dict["partsPipes"] = {};
       part_dict["editPartChoose"] = this.editPartChoose;
 
       for (let partName of Object.keys(this.partsWidgetId)) {
         let widgetIds = Array.from(this.partsWidgetId[partName]);
         let beltIds = Array.from(this.partsBelts[partName]);
+        let pipeIds = Array.from(this.partsPipes[partName]);
         part_dict["partsWidgetId"][partName] = widgetIds;
         part_dict["partsBelts"][partName] = beltIds;
+        part_dict["partsPipes"][partName] = pipeIds;
       }
 
       output.part = part_dict;
@@ -641,12 +900,15 @@ export const useRootStore = defineStore("sheng-root-store", {
     },
 
     importBluePrint(blueprint) {
-      let { machine, belt, part } = blueprint;
+      let { machine, belt, part, pipe } = blueprint;
       for (let mac of machine) {
         this.makeMachine(mac);
       }
       for (let blt of belt) {
         this.generateOneBelt(blt.position, blt.type, blt.rotate, blt.id);
+      }
+      for (let pip of pipe) {
+        this.generateOnePipe(pip.position, pip.type, pip.rotate, pip.id);
       }
 
       // 加载 part 数据
@@ -667,6 +929,13 @@ export const useRootStore = defineStore("sheng-root-store", {
         if (part.partsBelts) {
           for (let partName of Object.keys(part.partsBelts)) {
             this.partsBelts[partName] = new Set(part.partsBelts[partName]);
+          }
+        }
+
+        this.partsPipes = {};
+        if (part.partsPipes) {
+          for (let partName of Object.keys(part.partsPipes)) {
+            this.partsPipes[partName] = new Set(part.partsPipes[partName]);
           }
         }
 
@@ -707,8 +976,8 @@ export const useRootStore = defineStore("sheng-root-store", {
 
       try {
         // 构建蓝图URL
-        const blueprintUrl = `http://117.72.161.160:88/download/${hashCode}.json`;
-
+        const blueprintUrl = `${this.host}/download/${hashCode}.json`;
+        
         // 发送请求获取蓝图数据
         const response = await fetch(blueprintUrl);
 

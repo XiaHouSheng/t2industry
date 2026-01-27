@@ -4,7 +4,7 @@
  */
 
 class ApiClient {
-  constructor(baseUrl = 'http://117.72.161.160:88') {
+  constructor(baseUrl = 'https://api.t2blueprint.xyz') {
     this.baseUrl = baseUrl;
     this.token = null;
   }

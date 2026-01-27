@@ -19,11 +19,14 @@ import ReactionPool from '../components/simulation/ReactionPool.vue'
 import XiraniteFurnace from '../components/simulation/XiraniteFurnace.vue'
 import ProtocolCore from '../components/simulation/ProtocolCore.vue';
 import PowerSupplier from '../components/simulation/PowerSupplier.vue';
+import Pipe from '../components/simulation/Pipe.vue';
+import LiquidContainer from '../components/simulation/LiquidContainer.vue';
 import { markRaw } from 'vue';
 
 // 组件映射表：key 对应机器唯一标识（与之前的 gs_id 前缀一致），value 是组件对象
 export const machineComponentMap = {
   conveyerbelt: markRaw(ConveyerBelt),
+  pipe: markRaw(Pipe),
   refineryFurnace: markRaw(RefineryFurnace),
   crusher: markRaw(Crusher),
   accessoryMachine: markRaw(AccessoryMachine),
@@ -40,10 +43,11 @@ export const machineComponentMap = {
   warehouseWithdrawalPort: markRaw(WarehouseWithdrawalPort),
   powerStation: markRaw(PowerStation),
   powerSupplier: markRaw(PowerSupplier),
-  // jinlong 专属
+  // 武陵专属
   dismantlerMachine: markRaw(DismantlerMachine),
   reactionPool: markRaw(ReactionPool),
-  xiraniteFurnace: markRaw(XiraniteFurnace)
+  xiraniteFurnace: markRaw(XiraniteFurnace),
+  liquidContainer: markRaw(LiquidContainer),
 };
 
 export const machineDataFileMap = {
@@ -88,6 +92,7 @@ export const machineNameMap = {
   reactionPool: '反应池',
   waterPump: '水泵',
   xiraniteFurnace: '天有洪炉',
+  liquidContainer: '储液罐',
 };
 
 // 反向映射：中文名称 → 英文 key（方便根据中文查英文）

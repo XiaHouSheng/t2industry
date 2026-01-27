@@ -70,6 +70,8 @@ const handleView = async (blueprint) => {
   try {
     //console.log("查看蓝图:", blueprint);
     if (blueprint.fileHash) {
+      //这里是为了浏览量的增加，实际信息不需要使用
+      homeStore.getBlueprintById(blueprint.id)
       // 有fileHash，跳转到带hash的editor页面
       router.push(`/editor/${blueprint.fileHash}`);
     } else {
