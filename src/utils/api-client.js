@@ -2,7 +2,7 @@
  * API请求客户端
  * 封装了所有后端API的调用方法，方便前端使用
  */
-
+//https://api.t2blueprint.xyz
 class ApiClient {
   constructor(baseUrl = 'https://api.t2blueprint.xyz') {
     this.baseUrl = baseUrl;

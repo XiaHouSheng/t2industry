@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "github": "vite build --base=t2industry",
     "preview": "vite preview"
   },
   "dependencies": {

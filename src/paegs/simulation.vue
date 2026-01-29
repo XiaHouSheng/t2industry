@@ -321,6 +321,14 @@
                     />
                   </div>
                   <div class="layer-item">
+                    <span>管道</span>
+                    <el-switch
+                      v-model="rootStore.isShowPipes"
+                      size="small"
+                      :checked="true"
+                    />
+                  </div>
+                  <div class="layer-item">
                     <span>液体管口</span>
                     <el-switch
                       v-model="rootStore.isShowPipePort"

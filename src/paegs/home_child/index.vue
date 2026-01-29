@@ -47,7 +47,7 @@ const quickLinks = [
     text: "Discover",
     path: "/home/discover",
     description: "浏览其他玩家的蓝图",
-    icon: Search
+    icon: Search,
   },
   {
     name: "个人蓝图",
@@ -61,7 +61,7 @@ const quickLinks = [
     text: "Calculator",
     path: "/calculate",
     description: "物料配平计算",
-    icon: Setting
+    icon: Setting,
   },
 ];
 
@@ -71,7 +71,7 @@ const handleView = async (blueprint) => {
     //console.log("查看蓝图:", blueprint);
     if (blueprint.fileHash) {
       //这里是为了浏览量的增加，实际信息不需要使用
-      homeStore.getBlueprintById(blueprint.id)
+      homeStore.getBlueprintById(blueprint.id);
       // 有fileHash，跳转到带hash的editor页面
       router.push(`/editor/${blueprint.fileHash}`);
     } else {
@@ -396,6 +396,23 @@ const handleRetry = () => {
               <p>霞后生</p>
             </div>
           </div>
+          <div class="intro-item">
+            <h4>免责声明</h4>
+            <p>
+              本网站/项目为非官方、非商业性质的个人学习与交流项目，与
+              《明日方舟：终末地》（英文名：Arknights: Endfield）及其著作权方
+              上海鹰角网络科技有限公司 不存在任何隶属、合作、授权或代言关系。
+              网站/项目中所涉及的 《明日方舟：终末地》（Arknights: Endfield）
+              相关名称、角色、图像、音效、世界观及其他知识产权内容，其著作权及相关权利均归
+              上海鹰角网络科技有限公司
+              所有，仅用于学习研究、技术展示与爱好交流目的，不构成任何商业用途。
+              本网站/项目的程序代码部分采用 MIT License（MIT 开源协议）
+              进行开源，仅对代码本身的使用、复制、修改、合并、发布等行为进行授权；
+              MIT
+              协议不包含也不代表对任何第三方素材（包括但不限于游戏美术、设定、商标等）的授权。
+              如相关内容的展示对权利方造成影响或存在不妥之处，请联系作者处理，本站/项目将第一时间进行修改或删除。
+            </p>
+          </div>
         </el-card>
       </div>
     </el-col>
@@ -519,7 +536,7 @@ const handleRetry = () => {
 }
 
 .quick-link-icon {
-  color: blue
+  color: blue;
 }
 
 .quick-link-card:hover .quick-link-icon-cont {

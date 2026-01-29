@@ -24,6 +24,7 @@ export const useRootStore = defineStore("sheng-root-store", {
     isShowSupplierExtent: false,
     isShowMachines: true,
     isShowBelts: true,
+    isShowPipes: true,
     isShowPipePort: true,
     quickPlaceMode: "belt",
     // -------------------- 选择状态 --------------------
