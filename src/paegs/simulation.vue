@@ -286,15 +286,23 @@
 
           <!--快速放置模式-->
           <div style="margin-right: 12px">
-            <el-radio-group v-model="rootStore.quickPlaceMode" size="small">
+            <el-radio-group v-model="rootStore.quickPlaceMode" @change="rootStore.handleGenerateTypeChange" size="small">
               <el-radio-button label="belt" value="belt"
                 >传送带</el-radio-button
               >
               <el-radio-button label="pipe" value="pipe">管道</el-radio-button>
             </el-radio-group>
           </div>
+
+          <el-button
+            style="margin-left: auto"
+            icon="Delete"
+            @click="handleStartClear"
+            >清空</el-button
+          >
+
           <!--图层设置-->
-          <div style="margin-left: auto">
+          <div>
             <el-dropdown trigger="click">
               <el-button>
                 图层设置<el-icon class="el-icon--right"><arrow-down /></el-icon>
@@ -466,7 +474,6 @@
       >
         <div
           class="sheng-overlay"
-          @click="BeltIndicator.handleOverlayClick"
         ></div>
         <div
           @click="rootStore.handleLeftClick"
@@ -477,6 +484,8 @@
             pointerEvents:
               rootStore.quickPlaceMode === 'pipe' ? 'auto' : 'none',
           }"
+
+          
         ></div>
         <div
           @click="rootStore.handleLeftClick"
@@ -517,6 +526,7 @@ import BeltIndicator from "../utils/BeltIndicator";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
+import { ElMessageBox } from "element-plus";
 
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
@@ -642,7 +652,30 @@ const stopWatcher = watch(
   },
 );
 
-// 添加新模块
+// 清空画布回调
+const handleStartClear = () => {
+  ElMessageBox.confirm(
+    "你确定要清空画布吗？确认后会直接清空画布，若清空后保存将会彻底无法恢复。",
+    {
+      confirmButtonText: "我确认清空画布",
+      cancelButtonText: "取消",
+      type: "warning",
+    },
+  )
+    .then(() => {
+      ElMessage({
+        type: "success",
+        message: "已经清空画布",
+      });
+      rootStore.clearBlueprint();
+    })
+    .catch(() => {
+      ElMessage({
+        type: "info",
+        message: "清空画布已取消",
+      });
+    });
+};
 
 // 组件卸载时停止监听
 onUnmounted(() => {
@@ -691,7 +724,7 @@ onUnmounted(() => {
   width: 3017px;
   height: 3017px;
   transform-origin: 0 0;
-  pointer-events: auto;
+  pointer-events: none;
   background-color: rgba(0, 0, 0, 0);
 }
 

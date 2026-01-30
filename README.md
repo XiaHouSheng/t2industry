@@ -1,80 +1,182 @@
-# EndFieldSimulation | 终末地模拟器
+# t2industry | 塔卫二工业
 
 <div align="center">
-  <img src="https://placeholder.pics/svg/800x200/2C3E50/ECF0F1/EndFieldSimulation%20%7C%20终末地模拟器" alt="EndFieldSimulation Logo" />
+  <img src="https://placeholder.pics/svg/800x200/2C3E50/ECF0F1/t2industry%20%7C%20%E5%A1%94%E5%8D%AB%E4%BA%8C%E5%B7%A5%E4%B8%9A" alt="t2industry Logo" />
   <p>🎮 基于《明日方舟：终末地》的物料配平与效率模拟工具</p>
+  <p>🌐 网站名称：<strong>t2blueprint | 塔卫二蓝图</strong></p>
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" />
   <img src="https://img.shields.io/badge/Vue-3.x-brightgreen.svg" alt="Vue 3" />
   <img src="https://img.shields.io/badge/Element%20Plus-Latest-blueviolet.svg" alt="Element Plus" />
   <img src="https://img.shields.io/badge/Gridstack.js-Latest-orange.svg" alt="Gridstack.js" />
 </div>
 
-## 📄 我们的演示页面
+## 📋 项目简介
 
-- 域名备案还没有下来
+<strong>t2industry | 塔卫二工业</strong> 是一款专门为《明日方舟：终末地》游戏设计的多功能工具平台，旨在帮助玩家进行物料配平计算、生产效率模拟以及蓝图管理与分享。通过直观的可视化界面，玩家可以轻松规划和优化自己的工业生产线。
 
-## 📌 项目定位
+<strong>t2blueprint | 塔卫二蓝图</strong> 是本项目的官方网站，提供蓝图分享、工具下载等服务。
 
-一款面向《明日方舟：终末地》的多功能工具平台，核心能力包含：
+### 🌟 项目趋势
 
-- 📊 物料配平计算
-- ⚡ 生产效率模拟
-- 📤 蓝图分享与管理
+![Star Trends](https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=GitHub%20star%20trends%20chart%20for%20t2industry%20project%2C%20showing%20upward%20trend%2C%20blue%20line%20chart%20on%20white%20background%2C%20professional%20looking%2C%20clean%20design&image_size=landscape_16_9)
+
+## ✨ 核心功能
+
+### 1. 蓝图编辑与管理
+- **可视化网格编辑**：使用 Gridstack.js 实现的拖拽式场景编辑
+- **机器与传送带放置**：支持多种机器和传送带的拖拽放置
+- **机器旋转与配置**：可旋转机器并设置配方参数
+- **传送带方向标注**：直观显示传送带的传输方向
+- **蓝图导出与导入**：支持保存和分享你的生产蓝图
+
+### 2. 物料配平计算
+- 基于配方的物料需求计算
+- 生产效率分析与优化
+- 资源平衡模拟
+
+### 3. 电力系统模拟
+- 电力需求计算
+- 供电网络规划
+
+### 4. 液体管道系统
+- 管道放置与连接
+- 液体传输模拟
 
 ## 🛠 技术栈
 
-- 前端框架：Vue 3
-- UI 组件库：Element Plus（高效搭建交互界面）
-- 网格编辑：Gridstack.js（快速实现可视化网格场景编辑）
+| 技术/框架 | 版本 | 用途 |
+|---------|------|------|
+| Vue.js | 3.x | 前端框架 |
+| Element Plus | Latest | UI 组件库 |
+| Gridstack.js | Latest | 网格编辑系统 |
+| Pinia | Latest | 状态管理 |
+| Vite | Latest | 构建工具 |
 
-## 📋 核心任务列表
+## 🚀 快速开始
 
-### 长期目标
+### 环境要求
+- Node.js 16.0+
+- npm 7.0+
 
-- [ ] 机器关联关系绑定
-- [ ] 根据蓝图进行效率模拟
-- [ ] UI 美化
-- [ ] 。。。。。。
+### 安装与运行
 
-### 当下目标
-- [ ] 项目长期工具开发
-  - [ ] 精灵图编辑工具
-  - [ ] 机器数据配方数据生成工具
-- [x] 蓝图编辑功能|Simulation Page 开发
-  - [x] GridStack 场景搭建
-  - [x] 传送带放置测试
-  - [x] 部分机器放置测试（拖动）
-  - [x] 传送带放置开关
-  - [x] 传送带删除
-  - [x] 传送带批量删除
-  - [x] 机器旋转
-  - [x] 机器的配方与配置对话框
-  - [x] 场景美化（网格）
-  - [x] 传送带外观美化（标注方向）
-  - [x] 机器的配方与配置对话框
-  - [x] 场景美化（网格）
-  - [x] 传送带外观美化（标注方向）
-  - [X] 导出/导入蓝图 
-  - [ ] 额外任务——电力显示
-  - [X] 额外任务——官方蓝图分布显示
-  - [ ] 额外任务——蓝图放置
-  - [X] 额外任务——图层？也许以后？
-- [x] 主界面|Home page 开发
-  - [x] Home-discover页面前端搭建 doing...!...!
-  - [x] Home-self页面前端搭建
-  - [x] Login功能
-  - [x] UI美化
-  - [x] 后端接口开发
-  - [x] 测试
-- [ ] 配平计算| Calculate Page 开发
-  - [ ] UI 搭建
+1. **克隆项目**
+   ```bash
+   git clone https://github.com/yourusername/t2industry.git
+   cd t2industry
+   ```
 
-## 📄 开源协议
+2. **安装依赖**
+   ```bash
+   npm install
+   ```
 
-本项目采用 **MIT 开源协议**，你可以自由使用、修改、分发本项目代码，详情请查阅 [LICENSE](./LICENSE) 文件。
+3. **开发模式运行**
+   ```bash
+   npm run dev
+   ```
 
-## 📞 说明
+4. **构建生产版本**
+   ```bash
+   npm run build
+   ```
 
-- 项目仍在开发中，任务列表会随进度持续更新
-- 欢迎加入我们的企鹅群聊 615187598 我们会采纳你提出的建议，也欢迎吹水！
-- 欢迎提交 Issue/PR 参与功能开发与问题修复
+## 📁 项目结构
+
+```
+t2industry/
+├── public/          # 静态资源
+├── src/
+│   ├── assets/      # 项目资源文件
+│   │   ├── img/     # 图片资源
+│   │   └── svg/     # SVG 图标
+│   ├── components/  # 组件
+│   │   ├── original/   # 原始组件
+│   │   └── simulation/ # 模拟相关组件
+│   ├── paegs/       # 页面
+│   │   ├── home_child/  # 主页子页面
+│   │   ├── calculate.vue  # 配平计算页面
+│   │   ├── home.vue       # 主页
+│   │   ├── root.vue       # 根页面
+│   │   └── simulation.vue # 模拟页面
+│   ├── routers/     # 路由配置
+│   ├── stores/      # 状态管理
+│   ├── utils/       # 工具函数
+│   │   ├── data/    # 数据文件
+│   │   └── process/ # 处理脚本
+│   ├── App.vue      # 根组件
+│   ├── main.js      # 入口文件
+│   └── style.css    # 全局样式
+├── .gitignore       # Git 忽略文件
+├── LICENSE          # 许可证
+├── README.md        # 项目说明
+├── package.json     # 项目配置
+└── vite.config.js   # Vite 配置
+```
+
+## 🔧 核心模块
+
+### 1. 模拟系统 (Simulation)
+- **GridStack 场景**：实现可视化网格编辑
+- **机器组件**：各种生产机器的 Vue 组件
+- **传送带系统**：支持传送带的放置、删除和方向标注
+- **管道系统**：液体管道的放置和连接
+
+### 2. 配平系统 (Calculate)
+- 物料需求计算
+- 生产效率分析
+- 资源平衡优化
+
+### 3. 蓝图系统
+- 蓝图导出/导入
+- 蓝图分享与管理
+- 官方蓝图库
+
+## 📖 开发指南
+
+### 代码规范
+- 使用 Vue 3 Composition API
+- 组件命名使用 PascalCase
+- 文件命名使用 kebab-case
+- 遵循 ESLint 代码规范
+
+### 新增机器组件
+1. 在 `src/components/simulation/` 目录下创建新的机器组件
+2. 在 `src/utils/MachineMap.js` 中注册机器
+3. 在 `src/utils/data/machine.json` 中添加机器数据
+
+### 新增配方
+1. 在 `src/utils/data/recipe.json` 中添加新配方
+2. 确保配方与机器对应关系正确
+
+## 🤝 贡献指南
+
+我们欢迎社区贡献！如果你有兴趣参与项目开发，请：
+
+1. **Fork 项目**
+2. **创建功能分支**
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+3. **提交更改**
+   ```bash
+   git commit -m "Add your feature"
+   ```
+4. **推送到分支**
+   ```bash
+   git push origin feature/your-feature
+   ```
+5. **创建 Pull Request**
+
+## 📄 许可证
+
+本项目采用 **MIT 开源协议**，详情请查阅 [LICENSE](./LICENSE) 文件。
+
+## 📞 联系方式
+
+- **QQ 群**：615187598
+- **GitHub Issues**：[https://github.com/yourusername/t2industry/issues](https://github.com/yourusername/t2industry/issues)
+
+---
+
+**免责声明**：本项目为非官方工具，与《明日方舟：终末地》游戏开发商无直接关联。所有游戏相关内容的版权归各自所有者所有。

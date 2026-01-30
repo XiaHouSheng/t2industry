@@ -37,6 +37,13 @@ const hadnleRotate = () => {
   rotateAngle.value = ((rotateAngle.value / 90 + 1) % 4) * 90;
   rootStore.gridWidgets[props.gs_id]["rotate"] = rotateAngle.value / 90;
 };
+//出入口点击拦截
+const handleBeltPortClick = (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  //console.log("出入口点击拦截", e);
+  rootStore.handleOverlayClick(e, { "isBeltPort": true });
+};
 </script>
 
 <template>
@@ -48,6 +55,7 @@ const hadnleRotate = () => {
     @click="hadnleRotate"
   >
     <div v-if="port.top"
+      @click="handleBeltPortClick"
       class="display-flex justify-content-center line-inner flex-direation-row"
       style="height: 15px"
     ></div>
@@ -63,6 +71,7 @@ const hadnleRotate = () => {
     </div>
 
     <div v-if="port.bottom"
+      @click="handleBeltPortClick"
       class="display-flex justify-content-center line-outter flex-direation-col"
       style="height: 15px"
     ></div>
