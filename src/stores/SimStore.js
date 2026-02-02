@@ -8,6 +8,8 @@ import { ElNotification, ElMessageBox, treeEmits } from "element-plus";
 import keyboardHandler from "../utils/keyboardHandler";
 import dragScrollHandler from "../utils/dragScrollHandler";
 import BeltIndicator from "../utils/BeltIndicator";
+import SelectIndicator from "../utils/SelectIndicator";
+import CommandEvent from "../utils/CommandEvent";
 
 export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
@@ -42,7 +44,6 @@ export const useRootStore = defineStore("sheng-root-store", {
     gridWidgets: {}, //用于非传送带模拟控件配置存储|id->{rotate:rotate,recipe:recipe,part:partName}
     gridBelt2dElement: markRaw({}),
     gridBelts2d: null, //存储传送带的元素|x,y->{rotate:rotate,type:type}
-
     gridPipe2dElement: markRaw({}),
     gridPipes2d: null, //存储管道的元素|x,y->{rotate:rotate,type:type}
     // -------------------- 模块相关存储 --------------------
@@ -128,6 +129,10 @@ export const useRootStore = defineStore("sheng-root-store", {
       dragScrollHandler.init(this.gridElCont);
       // 初始化传送带指示器
       BeltIndicator.init(this.overlay);
+      // 初始化框选指示器
+      SelectIndicator.init(this.overlay);
+      // 初始化命令事件控制
+      CommandEvent.init();
     },
 
     initPipeGrid(pipeGrid) {
@@ -272,7 +277,6 @@ export const useRootStore = defineStore("sheng-root-store", {
         clientX: endX,
         clientY: endY,
       });
-
       //edit by AI
       // 计算矩形区域的边界（取x/y的最小/最大值）
       const minX = Math.min(positionStart.x, positionEnd.x);
@@ -446,6 +450,90 @@ export const useRootStore = defineStore("sheng-root-store", {
       return map[`${fromDir}-${toDir}`];
     },
 
+    generateStraightPipe(from, to, id = "pipe") {
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+
+      // 必须是直线
+      if (dx !== 0 && dy !== 0) return false;
+
+      const stepX = dx === 0 ? 0 : dx > 0 ? 1 : -1;
+      const stepY = dy === 0 ? 0 : dy > 0 ? 1 : -1;
+      const steps = Math.abs(dx + dy);
+
+      const curDir = this.getStraightRotateIndex(stepX, stepY);
+
+      // 拐点处理
+      if (this.lastDir !== null && this.lastDir !== curDir) {
+        const turnRotate = this.getTurnRotateIndex(this.lastDir, curDir);
+        if (turnRotate === undefined) return false;
+
+        this.replacePipeNodeAtPosition(from, {
+          type: "turn-img-pipe",
+          rotate: turnRotate,
+        });
+      }
+
+      // 判空
+      for (let i = 1; i <= steps; i++) {
+        const x = from.x + stepX * i;
+        const y = from.y + stepY * i;
+        if (!this.isCellEmptyForPipe(x, y)) return false;
+      }
+
+      // 生成 pipe
+      for (let i = 1; i <= steps; i++) {
+        const x = from.x + stepX * i;
+        const y = from.y + stepY * i;
+        this.generateOnePipe({ x, y }, "belt-img-pipe", curDir, id);
+      }
+
+      this.lastDir = curDir;
+      return true;
+    },
+
+    generateStraightBelt(from, to, id = "belt") {
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+
+      // 必须是直线
+      if (dx !== 0 && dy !== 0) return false;
+
+      const stepX = dx === 0 ? 0 : dx > 0 ? 1 : -1;
+      const stepY = dy === 0 ? 0 : dy > 0 ? 1 : -1;
+      const steps = Math.abs(dx + dy);
+
+      const curDir = this.getStraightRotateIndex(stepX, stepY);
+
+      // 拐点处理
+      if (this.lastDir !== null && this.lastDir !== curDir) {
+        const turnRotate = this.getTurnRotateIndex(this.lastDir, curDir);
+        if (turnRotate === undefined) return false;
+
+        this.replaceNodeAtPosition(from, {
+          type: "turn-img",
+          rotate: turnRotate,
+        });
+      }
+
+      // 判空
+      for (let i = 1; i <= steps; i++) {
+        const x = from.x + stepX * i;
+        const y = from.y + stepY * i;
+        if (!this.isCellEmptyByPosition(x, y)) return false;
+      }
+
+      // 生成 belt
+      for (let i = 1; i <= steps; i++) {
+        const x = from.x + stepX * i;
+        const y = from.y + stepY * i;
+        this.generateOneBelt({ x, y }, "belt-img", curDir, id);
+      }
+
+      this.lastDir = curDir;
+      return true;
+    },
+
     generateBelt(newPosition, id = "belt") {
       // 第一次调用：只记录基准点
       if (!this.lastBaseNode) {
@@ -454,59 +542,24 @@ export const useRootStore = defineStore("sheng-root-store", {
         return;
       }
 
-      const oldNode = this.lastBaseNode;
+      const startNode = { ...this.lastBaseNode };
 
-      const dx = newPosition.x - oldNode.x;
-      const dy = newPosition.y - oldNode.y;
+      // ===== 曼哈顿路径：先 X 后 Y =====
 
-      // 只允许直线
-      if (dx !== 0 && dy !== 0) {
-        //console.log("not a straight line");
+      // 第一段：X
+      const midNode = { x: newPosition.x, y: startNode.y };
+
+      if (
+        (midNode.x !== startNode.x &&
+          !this.generateStraightBelt(startNode, midNode)) ||
+        (newPosition.y !== midNode.y &&
+          !this.generateStraightBelt(midNode, newPosition))
+      ) {
         return;
-      }
-
-      const stepX = dx === 0 ? 0 : dx > 0 ? 1 : -1;
-      const stepY = dy === 0 ? 0 : dy > 0 ? 1 : -1;
-      const steps = Math.abs(dx + dy);
-
-      const curDir = this.getStraightRotateIndex(stepX, stepY);
-
-      // 拐点：替换基准点为 turn-img
-      if (this.lastDir !== null && this.lastDir !== curDir) {
-        const turnRotate = this.getTurnRotateIndex(this.lastDir, curDir);
-        if (turnRotate === undefined) {
-          //console.log("invalid turn");
-          return;
-        }
-
-        this.replaceNodeAtPosition(oldNode, {
-          type: "turn-img",
-          rotate: turnRotate,
-        });
-      }
-
-      // 判空
-      for (let i = 1; i <= steps; i++) {
-        const x = oldNode.x + stepX * i;
-        const y = oldNode.y + stepY * i;
-
-        if (!this.isCellEmptyByPosition(x, y)) {
-          //console.log("not all empty");
-          return;
-        }
-      }
-
-      // 生成直线 belt
-      for (let i = 1; i <= steps; i++) {
-        const x = oldNode.x + stepX * i;
-        const y = oldNode.y + stepY * i;
-
-        this.generateOneBelt({ x, y }, "belt-img", curDir, id);
       }
 
       // 更新基准点
       this.lastBaseNode = { ...newPosition };
-      this.lastDir = curDir;
     },
 
     generatePipe(newPosition, id = "pipe") {
@@ -517,121 +570,67 @@ export const useRootStore = defineStore("sheng-root-store", {
         return;
       }
 
-      const oldNode = this.lastBaseNode;
+      const startNode = { ...this.lastBaseNode };
 
-      const dx = newPosition.x - oldNode.x;
-      const dy = newPosition.y - oldNode.y;
+      // ===== 曼哈顿路径：先 X 后 Y =====
+      const midNode = { x: newPosition.x, y: startNode.y };
 
-      // 只允许直线
-      if (dx !== 0 && dy !== 0) {
-        //console.log("not a straight line");
+      if (
+        (midNode.x !== startNode.x &&
+          !this.generateStraightPipe(startNode, midNode)) ||
+        (newPosition.y !== midNode.y &&
+          !this.generateStraightPipe(midNode, newPosition))
+      ) {
         return;
-      }
-
-      const stepX = dx === 0 ? 0 : dx > 0 ? 1 : -1;
-      const stepY = dy === 0 ? 0 : dy > 0 ? 1 : -1;
-      const steps = Math.abs(dx + dy);
-
-      const curDir = this.getStraightRotateIndex(stepX, stepY);
-
-      // 拐点：替换基准点为 turn-img
-      if (this.lastDir !== null && this.lastDir !== curDir) {
-        const turnRotate = this.getTurnRotateIndex(this.lastDir, curDir);
-        if (turnRotate === undefined) {
-          //console.log("invalid turn");
-          return;
-        }
-
-        this.replacePipeNodeAtPosition(oldNode, {
-          type: "turn-img-pipe",
-          rotate: turnRotate,
-        });
-      }
-
-      // 判空
-      for (let i = 1; i <= steps; i++) {
-        const x = oldNode.x + stepX * i;
-        const y = oldNode.y + stepY * i;
-        //这里的判空需要修改
-        if (!this.isCellEmptyForPipe(x, y)) {
-          //console.log("not all empty");
-          return;
-        }
-      }
-
-      // 生成直线 belt
-      for (let i = 1; i <= steps; i++) {
-        const x = oldNode.x + stepX * i;
-        const y = oldNode.y + stepY * i;
-
-        this.generateOnePipe({ x, y }, "belt-img-pipe", curDir, id);
       }
 
       // 更新基准点
       this.lastBaseNode = { ...newPosition };
-      this.lastDir = curDir;
     },
 
     // ======================================================
     // -------------------- 事件处理 --------------------
     // ======================================================
-    handleLeftClick(event) {
-      //console.log("left click", event);
-      //这里做pipe和belt判断
-      if (this.toolbarMode == "belts") {
-        const position = this.getPositionFromClick(event);
-        if (this.quickPlaceMode === "belt") {
-          if (this.isCellEmpty(event) || event.isBeltPort) {
-            this.generateBelt(position, "belt");
-          }
-        }
-        if (this.quickPlaceMode === "pipe" && this.isCellEmptyPipe(event)) {
-          this.generatePipe(position, "pipe");
-          console.log("test click pipe generate");
+    handleClickBelts(event) {
+      const position = this.getPositionFromClick(event);
+      if (this.quickPlaceMode === "belt") {
+        if (this.isCellEmpty(event) || event.isBeltPort) {
+          this.generateBelt(position, "belt");
         }
       }
-
-      if (!["belts", "select", "default"].includes(this.toolbarMode)) {
-        //对于pipe模式下需要修改材质
-        const position = this.getPositionFromClick(event);
-        //特殊
-        if (
-          this.quickPlaceMode === "pipe" &&
-          ["belt", "turn"].includes(this.toolbarMode) &&
-          this.isCellEmptyPipe(event)
-        ) {
-          let name = `${this.toolbarMode}-img-pipe`;
-          this.generateOnePipe(position, name, 0, this.toolbarMode);
-          return;
-        }
-        //标准
-        if (
-          this.quickPlaceMode === "pipe" &&
-          !["belt", "turn"].includes(this.toolbarMode) &&
-          this.isCellEmpty(event)
-        ) {
-          let name = `${this.toolbarMode}-img-pipe`;
-          this.generateOneBelt(position, name, 0, this.toolbarMode);
-          return;
-        }
-        if (this.quickPlaceMode === "belt" && this.isCellEmpty(event)) {
-          let name = `${this.toolbarMode}-img`;
-          this.generateOneBelt(position, name, 0, this.toolbarMode);
-          return;
-        }
+      if (this.quickPlaceMode === "pipe" && this.isCellEmptyPipe(event)) {
+        this.generatePipe(position, "pipe");
+        //console.log("test click pipe generate");
       }
     },
 
-    handleRightClick(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      //处于连接状态取消连接模式
+    handleClickSingleBoP(event) {
+      //对于pipe模式下需要修改材质
       const position = this.getPositionFromClick(event);
-      if (this.quickPlaceMode === "belt") {
-        this.deleteOneBelt(position);
+      //特殊
+      if (
+        this.quickPlaceMode === "pipe" &&
+        ["belt", "turn"].includes(this.toolbarMode) &&
+        this.isCellEmptyPipe(event)
+      ) {
+        let name = `${this.toolbarMode}-img-pipe`;
+        this.generateOnePipe(position, name, 0, this.toolbarMode);
+        return;
       }
-      if (this.quickPlaceMode === "pipe") {
-        this.deleteOnePipe(position);
+      //标准
+      if (
+        this.quickPlaceMode === "pipe" &&
+        !["belt", "turn"].includes(this.toolbarMode) &&
+        this.isCellEmpty(event)
+      ) {
+        let name = `${this.toolbarMode}-img-pipe`;
+        this.generateOneBelt(position, name, 0, this.toolbarMode);
+        return;
+      }
+      if (this.quickPlaceMode === "belt" && this.isCellEmpty(event)) {
+        let name = `${this.toolbarMode}-img`;
+        this.generateOneBelt(position, name, 0, this.toolbarMode);
+        return;
       }
     },
 
@@ -639,28 +638,9 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.rootGrid.enableMove(true);
     },
 
-    handleBeltModeChange(value) {
-      //select模式下禁用cont的scroll
-      if (value == "select") {
-        this.gridElCont.style.overflow = "hidden";
-      } else {
-        this.gridElCont.style.overflow = "scroll";
-      }
-      if (this.toolbarMode == "belts") {
-        BeltIndicator.handleStartBelt();
-      }
-      if (this.toolbarModeHistory == "belts") {
-        this.lastBaseNode = null;
-        this.lastDir = null;
-        BeltIndicator.handleEndBelt();
-      }
-      this.toolbarModeHistory = value;
-    },
-
     //多带放置对象改变，需要重置toolbarMode
     handleGenerateTypeChange() {
-      this.toolbarMode = "default"
-      this.handleBeltModeChange("default")
+      this.toolbarMode = "default";
     },
 
     // 处理overlay点击事件，传递给底层grid-stack
@@ -672,7 +652,7 @@ export const useRootStore = defineStore("sheng-root-store", {
         bubbles: true,
         cancelable: true,
       });
-      const newEventEnhance = Object.assign(newEvent,detail);
+      const newEventEnhance = Object.assign(newEvent, detail);
       // 触发grid-stack的点击事件
       if (this.quickPlaceMode === "belt") {
         this.gridEl.dispatchEvent(newEventEnhance);
@@ -800,7 +780,7 @@ export const useRootStore = defineStore("sheng-root-store", {
 
     copyEditCode(index) {
       // 获取对应索引的模块对象
-      console.log("nowpart", this.parts);
+      //console.log("nowpart", this.parts);
       const part = this.parts[index];
       if (!part) return;
       keyboardHandler.disable();

@@ -11,7 +11,7 @@
     <template #reference>
       <div
         class="selection-box"
-        v-show="selectStore.showSelect"
+        v-show="selectStore.isStartSelect"
         @mousedown="selectStore.handleMouseDown"
         @mousemove="selectStore.handleMouseMove"
         @mouseup="selectStore.handleMouseUp"
@@ -218,7 +218,6 @@
           <el-radio-group
             v-model="rootStore.toolbarMode"
             size="default"
-            @change="rootStore.handleBeltModeChange"
             class="toolbar-section"
           >
             <el-radio-button label="多带" value="belts" />
@@ -467,7 +466,7 @@
       <div
         class="sheng-cont-grid"
         @wheel="rootStore.handleScalingChange_"
-        @contextmenu="rootStore.handleRightClick"
+        @contextmenu="CommandEvent.handleRightClick"
         @mousedown="selectStore.handleMouseDown"
         @mousemove="selectStore.handleMouseMove"
         @mouseup="selectStore.handleMouseUp"
@@ -476,7 +475,7 @@
           class="sheng-overlay"
         ></div>
         <div
-          @click="rootStore.handleLeftClick"
+          @click="CommandEvent.handleLeftClick"
           class="pipe-grid"
           id="pipe-grid"
           style="background-color: transparent"
@@ -488,7 +487,7 @@
           
         ></div>
         <div
-          @click="rootStore.handleLeftClick"
+          @click=" CommandEvent.handleLeftClick"
           id="grid-stack"
           class="grid-stack bottom-grid-bg"
           style="background-color: transparent"
@@ -509,20 +508,18 @@ import {
   createVNode,
   render,
   getCurrentInstance,
-  markRaw,
-  ref,
   watch,
   onUnmounted,
 } from "vue";
+import "gridstack/dist/gridstack.min.css";
+import RecipeContent from "../components/original/RecipeContent.vue";
+import WareHouseContent from "../components/original/WareHouseContent.vue";
+import CommandEvent from "../utils/CommandEvent";
 import { GridStack } from "gridstack";
 import { useRootStore } from "../stores/SimStore";
 import { useSelectStore } from "../stores/SelectStore";
 import { machineComponentMap } from "../utils/MachineMap";
-import RecipeContent from "../components/original/RecipeContent.vue";
-import WareHouseContent from "../components/original/WareHouseContent.vue";
 import { MachineData, iconStyle, gridStackDataProcess } from "../utils/DataMap";
-import "gridstack/dist/gridstack.min.css";
-import BeltIndicator from "../utils/BeltIndicator";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
@@ -595,12 +592,15 @@ onMounted(async () => {
     const rootId = item.id.split("_")[0];
     // 存入 store
     if (!el.classList.contains("sidebar-item")) return;
+    
+    const detail = event.detail[0];
 
     rootStore.gridWidgets[item.id] = {
       rotate: 0,
       recipe: "",
       part: rootStore.editPartChoose,
     };
+
     rootStore.gridWidgetElements[item.id] = el;
     rootStore.partsWidgetId[rootStore.editPartChoose].add(item.id);
     // 渲染 Vue 组件
@@ -781,6 +781,7 @@ onUnmounted(() => {
   border: 2px dashed var(--sim-color-primary);
   border-radius: 4px;
   background-color: rgba(64, 158, 255, 0.1);
+  pointer-events: none;
 }
 
 :deep(.grid-stack-item) {

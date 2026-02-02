@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { useRootStore } from "./SimStore";
 import { nextTick } from "vue";
+import SelectIndicator from "../utils/SelectIndicator";
 
 export const useSelectStore = defineStore("sheng-select-store", {
   state: () => ({
@@ -9,8 +10,6 @@ export const useSelectStore = defineStore("sheng-select-store", {
     startX: null, //初始X位置 相对屏幕
     startY: null, //初始Y位置 相对屏幕
     isStartSelect: false, //判断是否开始框选
-    showSelectMenu: false, //判断是否显示框选菜单
-    showSelect: false, //判断是否显示框选器
     midDeleteData: null,
   }),
 
@@ -18,30 +17,30 @@ export const useSelectStore = defineStore("sheng-select-store", {
     //初始化框选器
     initSelector(selector) {
       this.selector = selector;
-      this.hideSelectorAMenu();
-    },
-
-    //展示框选器的确认菜单
-    showMenu() {
-      this.showSelectMenu = true;
     },
 
     //展示框选器
     showSelector() {
-      this.showSelect = true;
       this.selector.style.opacity = 1;
     },
 
     //隐藏框选器与其菜单
-    hideSelectorAMenu() {
+    hideSelector() {
       this.selector.style.opacity = 0;
-      this.showSelectMenu = false;
     },
 
-    //确认删除
+    //确认删除 - 暂时弃用
     confirmDelete() {
       //console.log(this.midDeleteData)
-      if (this.rootStore.quickPlaceMode === 'pipe') {
+      /*
+      this.midDeleteData = {
+        startX: this.startX,
+        startY: this.startY,
+        endX: this.startX + newWidth,
+        endY: this.endY + newHeight,
+      };
+      */
+      if (this.rootStore.quickPlaceMode === "pipe") {
         this.rootStore.deleteSeriesPipe2d(this.midDeleteData);
       } else {
         this.rootStore.deleteSeriesBelt2d(this.midDeleteData);
@@ -49,13 +48,12 @@ export const useSelectStore = defineStore("sheng-select-store", {
       this.hideSelectorAMenu();
     },
 
-    //el-popper的回调事件|用于popper消失之后控制框选器完全隐藏
-    handleMenuHide() {
+    //结束select重置
+    handleSelectOver() {
+      this.hideSelector();
+      this.isStartSelect = false;
       this.selector.style.width = "0px";
       this.selector.style.height = "0px";
-      this.showSelect = false;
-      this.rootStore.toolbarMode = "default";
-      this.rootStore.handleBeltModeChange("default");
     },
 
     handleMouseDown(event) {
@@ -72,7 +70,7 @@ export const useSelectStore = defineStore("sheng-select-store", {
       if (!(this.rootStore.toolbarMode == "select")) {
         return;
       }
-      ////console.log("move", event);
+      //console.log("move", event);
       if (this.isStartSelect) {
         let newWidth = Math.abs(this.startX - event.clientX);
         let newHeight = Math.abs(this.startY - event.clientY);
@@ -85,20 +83,32 @@ export const useSelectStore = defineStore("sheng-select-store", {
       if (!(this.rootStore.toolbarMode == "select")) {
         return;
       }
-      ////console.log("up", event);
-      this.isStartSelect = false;
-      this.showMenu();
+      
+      //console.log("up", event);
+      this.handleSelectOver()
+
+      //this.showMenu();
       let newWidth = Math.abs(this.startX - event.clientX);
-      let newHeight = Math.abs(this.startY - event.clientY) / 2
+      let newHeight = Math.abs(this.startY - event.clientY) / 2;
+
       //console.log(newWidth,newHeight)
       this.endX = this.startX + newWidth;
       this.endY = this.startY + newHeight;
-      this.midDeleteData = {
-        startX: this.startX,
-        startY: this.startY,
-        endX: this.startX + newWidth,
-        endY: this.endY + newHeight,
+
+      //这里将cellPosition传递给SelectIndicator
+      const cellPosition = {
+        startCell: this.rootStore.getPositionFromClick({
+          clientX: this.startX,
+          clientY: this.startY,
+        }),
+        endCell: this.rootStore.getPositionFromClick({
+          clientX: this.startX + newWidth,
+          clientY: this.endY + newHeight,
+        }),
       };
+
+      //更新指示器的内容
+      SelectIndicator.updateIndicatorContent(cellPosition);
     },
 
     //工具方法，设置框选器的位置
