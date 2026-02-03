@@ -4,7 +4,12 @@ import { createVNode, markRaw, render } from "vue";
 import { machineComponentMap } from "../utils/MachineMap";
 import ConveyerBelt from "../components/simulation/ConveyerBelt.vue";
 import Pipe from "../components/simulation/Pipe.vue";
-import { ElNotification, ElMessageBox, treeEmits } from "element-plus";
+import {
+  ElNotification,
+  ElMessageBox,
+  treeEmits,
+  ElMessage,
+} from "element-plus";
 import keyboardHandler from "../utils/keyboardHandler";
 import dragScrollHandler from "../utils/dragScrollHandler";
 import BeltIndicator from "../utils/BeltIndicator";
@@ -19,9 +24,11 @@ export const useRootStore = defineStore("sheng-root-store", {
     appContext: null,
 
     // -------------------- 状态标志 --------------------
+    //这里是Dialog相关的
     isBluePrintImport: false,
     isRecipeChoose: false,
     isWareHouseRecipeChoose: false,
+    //一般的状态标志
     isZomming: false,
     isShowSupplierExtent: false,
     isShowMachines: true,
@@ -29,13 +36,15 @@ export const useRootStore = defineStore("sheng-root-store", {
     isShowPipes: true,
     isShowPipePort: true,
     quickPlaceMode: "belt",
+    //keyboard状态
+    keyboardCommand: null,
+    selectSubMode: null,
     // -------------------- 选择状态 --------------------
     recipeChooseId: "",
     materialChooseId: "",
 
     // -------------------- 工具栏状态 --------------------
     toolbarMode: "default",
-    toolbarModeHistory: "default",
     beltSelect: "turn",
     editPartChoose: "part0", //当前编辑的模块
 
@@ -693,6 +702,46 @@ export const useRootStore = defineStore("sheng-root-store", {
         noResize: true,
         id: id,
       });
+    },
+
+    batchMoveMachines(nodes, bias) {
+      const { biasX, biasY } = bias;
+      const engine = this.rootGrid.engine;
+
+      // 第一步：遍历所有节点，检查新位置是否都可用
+      const canMove = Object.entries(nodes).every(([nodeId, node]) => {
+        const preElement = this.gridWidgetElements[nodeId];
+        const preNode = preElement.gridstackNode;
+        const newX = preNode.x + biasX;
+        const newY = preNode.y + biasY;
+        return engine.isAreaEmpty(newX, newY, preNode.w, preNode.h);
+      });
+
+      // 如果任何节点的新位置不可用，直接返回
+      if (!canMove) {
+        ElMessage.error("有机器位置冲突，无法移动");
+        return false;
+      }
+
+      // 第二步：所有节点的新位置都可用，开始批量更新
+      engine.batchUpdate(true, true);
+      engine.float = false;
+      //进行批量MOVE操作
+      Object.entries(nodes)
+        .reverse()
+        .forEach(([nodeId, node]) => {
+          const preElement = this.gridWidgetElements[nodeId];
+          const preNode = preElement.gridstackNode;
+          const newX = preNode.x + biasX;
+          const newY = preNode.y + biasY;
+
+          this.rootGrid.update(preElement, { x: newX, y: newY });
+        });
+
+      //结束批量更新，进行提交
+      engine.batchUpdate(false, true);
+      engine.float = true;
+      return true
     },
 
     // ======================================================

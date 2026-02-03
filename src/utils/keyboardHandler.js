@@ -1,7 +1,9 @@
 // 键盘事件处理器
+import { useRootStore } from "../stores/SimStore";
 
 class KeyboardHandler {
   constructor() {
+    this.rootStore = null;
     this.isListening = false;
     this.gridElCont = null;
     this.gridElContScale = 1;
@@ -11,9 +13,9 @@ class KeyboardHandler {
   // 初始化键盘事件监听
   init(gridElCont) {
     if (this.isListening) return;
-    
     this.gridElCont = gridElCont;
-    window.addEventListener('keydown', this.handleKeydown);
+    this.rootStore = useRootStore();
+    window.addEventListener("keydown", this.handleKeydown);
     this.isListening = true;
   }
 
@@ -24,30 +26,36 @@ class KeyboardHandler {
 
   // 键盘按下事件处理
   handleKeydown(event) {
-    // 只处理WASD键
     const key = event.key.toLowerCase();
-    if (!['w', 'a', 's', 'd'].includes(key)) return;
-    
-    // 阻止默认行为（如页面滚动）
-    event.preventDefault();
-    
-    // 根据gridElContScale计算滚动步长
-    const baseStep = 50;
-    const step = baseStep * this.gridElContScale;
-    
-    // 根据按键方向计算滚动方向
+
+    // WASD 保留（输入层行为）
+    if (["w", "a", "s", "d"].includes(key)) {
+      event.preventDefault();
+      const step = 50 * this.gridElContScale;
+      if (key === "w") this.gridElCont.scrollTop -= step;
+      if (key === "s") this.gridElCont.scrollTop += step;
+      if (key === "a") this.gridElCont.scrollLeft -= step;
+      if (key === "d") this.gridElCont.scrollLeft += step;
+      return;
+    }
+
+    // 只做一件事：写命令
     switch (key) {
-      case 'w': // 上
-        this.gridElCont.scrollTop -= step;
+      case "x":
+        event.preventDefault();
+        this.rootStore.keyboardCommand = "enter-select";
         break;
-      case 'a': // 左
-        this.gridElCont.scrollLeft -= step;
+      case "f":
+        event.preventDefault();
+        this.rootStore.keyboardCommand = "select-fold";
         break;
-      case 's': // 下
-        this.gridElCont.scrollTop += step;
+      case "m":
+        event.preventDefault();
+        this.rootStore.keyboardCommand = "select-move";
         break;
-      case 'd': // 右
-        this.gridElCont.scrollLeft += step;
+      case "escape":
+        event.preventDefault();
+        this.rootStore.keyboardCommand = "escape";
         break;
     }
   }
@@ -55,25 +63,30 @@ class KeyboardHandler {
   // 销毁键盘事件监听
   destroy() {
     if (!this.isListening) return;
-    
-    window.removeEventListener('keydown', this.handleKeydown);
+
+    window.removeEventListener("keydown", this.handleKeydown);
     this.isListening = false;
     this.gridElCont = null;
+    // 重置状态变量
+    if (this.rootStore) {
+      this.rootStore.isXPressed = false;
+      this.rootStore.activeKey = null;
+    }
   }
 
   // 暂时禁用键盘事件监听
   disable() {
     if (!this.isListening) return;
-    
-    window.removeEventListener('keydown', this.handleKeydown);
+
+    window.removeEventListener("keydown", this.handleKeydown);
     this.isListening = false;
   }
 
   // 重新启用键盘事件监听
   enable() {
     if (this.isListening || !this.gridElCont) return;
-    
-    window.addEventListener('keydown', this.handleKeydown);
+
+    window.addEventListener("keydown", this.handleKeydown);
     this.isListening = true;
   }
 }

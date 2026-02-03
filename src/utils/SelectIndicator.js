@@ -18,9 +18,14 @@ class SelectIndicator {
     //网格大小
     this.gridSize = 3017 / 72;
     //存储选中的配置
-    this.selectedConfigs = {}
+    this.selectedConfigs = {};
     //鼠标移动事件
     this.handleMouseMove = this.handleMouseMove.bind(this);
+    //偏移
+    this.bias = {
+      biasX: 0,
+      biasY: 0,
+    }
   }
 
   /**
@@ -79,25 +84,20 @@ class SelectIndicator {
     return indicator;
   }
 
-  //校准鼠标的位置
-  calibrateMousePosition(x, y) {
-    if (!this.indicatorContainer) return;
-
-    // 这里的 x 和 y 是从 SelectStore 传入的 newWidth 和 newHeight
-    // 我们需要将指示器容器定位到合适的位置
-    // 计算中心位置
-    const centerX = x / 2;
-    const centerY = y / 2;
-
-    // 将指示器容器定位到框选区域的中心
-    this.indicatorContainer.style.left = `${centerX}px`;
-    this.indicatorContainer.style.top = `${centerY}px`;
-  }
-
   //激活监听MouseMove事件
   activateMouseMoveListener() {
     if (this.rootStore && this.rootStore.gridEl) {
       this.rootStore.gridEl.addEventListener("mousemove", this.handleMouseMove);
+    }
+  }
+
+  //取消监听MouseMove事件
+  deactivateMouseMoveListener() {
+    if (this.rootStore && this.rootStore.gridEl) {
+      this.rootStore.gridEl.removeEventListener(
+        "mousemove",
+        this.handleMouseMove,
+      );
     }
   }
 
@@ -112,6 +112,7 @@ class SelectIndicator {
       this.selectRange.minY +
         (this.selectRange.maxY - this.selectRange.minY) / 2,
     );
+    
     const rect = this.rootContainer.getBoundingClientRect();
     // 屏幕坐标 → 容器视觉坐标
     const visualX = event.clientX - rect.left;
@@ -122,6 +123,12 @@ class SelectIndicator {
     // 网格吸附（逻辑空间）
     const col = Math.floor(logicX / this.gridSize) - biasX;
     const row = Math.floor(logicY / this.gridSize) - biasY;
+
+    this.bias = {
+      biasX: col,
+      biasY: row,
+    }
+
     const snappedX = col * this.gridSize;
     const snappedY = row * this.gridSize;
     // 放回逻辑坐标（不要再 * scale）
@@ -129,9 +136,14 @@ class SelectIndicator {
     this.indicatorContainer.style.top = `${snappedY}px`;
   }
 
-  resetAll() {
+  clearConfig() {
     // 清空选中的配置对象
     this.selectedConfigs = {};
+    // 清空偏移数据
+    this.bias = {
+      biasX: 0,
+      biasY: 0,
+    }
   }
 
   //更新指示器的内容
@@ -165,15 +177,9 @@ class SelectIndicator {
 
       //贪心维护
       this.selectRange.minX = Math.min(this.selectRange.minX ?? x, x);
-      this.selectRange.maxX = Math.max(
-        this.selectRange.maxX ?? x + w,
-        x + w,
-      );
+      this.selectRange.maxX = Math.max(this.selectRange.maxX ?? x + w, x + w);
       this.selectRange.minY = Math.min(this.selectRange.minY ?? y, y);
-      this.selectRange.maxY = Math.max(
-        this.selectRange.maxY ?? y + h,
-        y + h,
-      );
+      this.selectRange.maxY = Math.max(this.selectRange.maxY ?? y + h, y + h);
 
       // 检查是否在框选范围内
       if (x >= startX && x <= endX && y >= startY && y <= endY) {
@@ -190,20 +196,24 @@ class SelectIndicator {
       }
     });
 
-    console.log(this.selectedConfigs);
-
     // 遍历选中的配置对象，生成拓印
     Object.values(this.selectedConfigs).forEach((config) => {
       this.generatePrint(config);
     });
-
-    //生命周期还需要重新绑定事件
-    this.activateMouseMoveListener();
   }
 
   //清空指示器
   clearIndicator() {
     this.indicatorContainer.innerHTML = "";
+  }
+
+  //重置指示器
+  reset() {
+    this.clearConfig();
+    this.clearIndicator();
+    this.deactivateMouseMoveListener();
+    this.indicatorContainer.style.left = `0`;
+    this.indicatorContainer.style.top = `0`;
   }
 }
 

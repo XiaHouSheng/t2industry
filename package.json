@@ -13,7 +13,7 @@
     "@element-plus/icons-vue": "^2.3.2",
     "@vueuse/core": "^14.1.0",
     "element-plus": "^2.11.9",
-    "gridstack": "^12.3.3",
+    "gridstack": "^12.4.2",
     "gridstack-vue": "^0.0.1",
     "jquery": "^3.7.1",
     "lodash": "^4.17.21",
