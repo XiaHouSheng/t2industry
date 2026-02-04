@@ -285,7 +285,10 @@
 
           <!--快速放置模式-->
           <div style="margin-right: 12px">
-            <el-radio-group v-model="rootStore.quickPlaceMode" @change="rootStore.handleGenerateTypeChange" size="small">
+            <el-radio-group
+              v-model="rootStore.quickPlaceMode"
+              size="small"
+            >
               <el-radio-button label="belt" value="belt"
                 >传送带</el-radio-button
               >
@@ -471,9 +474,7 @@
         @mousemove="selectStore.handleMouseMove"
         @mouseup="selectStore.handleMouseUp"
       >
-        <div
-          class="sheng-overlay"
-        ></div>
+        <div class="sheng-overlay"></div>
         <div
           @click="CommandEvent.handleLeftClick"
           class="pipe-grid"
@@ -483,11 +484,9 @@
             pointerEvents:
               rootStore.quickPlaceMode === 'pipe' ? 'auto' : 'none',
           }"
-
-          
         ></div>
         <div
-          @click=" CommandEvent.handleLeftClick"
+          @click="CommandEvent.handleLeftClick"
           id="grid-stack"
           class="grid-stack bottom-grid-bg"
           style="background-color: transparent"
@@ -592,8 +591,6 @@ onMounted(async () => {
     const rootId = item.id.split("_")[0];
     // 存入 store
     if (!el.classList.contains("sidebar-item")) return;
-    
-    const detail = event.detail[0];
 
     rootStore.gridWidgets[item.id] = {
       rotate: 0,

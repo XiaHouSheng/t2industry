@@ -2,16 +2,6 @@
 
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 
-// 导入业务页面组件（均基于 Root 容器开发）
-import home from '../paegs/home.vue'
-import calculate from '../paegs/calculate.vue'
-import simulation from '../paegs/simulation.vue'
-
-// 导入home页面的子组件
-import homeIndex from '../paegs/home_child/index.vue'
-import homeDiscover from '../paegs/home_child/discover.vue'
-import homeSelf from '../paegs/home_child/self.vue'
-
 // 路由规则（直接映射业务页面）
 const routes = [
   {
@@ -21,25 +11,25 @@ const routes = [
   {
     path: '/home',
     name: 'Home',
-    component: home,
+    component: () => import('../paegs/home.vue'),
     meta: { title: '终末地模拟器 - 首页' },
     children: [
       {
         path: '',
         name: 'HomeIndex',
-        component: homeIndex,
+        component: () => import('../paegs/home_child/index.vue'),
         meta: { title: '终末地模拟器 - 首页' }
       },
       {
         path: 'discover',
         name: 'HomeDiscover',
-        component: homeDiscover,
+        component: () => import('../paegs/home_child/discover.vue'),
         meta: { title: '终末地模拟器 - 发现蓝图' }
       },
       {
         path: 'self',
         name: 'HomeSelf',
-        component: homeSelf,
+        component: () => import('../paegs/home_child/self.vue'),
         meta: { title: '终末地模拟器 - 个人蓝图' }
       }
     ]
@@ -47,13 +37,13 @@ const routes = [
   {
     path: '/calculate',
     name: 'Calculate',
-    component: calculate,
+    component: () => import('../paegs/calculate.vue'),
     meta: { title: '物料配平计算' }
   },
   {
     path: '/editor/:hashCode?',
     name: 'Editor',
-    component: simulation,
+    component: () => import('../paegs/simulation.vue'),
     meta: { title: '蓝图编辑' }
   },
 ]

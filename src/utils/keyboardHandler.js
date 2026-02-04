@@ -41,6 +41,14 @@ class KeyboardHandler {
 
     // 只做一件事：写命令
     switch (key) {
+      case "q":
+        event.preventDefault();
+        this.rootStore.keyboardCommand = "pipes-pipe";
+        break;
+      case "e":
+        event.preventDefault();
+        this.rootStore.keyboardCommand = "belts-belt";
+        break;
       case "x":
         event.preventDefault();
         this.rootStore.keyboardCommand = "enter-select";

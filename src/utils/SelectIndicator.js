@@ -3,6 +3,7 @@ import { useRootStore } from "../stores/SimStore";
 class SelectIndicator {
   constructor() {
     //方法调用
+    this.selectStore = null;
     this.rootStore = null;
     //指示器容器
     this.indicatorContainer = null;
@@ -19,13 +20,15 @@ class SelectIndicator {
     this.gridSize = 3017 / 72;
     //存储选中的配置
     this.selectedConfigs = {};
+    this.selectedBeltConfigs = {};
+    this.selectedPipeConfigs = {};
     //鼠标移动事件
     this.handleMouseMove = this.handleMouseMove.bind(this);
     //偏移
     this.bias = {
       biasX: 0,
       biasY: 0,
-    }
+    };
   }
 
   /**
@@ -72,7 +75,6 @@ class SelectIndicator {
   //生成拓印
   generatePrint(config) {
     const { x, y, width, height } = config;
-
     const indicator = document.createElement("div");
     indicator.style.position = "absolute";
     indicator.style.left = `${x * this.gridSize}px`;
@@ -80,6 +82,7 @@ class SelectIndicator {
     indicator.style.width = `${width * this.gridSize}px`;
     indicator.style.height = `${height * this.gridSize}px`;
     indicator.style.backgroundColor = "rgba(0, 115, 255, 0.66)";
+    indicator.style.zIndex = 2000;
     this.indicatorContainer.appendChild(indicator);
     return indicator;
   }
@@ -112,7 +115,7 @@ class SelectIndicator {
       this.selectRange.minY +
         (this.selectRange.maxY - this.selectRange.minY) / 2,
     );
-    
+
     const rect = this.rootContainer.getBoundingClientRect();
     // 屏幕坐标 → 容器视觉坐标
     const visualX = event.clientX - rect.left;
@@ -124,10 +127,11 @@ class SelectIndicator {
     const col = Math.floor(logicX / this.gridSize) - biasX;
     const row = Math.floor(logicY / this.gridSize) - biasY;
 
+    // 偏移量
     this.bias = {
       biasX: col,
       biasY: row,
-    }
+    };
 
     const snappedX = col * this.gridSize;
     const snappedY = row * this.gridSize;
@@ -139,15 +143,18 @@ class SelectIndicator {
   clearConfig() {
     // 清空选中的配置对象
     this.selectedConfigs = {};
+    this.selectedBeltConfigs = {};
+    this.selectedPipeConfigs = {};
     // 清空偏移数据
     this.bias = {
       biasX: 0,
       biasY: 0,
-    }
+    };
   }
 
   //更新指示器的内容
   updateIndicatorContent(position) {
+    console.log("updateIndicatorContent", position);
     const { startCell, endCell } = position;
 
     // 重置选择范围
@@ -166,9 +173,8 @@ class SelectIndicator {
     const startY = Math.min(startCell.y, endCell.y);
     const endY = Math.max(startCell.y, endCell.y);
 
-    // 遍历所有 gridWidgetElements
-    Object.values(this.rootStore.gridWidgetElements).forEach((item) => {
-      // 获取元素的位置和大小
+    //可复用
+    const firstStepCheck = (item, type = "machine") => {
       const x = parseInt(item.getAttribute("gs-x")) || 0;
       const y = parseInt(item.getAttribute("gs-y")) || 0;
       const w = parseInt(item.getAttribute("gs-w")) || 1;
@@ -190,14 +196,54 @@ class SelectIndicator {
           width: w,
           height: h,
           id: id,
+          el: item,
         };
-        // 添加到选中的配置集合
-        this.selectedConfigs[id] = config;
+        // 添加到对应选中的配置集合
+        if (type === "machine") {
+          this.selectedConfigs[id] = config;
+        }
+        if (type === "belt") {
+          this.selectedBeltConfigs[id] = config;
+        }
+        if (type === "pipe") {
+          this.selectedPipeConfigs[id] = config;
+        }
       }
+    };
+
+    // 遍历所有 gridWidgetElements
+    Object.values(this.rootStore.gridWidgetElements).forEach((item) => {
+      // 获取元素的位置和大小
+      firstStepCheck(item, "machine");
     });
+
+    // 遍历传送带和管道
+    for (let x = startX; x <= endX; x++) {
+      for (let y = startY; y <= endY; y++) {
+        const beltElement = this.rootStore.gridBelt2dElement[`${x}-${y}`];
+        const pipeElement = this.rootStore.gridPipe2dElement[`${x}-${y}`];
+        if (beltElement) {
+          firstStepCheck(beltElement, "belt");
+        }
+        if (pipeElement) {
+          firstStepCheck(pipeElement, "pipe");
+        }
+      }
+    }
+
+    //
 
     // 遍历选中的配置对象，生成拓印
     Object.values(this.selectedConfigs).forEach((config) => {
+      //console.log(config)
+      this.generatePrint(config);
+    });
+    Object.values(this.selectedBeltConfigs).forEach((config) => {
+      //console.log(config)
+      this.generatePrint(config);
+    });
+    Object.values(this.selectedPipeConfigs).forEach((config) => {
+      //console.log(config)
       this.generatePrint(config);
     });
   }

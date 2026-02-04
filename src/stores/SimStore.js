@@ -647,11 +647,6 @@ export const useRootStore = defineStore("sheng-root-store", {
       this.rootGrid.enableMove(true);
     },
 
-    //多带放置对象改变，需要重置toolbarMode
-    handleGenerateTypeChange() {
-      this.toolbarMode = "default";
-    },
-
     // 处理overlay点击事件，传递给底层grid-stack
     handleOverlayClick(event, detail = {}) {
       //console.log("handleOverlayClick", event);
@@ -704,24 +699,159 @@ export const useRootStore = defineStore("sheng-root-store", {
       });
     },
 
-    batchMoveMachines(nodes, bias) {
+    checkNodesCanMove(engine, nodes, bias, errorMessage) {
       const { biasX, biasY } = bias;
-      const engine = this.rootGrid.engine;
 
-      // 第一步：遍历所有节点，检查新位置是否都可用
       const canMove = Object.entries(nodes).every(([nodeId, node]) => {
-        const preElement = this.gridWidgetElements[nodeId];
+        const preElement = node.el;
         const preNode = preElement.gridstackNode;
         const newX = preNode.x + biasX;
         const newY = preNode.y + biasY;
         return engine.isAreaEmpty(newX, newY, preNode.w, preNode.h);
       });
 
-      // 如果任何节点的新位置不可用，直接返回
       if (!canMove) {
-        ElMessage.error("有机器位置冲突，无法移动");
+        ElMessage.error(errorMessage);
         return false;
       }
+
+      return true;
+    },
+
+    batchMovePipe(nodes, bias) {
+      const { biasX, biasY } = bias;
+      const engine = this.rootPipeGrid.engine;
+
+      // 第二步：所有节点的新位置都可用，开始批量更新
+      engine.batchUpdate(true, true);
+      engine.float = false;
+
+      // 临时存储需要移动的管道数据
+      const pipesToMove = [];
+
+      // 第一步：遍历当前位置，清除数据
+      Object.entries(nodes).forEach(([nodeId, node]) => {
+        const preElement = node.el;
+        const preNode = preElement.gridstackNode;
+        const oldX = preNode.x;
+        const oldY = preNode.y;
+
+        // 保存管道数据
+        const pipeData = this.gridPipes2d[oldX][oldY];
+        if (pipeData) {
+          pipesToMove.push({
+            element: preElement,
+            oldX,
+            oldY,
+            data: pipeData,
+          });
+
+          // 从原位置清除数据
+          this.gridPipes2d[oldX][oldY] = {};
+          delete this.gridPipe2dElement[`${oldX}-${oldY}`];
+        }
+      });
+
+      // 第二步：更新位置并设置新坐标的数据
+      pipesToMove.forEach(({ element, oldX, oldY, data }) => {
+        const preNode = element.gridstackNode;
+        const newX = preNode.x + biasX;
+        const newY = preNode.y + biasY;
+
+        // 更新网格位置
+        this.rootPipeGrid.update(element, { x: newX, y: newY });
+
+        // 在新位置设置数据
+        this.gridPipes2d[newX][newY] = data;
+        this.gridPipe2dElement[`${newX}-${newY}`] = element;
+
+        // 更新partsPipes中的位置
+        const part = data.part;
+        if (part) {
+          this.partsPipes[part].delete(`${oldX}-${oldY}`);
+          this.partsPipes[part].add(`${newX}-${newY}`);
+        }
+      });
+
+      //结束批量更新，进行提交
+      engine.batchUpdate(false, true);
+      engine.float = true;
+      return true;
+    },
+
+    batchMoveBelt(nodes, bias) {
+      const { biasX, biasY } = bias;
+      const engine = this.rootGrid.engine;
+
+      // 第二步：所有节点的新位置都可用，开始批量更新
+      engine.batchUpdate(true, true);
+      engine.float = false;
+
+      // 临时存储需要移动的传送带数据
+      /*
+      this.gridBelt2dElement[`${position.x}-${position.y}`] = craftElement;
+      this.gridBelts2d[position.x][position.y] = {
+        rotate: rotate,
+        type: type,
+        id: id,
+        part: this.editPartChoose,
+      };
+       */
+      const beltsToMove = [];
+
+      // 第一步：遍历当前位置，清除数据
+      Object.entries(nodes).forEach(([nodeId, node]) => {
+        const preElement = node.el;
+        const preNode = preElement.gridstackNode;
+        const oldX = preNode.x;
+        const oldY = preNode.y;
+
+        // 保存传送带数据
+        const beltData = this.gridBelts2d[oldX][oldY];
+        if (beltData) {
+          beltsToMove.push({
+            element: preElement,
+            oldX,
+            oldY,
+            data: beltData,
+          });
+
+          // 从原位置清除数据
+          this.gridBelts2d[oldX][oldY] = {};
+          delete this.gridBelt2dElement[`${oldX}-${oldY}`];
+        }
+      });
+
+      // 第二步：更新位置并设置新坐标的数据
+      beltsToMove.forEach(({ element, oldX, oldY, data }) => {
+        const preNode = element.gridstackNode;
+        const newX = preNode.x + biasX;
+        const newY = preNode.y + biasY;
+
+        // 更新网格位置
+        this.rootGrid.update(element, { x: newX, y: newY });
+
+        // 在新位置设置数据
+        this.gridBelts2d[newX][newY] = data;
+        this.gridBelt2dElement[`${newX}-${newY}`] = element;
+
+        // 更新partsBelts中的位置
+        const part = data.part;
+        if (part) {
+          this.partsBelts[part].delete(`${oldX}-${oldY}`);
+          this.partsBelts[part].add(`${newX}-${newY}`);
+        }
+      });
+
+      //结束批量更新，进行提交
+      engine.batchUpdate(false, true);
+      engine.float = true;
+      return true;
+    },
+
+    batchMoveMahcine(nodes, bias) {
+      const { biasX, biasY } = bias;
+      const engine = this.rootGrid.engine;
 
       // 第二步：所有节点的新位置都可用，开始批量更新
       engine.batchUpdate(true, true);
@@ -730,18 +860,51 @@ export const useRootStore = defineStore("sheng-root-store", {
       Object.entries(nodes)
         .reverse()
         .forEach(([nodeId, node]) => {
-          const preElement = this.gridWidgetElements[nodeId];
+          const preElement = node.el;
           const preNode = preElement.gridstackNode;
           const newX = preNode.x + biasX;
           const newY = preNode.y + biasY;
-
           this.rootGrid.update(preElement, { x: newX, y: newY });
         });
 
       //结束批量更新，进行提交
       engine.batchUpdate(false, true);
       engine.float = true;
-      return true
+      return true;
+    },
+
+    batchMove(nodes, bias) {
+      const { machineNodes, beltNodes, pipeNodes } = nodes;
+      const engine = this.rootGrid.engine;
+      const pipeEngine = this.rootPipeGrid.engine;
+
+      const isOkMachine = this.checkNodesCanMove(
+        engine,
+        machineNodes,
+        bias,
+        "有机器位置冲突，无法移动",
+      );
+      const isOkBelt = this.checkNodesCanMove(
+        engine,
+        beltNodes,
+        bias,
+        "有传送带位置冲突，无法移动",
+      );
+      const isOkPipe = this.checkNodesCanMove(
+        pipeEngine,
+        pipeNodes,
+        bias,
+        "有管道位置冲突，无法移动",
+      );
+
+      if (!isOkMachine || !isOkBelt || !isOkPipe) {
+        return false;
+      }
+
+      this.batchMoveMahcine(machineNodes, bias);
+      this.batchMoveBelt(beltNodes, bias);
+      this.batchMovePipe(pipeNodes, bias);
+      return true;
     },
 
     // ======================================================
@@ -769,6 +932,7 @@ export const useRootStore = defineStore("sheng-root-store", {
     },
 
     showPartWidgets(part, value) {
+      // 显示模块对应的机器
       for (let widgetId of this.partsWidgetId[part.name]) {
         this.gridWidgetElements[widgetId].style.opacity = value ? 1 : 0.2;
       }

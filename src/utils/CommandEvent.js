@@ -1,10 +1,14 @@
 import { watch } from "vue";
+import { ElMessage } from "element-plus";
 import { useRootStore } from "../stores/SimStore";
 import BeltIndicator from "./BeltIndicator";
 import SelectIndicator from "./SelectIndicator";
+import { useSelectStore } from "../stores/SelectStore";
+
 class CommandEvent {
   constructor() {
     this.rootStore = null;
+    this.selectStore = null;
     this.singleBeltModes = ["belts", "select", "default"];
     //绑定
     this.handleLeftClick = this.handleLeftClick.bind(this);
@@ -13,12 +17,15 @@ class CommandEvent {
 
   init() {
     this.rootStore = useRootStore();
+    this.selectStore = useSelectStore();
     //监听toolbarMode变化
     this.initDogToolbar();
     //监听keybboard的变化
     this.initDogKeyboard();
     //监听select子命令
     this.initDogSelectSub();
+    //监听快速放置模式
+    this.initDogQuickPlace();
   }
 
   initDogToolbar() {
@@ -38,12 +45,14 @@ class CommandEvent {
         this.rootStore.gridElCont.style.overflow = "scroll";
         this.rootStore.selectSubMode = null;
         SelectIndicator.reset();
+        this.selectStore.disableSelect();
         break;
 
       case "belts":
         this.rootStore.lastBaseNode = null;
         this.rootStore.lastDir = null;
-        BeltIndicator.handleEndBelt();
+        BeltIndicator.handleEndBelt("belt");
+        BeltIndicator.handleEndBelt("pipe");
         break;
     }
   }
@@ -53,10 +62,11 @@ class CommandEvent {
       case "select":
         this.rootStore.rootGrid.setStatic(true);
         this.rootStore.gridElCont.style.overflow = "hidden";
+        this.selectStore.enableSelect();
         break;
 
       case "belts":
-        BeltIndicator.handleStartBelt();
+        BeltIndicator.handleStartBelt(this.rootStore.quickPlaceMode);
         break;
     }
   }
@@ -79,11 +89,31 @@ class CommandEvent {
     }
     //批量移动选中机器
     if (this.rootStore.selectSubMode === "move") {
-      const canMove = this.rootStore.batchMoveMachines(
-        SelectIndicator.selectedConfigs,
+
+      const { biasX, biasY } = SelectIndicator.bias;
+      const { minX, maxX, minY, maxY } = SelectIndicator.selectRange;
+      // 边界检查：确保移动后不超出网格边界
+      const isWithinBounds =
+        minX + biasX >= 0 &&
+        maxX + biasX <= 72 &&
+        minY + biasY >= 0 &&
+        maxY + biasY <= 72;
+      if (!isWithinBounds) {
+        ElMessage.error("移动超出边界，无法移动");
+        return;
+      }
+
+      const moveSuccess = this.rootStore.batchMove(
+        {
+          machineNodes: SelectIndicator.selectedConfigs,
+          beltNodes: SelectIndicator.selectedBeltConfigs,
+          pipeNodes: SelectIndicator.selectedPipeConfigs,
+        },
         SelectIndicator.bias,
       );
-      if (!canMove) return;
+
+      if (!moveSuccess) return;
+
       //退出选择模式
       this.rootStore.toolbarMode = "default";
     }
@@ -103,6 +133,42 @@ class CommandEvent {
       this.rootStore.deleteOnePipe(position);
     }
   }
+
+  //quickPlaceMode管理
+  initDogQuickPlace() {
+    watch(
+      () => this.rootStore.quickPlaceMode,
+      (next, prev) => {
+        this.exitModeQuickPlace(prev);
+        this.enterModeQuickPlace(next);
+      },
+    );
+  }
+
+  exitModeQuickPlace(quickPlaceMode) {
+    this.rootStore.lastBaseNode = null;
+    this.rootStore.lastDir = null;
+    switch (quickPlaceMode) {
+      case "belt":
+        BeltIndicator.handleEndBelt("belt");
+        break;
+      case "pipe":
+        BeltIndicator.handleEndBelt("pipe");
+        break;
+    }
+  }
+
+  enterModeQuickPlace(quickPlaceMode) {
+    switch (quickPlaceMode) {
+      case "belt":
+        BeltIndicator.handleStartBelt("belt");
+        break;
+      case "pipe":
+        BeltIndicator.handleStartBelt("pipe");
+        break;
+    }
+  }
+
   //select子命令管理
   initDogSelectSub() {
     watch(
@@ -119,6 +185,7 @@ class CommandEvent {
       case "move":
         SelectIndicator.reset();
         SelectIndicator.deactivateMouseMoveListener();
+        this.selectStore.enableSelect();
         break;
     }
   }
@@ -127,6 +194,7 @@ class CommandEvent {
     switch (submode) {
       case "move":
         SelectIndicator.activateMouseMoveListener();
+        this.selectStore.disableSelect();
         break;
     }
   }
@@ -137,10 +205,22 @@ class CommandEvent {
       () => this.rootStore.keyboardCommand,
       (cmd) => {
         if (!cmd) return;
-
         switch (cmd) {
+          case "pipes-pipe":
+            //BeltIndicator.handleEndBelt();
+            this.rootStore.toolbarMode = "belts";
+            this.rootStore.quickPlaceMode = "pipe";
+            break;
+
+          case "belts-belt":
+            //BeltIndicator.handleEndBelt();
+            this.rootStore.toolbarMode = "belts";
+            this.rootStore.quickPlaceMode = "belt";
+            break;
+
           case "enter-select":
             this.rootStore.toolbarMode = "select";
+            this.rootStore.quickPlaceMode = "belt";
             this.rootStore.selectSubMode = null;
             break;
 
@@ -155,9 +235,14 @@ class CommandEvent {
             break;
 
           case "escape":
+            //框选模式下
             if (this.rootStore.selectSubMode) {
               this.rootStore.selectSubMode = null;
             } else if (this.rootStore.toolbarMode === "select") {
+              this.rootStore.toolbarMode = "default";
+            }
+            //快速放置传送带模式下
+            if (this.rootStore.toolbarMode === "belts") {
               this.rootStore.toolbarMode = "default";
             }
             break;

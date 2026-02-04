@@ -6,7 +6,7 @@
  * 4. 只在belts模式下显示
  */
 /**
- * 
+ *
  */
 import { useRootStore } from "../stores/SimStore";
 
@@ -25,6 +25,7 @@ class BeltIndicator {
   // 初始化
   init(gridElCont) {
     if (!gridElCont) return;
+    this.rootStore = useRootStore();
     this.gridElCont = gridElCont;
     this.createIndicatorElement();
   }
@@ -116,7 +117,7 @@ class BeltIndicator {
 
     // 创建网格元素来显示路径
     let gridHtml = "";
-    gridPoints.forEach(point => {
+    gridPoints.forEach((point) => {
       const pixelX = point.x * this.gridSize;
       const pixelY = point.y * this.gridSize;
       gridHtml += `<div style="
@@ -161,24 +162,24 @@ class BeltIndicator {
   }
 
   // 开始快速放置
-  handleStartBelt() {
-    this.rootStore = useRootStore();
-    if (this.rootStore.quickPlaceMode === "belt") {
+  handleStartBelt(mode) {
+    if (mode === "belt") {
       this.rootStore.gridEl.addEventListener("mousemove", this.onMoveMouse);
-    } else if (this.rootStore.quickPlaceMode === "pipe") {
+    } else if (mode === "pipe") {
       this.rootStore.pipeGrid.addEventListener("mousemove", this.onMoveMouse);
     }
     this.activate();
   }
 
   // 结束快速放置
-  handleEndBelt() {
-    if (this.gridElCont) {
-      if (this.rootStore.quickPlaceMode === "belt") {
-        this.rootStore.gridEl.removeEventListener("mousemove", this.onMoveMouse);
-      } else if (this.rootStore.quickPlaceMode === "pipe") {
-        this.rootStore.pipeGrid.removeEventListener("mousemove", this.onMoveMouse);
-      }
+  handleEndBelt(mode) {
+    if (mode === "belt") {
+      this.rootStore.gridEl.removeEventListener("mousemove", this.onMoveMouse);
+    } else if (mode === "pipe") {
+      this.rootStore.pipeGrid.removeEventListener(
+        "mousemove",
+        this.onMoveMouse,
+      );
     }
     this.deactivate();
   }
@@ -199,8 +200,6 @@ class BeltIndicator {
     this.gridElCont = null;
     this.rootStore = null;
   }
-
-  
 }
 
 // 导出单例实例

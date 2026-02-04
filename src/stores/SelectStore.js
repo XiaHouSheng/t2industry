@@ -10,6 +10,7 @@ export const useSelectStore = defineStore("sheng-select-store", {
     startX: null, //初始X位置 相对屏幕
     startY: null, //初始Y位置 相对屏幕
     isStartSelect: false, //判断是否开始框选
+    canSelect: false, //允许框选
     midDeleteData: null,
   }),
 
@@ -17,6 +18,14 @@ export const useSelectStore = defineStore("sheng-select-store", {
     //初始化框选器
     initSelector(selector) {
       this.selector = selector;
+    },
+
+    enableSelect() {
+      this.canSelect = true;
+    },
+
+    disableSelect() {
+      this.canSelect = false;
     },
 
     //展示框选器
@@ -60,6 +69,7 @@ export const useSelectStore = defineStore("sheng-select-store", {
       if (!(this.rootStore.toolbarMode == "select")) {
         return;
       }
+      if (!this.canSelect) return;
       ////console.log("down", event);
       this.setPosition(event);
       this.showSelector();
@@ -70,23 +80,18 @@ export const useSelectStore = defineStore("sheng-select-store", {
       if (!(this.rootStore.toolbarMode == "select")) {
         return;
       }
-      //console.log("move", event);
-      if (this.isStartSelect) {
-        let newWidth = Math.abs(this.startX - event.clientX);
-        let newHeight = Math.abs(this.startY - event.clientY);
-        this.selector.style.width = `${newWidth}px`;
-        this.selector.style.height = `${newHeight}px`;
-      }
+      if (!this.isStartSelect) return;
+      let newWidth = Math.abs(this.startX - event.clientX);
+      let newHeight = Math.abs(this.startY - event.clientY);
+      this.selector.style.width = `${newWidth}px`;
+      this.selector.style.height = `${newHeight}px`;
     },
 
     handleMouseUp(event) {
       if (!(this.rootStore.toolbarMode == "select")) {
         return;
       }
-      
-      //console.log("up", event);
-      this.handleSelectOver()
-
+      if (!this.canSelect) return;
       //this.showMenu();
       let newWidth = Math.abs(this.startX - event.clientX);
       let newHeight = Math.abs(this.startY - event.clientY) / 2;
@@ -109,6 +114,9 @@ export const useSelectStore = defineStore("sheng-select-store", {
 
       //更新指示器的内容
       SelectIndicator.updateIndicatorContent(cellPosition);
+
+      //结束select重置
+      this.handleSelectOver();
     },
 
     //工具方法，设置框选器的位置
