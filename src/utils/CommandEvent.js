@@ -92,6 +92,7 @@ class CommandEvent {
 
       const { biasX, biasY } = SelectIndicator.bias;
       const { minX, maxX, minY, maxY } = SelectIndicator.selectRange;
+      console.log("biasX", biasX,"biasY", biasY, "minX", minX, "maxX", maxX, "minY", minY, "maxY", maxY);
       // 边界检查：确保移动后不超出网格边界
       const isWithinBounds =
         minX + biasX >= 0 &&

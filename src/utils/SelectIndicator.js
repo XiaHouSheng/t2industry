@@ -181,14 +181,15 @@ class SelectIndicator {
       const h = parseInt(item.getAttribute("gs-h")) || 1;
       const id = item.getAttribute("gs-id");
 
-      //贪心维护
-      this.selectRange.minX = Math.min(this.selectRange.minX ?? x, x);
-      this.selectRange.maxX = Math.max(this.selectRange.maxX ?? x + w, x + w);
-      this.selectRange.minY = Math.min(this.selectRange.minY ?? y, y);
-      this.selectRange.maxY = Math.max(this.selectRange.maxY ?? y + h, y + h);
-
       // 检查是否在框选范围内
       if (x >= startX && x <= endX && y >= startY && y <= endY) {
+        
+        //贪心维护
+        this.selectRange.minX = Math.min(this.selectRange.minX ?? x, x);
+        this.selectRange.maxX = Math.max(this.selectRange.maxX ?? x + w, x + w);
+        this.selectRange.minY = Math.min(this.selectRange.minY ?? y, y);
+        this.selectRange.maxY = Math.max(this.selectRange.maxY ?? y + h, y + h);
+
         // 创建配置对象
         const config = {
           x: x,
