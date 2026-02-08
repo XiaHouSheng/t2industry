@@ -15,27 +15,23 @@ const defaultRecipe = computed(() => {
 const finalValue = computed(() =>
   defaultRecipe.value
     ? { name: ItemData[defaultRecipe.value].name, icon_id: defaultRecipe.value }
-    : { name: "未选择", icon_id: "" }
+    : { name: "未选择", icon_id: "" },
 );
 </script>
 
 <template>
-  <div class="dialog-container">
-    <div class="display-flex flex-direation-row" style="gap: 6px;">
-      <div
-        class="flex-grow-1 display-flex flex-direation-col justify-content-center position-relative"
-      >
+  <div class="w-full p-4">
+    <div class="flex flex-row gap-4">
+      <div class="w-80 flex flex-1 flex-col justify-center relative">
         <div
-          class="position-absolute display-flex flex-direation-row justify-content-center sheng-ware-house-header"
-          style="left: 0; top: 0;width: 100%"
+          class="absolute flex flex-row justify-center bg-gray-800 rounded-[3px] px-4 py-2"
+          style="left: 0; top: 0; width: 100%"
         >
-          <h1>仓库取货口-当前输出</h1>
+          <h1 class="m-0 text-center text-gray-100 text-sm">仓库取货口-当前输出</h1>
         </div>
-        <div
-          class="display-flex flex-direation-row justify-content-center position-relative"
-        >
+        <div class="flex flex-row justify-center relative mt-12">
           <div
-            class="mat-item"
+            class="h-[64px] rounded-[3px] group border border-gray-600"
             :style="[
               iconStyle(finalValue.icon_id),
               {
@@ -44,23 +40,25 @@ const finalValue = computed(() =>
             ]"
           >
             <div
+              class="absolute flex flex-row justify-center transition-[0.1s] rounded-[3px] group-hover:bg-white/38 group-active:bg-black/31 max-h-full w-full"
               style="top: 64px; width: 64px; text-align: center"
-              class="display-flex flex-direation-row justify-content-center position-absolute"
             >
-              <el-text>{{ finalValue.name }}</el-text>
+              <el-text class="text-gray-100 text-xs">{{ finalValue.name }}</el-text>
             </div>
           </div>
         </div>
       </div>
-      <div class="choose-mat-grid">
+      <div
+        class="grid grid-cols-[repeat(6,64px)] max-h-[384px] gap-1 overflow-y-auto p-3 border border-gray-700 bg-gray-800 rounded-lg custom-scrollbar"
+      >
         <div
           v-for="material in MatData"
           :style="[iconStyle(material.icon)]"
-          class="position-relative mat-item"
+          class="relative h-[64px] rounded-[3px] group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg"
+          @click="matSelect(material.id)"
         >
           <div
-            @click="matSelect(material.id)"
-            class="mat-item-hover position-absolute max-height-width"
+            class="absolute transition-[0.1s] rounded-[3px] group-hover:bg-white/38 group-active:bg-black/31 max-h-full w-full"
           ></div>
         </div>
       </div>
@@ -69,49 +67,27 @@ const finalValue = computed(() =>
 </template>
 
 <style scoped>
-.dialog-container {
-  width: 100%;
-}
-.choose-mat-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 64px);
-  max-height: 384px;
-  row-gap: 3px;
-  column-gap: 3px;
-  overflow-y: scroll;
-  padding: 3px;
-  border: 1px solid var(--sheng-recipe-cont-border);
-  background-color: var(--sheng-mat-grid-bg);
-}
-.mat-item {
-  height: 64px;
-  border-radius: 3px;
-}
-.mat-item-hover {
-  transition: 0.1s;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.mat-item:hover .mat-item-hover {
-  background-color: rgba(255, 255, 255, 0.379);
-  border-radius: 3px;
-}
-.mat-item:active .mat-item-hover {
-  background-color: rgba(0, 0, 0, 0.311);
-  border-radius: 3px;
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1f2937;
+  border-radius: 4px;
 }
 
-h1 {
-  margin: 0;
-  text-align: center;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
-.sheng-ware-house-header{
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.838),
-    rgb(255, 255, 255) 2px,
-    transparent 2px,
-    transparent 4px
-  );
-  border-radius: 3px;
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: #1f2937;
 }
 </style>

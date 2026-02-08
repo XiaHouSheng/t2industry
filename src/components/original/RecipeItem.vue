@@ -78,92 +78,56 @@ function handleRecipeSelect() {
 </script>
 
 <template>
-  <div class="display-flex flex-direation-col sheng-recipe-root">
-    <el-text class="recipe-name">{{ recipe.name }}</el-text>
-    <div class="display-flex flex-direation-row sheng-recipe-item">
-      <div class="display-flex flex-direation-row sheng-recipe-mat">
+  <div class="flex flex-col border border-gray-700 rounded-lg bg-gray-800 overflow-hidden">
+    <div class="w-full text-start bg-gray-700 text-gray-300 font-bold px-4 py-2">
+      {{ recipe.name }}
+    </div>
+    <div class="flex flex-row transition-all duration-300 bg-gray-800 h-[64px] gap-[6px] p-[3px] hover:bg-gray-700">
+      <div class="flex flex-row gap-[6px]">
         <div
           v-for="(slot, index) in inputSlots"
           :key="index"
-          class="display-flex flex-direation-col position-relative"
+          class="flex flex-col relative"
         >
           <div
-            class="recipe-icon"
+            class="w-[64px] h-[64px] bg-no-repeat bg-auto rounded-[4px] border border-gray-600"
             :style="slot ? iconStyle(slot.itemId) : {}"
           ></div>
-          <span v-if="slot" style="position: absolute; left: 23px; bottom: 0px">
+          <span v-if="slot" class="absolute left-[23px] bottom-0 text-gray-300 text-xs">
             x{{ slot.count }}
           </span>
         </div>
       </div>
       <div
-        class="display-flex flex-direation-col justify-content-center sheng-recipe-cent"
+        class="flex flex-col justify-center w-[15px]"
       >
-        <el-icon size="15"><DArrowRight /></el-icon>
+        <svg viewBox="0 0 1024 1024" class="w-[15px] h-[15px] text-yellow-400">
+          <path fill="currentColor" d="M832 512a32 32 0 0 1 32 32v352a32 32 0 0 1-32 32H192a32 32 0 0 1-32-32V192a32 32 0 0 1 32-32h352a32 32 0 0 1 0 64H128a32 32 0 0 1-32-32v352a32 32 0 0 1 32 32z"/>
+        </svg>
       </div>
-      <div class="display-flex flex-direation-row sheng-recipe-mat">
+      <div class="flex flex-row gap-[6px]">
         <div
           v-for="(slot, index) in outputSlots"
           :key="index"
-          class="display-flex flex-direation-col position-relative"
+          class="flex flex-col relative"
         >
           <div
-            class="recipe-icon"
+            class="w-[64px] h-[64px] bg-no-repeat bg-auto rounded-[4px] border border-gray-600"
             :style="slot ? iconStyle(slot.itemId) : {}"
           ></div>
-          <span v-if="slot" style="position: absolute; left: 23px; bottom: 0px">
+          <span v-if="slot" class="absolute left-[23px] bottom-0 text-gray-300 text-xs">
             x{{ slot.count }}
           </span>
         </div>
       </div>
 
-      <el-button
+      <button
         v-if="showBtn"
         @click="handleRecipeSelect"
-        class="max-height-width"
-        icon="Select"
-        type="success"
-        plain
-      ></el-button>
+        class="h-full w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-medium transition-all duration-300 rounded-r-[3px]"
+      >
+        选择
+      </button>
     </div>
   </div>
 </template>
-
-<style scoped>
-.sheng-recipe-root {
-  border: 1px solid var(--sheng-recipe-cont-border);
-  border-radius: 3px;
-}
-.sheng-recipe-item {
-  transition: 0.1s;
-  background-color: var(--sheng-recipe-item-bg);
-  border-radius: 0 0 3px 3px;
-  height: 64px;
-  gap: 6px;
-  padding: 3px;
-}
-.sheng-recipe-mat {
-  gap: 6px;
-}
-.sheng-recipe-cent {
-  width: 15px;
-}
-.recipe-icon {
-  width: 64px;
-  height: 64px;
-  background-repeat: no-repeat;
-  background-size: auto;
-  border-radius: 4px;
-  border: 1px solid gray;
-}
-.recipe-name {
-  width: 100%;
-  text-align: start;
-  background-color: var(--sheng-recipe-item-name-bg);
-  color: white;
-  font: bold;
-}
-.sheng-recipe-mat span {
-  color: white;
-}
-</style>

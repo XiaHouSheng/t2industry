@@ -1,5 +1,5 @@
 import { watch } from "vue";
-import { ElMessage } from "element-plus";
+import toast from "../components/ui/wrapper-v1/toast/toast.js";
 import { useRootStore } from "../stores/SimStore";
 import BeltIndicator from "./BeltIndicator";
 import SelectIndicator from "./SelectIndicator";
@@ -100,7 +100,7 @@ class CommandEvent {
         minY + biasY >= 0 &&
         maxY + biasY <= 72;
       if (!isWithinBounds) {
-        ElMessage.error("移动超出边界，无法移动");
+        toast.error("移动超出边界，无法移动");
         return;
       }
 

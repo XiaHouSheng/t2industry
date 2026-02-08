@@ -20,26 +20,26 @@
   </el-popconfirm>
 
   <!--这个是配平配置的Dialog-->
-  <el-dialog
-    v-model="rootStore.isRecipeChoose"
-    width="50%"
-    @close="rootStore.handleDialogRecipeClose"
-    :append-to-body="true"
-  >
-    <div style="height: 60%">
-      <RecipeContent></RecipeContent>
-    </div>
-  </el-dialog>
+  <Dialog v-model:open="rootStore.isRecipeChoose" @update:open="rootStore.handleDialogRecipeClose">
+    <DialogContent max-width="max-w-4xl">
+      <DialogHeader>
+        <DialogTitle>配方选择</DialogTitle>
+      </DialogHeader>
+      <div class="h-[60%]">
+        <RecipeContent></RecipeContent>
+      </div>
+    </DialogContent>
+  </Dialog>
 
   <!--这个是取货口配置的Dialog-->
-  <el-dialog
-    v-model="rootStore.isWareHouseRecipeChoose"
-    width="50%"
-    @close="rootStore.handleDialogRecipeClose"
-    :append-to-body="true"
-  >
-    <WareHouseContent></WareHouseContent>
-  </el-dialog>
+  <Dialog v-model:open="rootStore.isWareHouseRecipeChoose" @update:open="rootStore.handleDialogRecipeClose">
+    <DialogContent max-width="max-w-4xl">
+      <DialogHeader>
+        <DialogTitle>仓库取货口配置</DialogTitle>
+      </DialogHeader>
+      <WareHouseContent></WareHouseContent>
+    </DialogContent>
+  </Dialog>
 
   <!--这个是蓝图导入的Dialog-->
   <el-dialog
@@ -180,8 +180,8 @@
       </div>
     </el-col>
     <el-col :span="20">
-      <div class="display-flex flex-direation-row sheng-tool-bar-cont">
-        <div class="sheng-tool-bar display-flex flex-direaiton-row">
+      <div class="flex flex-row p-2 bg-gray-800 border-b border-gray-700 rounded-t-lg sheng-tool-bar-cont">
+        <div class="w-full h-10 gap-2 items-center px-3 sheng-tool-bar display-flex flex-direation-row">
           <!--电量显示
           <div
             style="width: 180px; height: 100%; background-color: var(--el-color-white)"
@@ -215,254 +215,47 @@
           </div>
           -->
           <!--工具栏-->
-          <el-radio-group
-            v-model="rootStore.toolbarMode"
-            size="default"
-            class="toolbar-section"
-          >
-            <el-radio-button label="多带" value="belts" />
-            <el-radio-button label="框选" value="select" />
-            <el-radio-button label="无" value="default" />
-          </el-radio-group>
+          <ToolbarModeSelector v-model="rootStore.toolbarMode" />
 
           <!--便捷放置-->
-          <el-radio-group
-            v-model="rootStore.toolbarMode"
-            size="default"
-            class="toolbar-section"
-          >
-            <el-radio-button label="转弯带" value="turn">
-              <template #default>
-                <div class="toolbar-icon-wrapper">
-                  <img
-                    src="@/assets/img/turn.png"
-                    style="width: 18px; height: 18px"
-                  />
-                </div>
-              </template>
-            </el-radio-button>
-            <el-radio-button label="带" value="belt">
-              <template #default>
-                <div class="toolbar-icon-wrapper">
-                  <img
-                    src="@/assets/img/belt.png"
-                    style="width: 18px; height: 18px"
-                  />
-                </div>
-              </template>
-            </el-radio-button>
-            <el-radio-button label="一分三" value="splitter">
-              <template #default>
-                <div class="toolbar-icon-wrapper">
-                  <img
-                    src="@/assets/img/one_to_three.png"
-                    style="width: 18px; height: 18px"
-                  />
-                </div>
-              </template>
-            </el-radio-button>
-            <el-radio-button label="三合一" value="conveyer">
-              <template #default>
-                <div class="toolbar-icon-wrapper">
-                  <img
-                    src="@/assets/img/three_to_one.png"
-                    style="width: 18px; height: 18px"
-                  />
-                </div>
-              </template>
-            </el-radio-button>
-            <el-radio-button label="桥" value="cross">
-              <template #default>
-                <div class="toolbar-icon-wrapper">
-                  <img
-                    src="@/assets/img/cross.png"
-                    style="width: 18px; height: 18px"
-                  />
-                </div>
-              </template>
-            </el-radio-button>
-          </el-radio-group>
+          <QuickPlacement v-model="rootStore.toolbarMode" />
 
           <!--快速放置模式-->
-          <div style="margin-right: 12px">
-            <el-radio-group
-              v-model="rootStore.quickPlaceMode"
-              size="small"
-            >
-              <el-radio-button label="belt" value="belt"
-                >传送带</el-radio-button
-              >
-              <el-radio-button label="pipe" value="pipe">管道</el-radio-button>
-            </el-radio-group>
-          </div>
+          <QuickPlaceMode v-model="rootStore.quickPlaceMode" />
 
+          
           <el-button
-            style="margin-left: auto"
+            class="ml-auto"
             icon="Delete"
             @click="handleStartClear"
             >清空</el-button
           >
 
           <!--图层设置-->
-          <div>
-            <el-dropdown trigger="click">
-              <el-button>
-                图层设置<el-icon class="el-icon--right"><arrow-down /></el-icon>
-              </el-button>
-              <template #dropdown>
-                <div
-                  class="layer-dropdown"
-                  style="border-radius: 4px; overflow: hidden"
-                >
-                  <div class="layer-item">
-                    <span>供电范围</span>
-                    <el-switch
-                      v-model="rootStore.isShowSupplierExtent"
-                      size="small"
-                      :checked="false"
-                    />
-                  </div>
-                  <div class="layer-item">
-                    <span>传送带</span>
-                    <el-switch
-                      v-model="rootStore.isShowBelts"
-                      size="small"
-                      :checked="true"
-                    />
-                  </div>
-                  <div class="layer-item">
-                    <span>管道</span>
-                    <el-switch
-                      v-model="rootStore.isShowPipes"
-                      size="small"
-                      :checked="true"
-                    />
-                  </div>
-                  <div class="layer-item">
-                    <span>液体管口</span>
-                    <el-switch
-                      v-model="rootStore.isShowPipePort"
-                      size="small"
-                      :checked="true"
-                    />
-                  </div>
-                </div>
-              </template>
-            </el-dropdown>
-          </div>
+          <LayerSettings
+            v-model:show-supplier-extent="rootStore.isShowSupplierExtent"
+            v-model:show-belts="rootStore.isShowBelts"
+            v-model:show-pipes="rootStore.isShowPipes"
+            v-model:show-pipe-port="rootStore.isShowPipePort"
+          />
 
           <!--模块滤镜-->
-          <div style="margin-right: 12px">
-            <el-dropdown trigger="click">
-              <el-button>
-                模块滤镜<el-icon class="el-icon--right"><arrow-down /></el-icon>
-              </el-button>
-              <template #dropdown>
-                <div
-                  class="module-filter-dropdown"
-                  style="border-radius: 4px; overflow: hidden"
-                >
-                  <div
-                    v-for="(part, index) in rootStore.parts"
-                    :key="index"
-                    class="layer-item"
-                  >
-                    <div style="flex: 1; display: flex; align-items: center">
-                      <el-switch
-                        v-model="part.show"
-                        size="small"
-                        @change="
-                          (value) => rootStore.handlePartShowChange(part, value)
-                        "
-                      />
-                      <span style="margin-left: 3px">{{ part.name }}</span>
-                    </div>
-                    <div class="item-actions">
-                      <el-button
-                        size="small"
-                        icon="EditPen"
-                        :type="
-                          part.name === rootStore.editPartChoose
-                            ? 'primary'
-                            : ''
-                        "
-                        @click="rootStore.selectEditPart(part.name)"
-                        round
-                      >
-                      </el-button>
-                      <el-button
-                        size="small"
-                        icon="DocumentCopy"
-                        round
-                        @click="rootStore.copyEditCode(index)"
-                      >
-                      </el-button>
-                      <el-button
-                        v-bind="{ disabled: index === 0 }"
-                        size="small"
-                        icon="Delete"
-                        round
-                        @click="rootStore.deletePart(index)"
-                      >
-                      </el-button>
-                    </div>
-                  </div>
-
-                  <!--Toolbar底部控制栏-->
-                  <div class="layer-item" style="background-color: #f9f9f9">
-                    <div style="flex: 1; display: flex; align-items: center">
-                      <span style="font-weight: 500">添加新模块</span>
-                    </div>
-                    <div class="item-actions">
-                      <el-button size="small" icon="EditPen" round disabled>
-                      </el-button>
-                      <el-button
-                        size="small"
-                        icon="DocumentCopy"
-                        round
-                        disabled
-                      >
-                      </el-button>
-                      <el-button
-                        size="small"
-                        type="primary"
-                        icon="Plus"
-                        round
-                        @click="rootStore.addNewPart"
-                      >
-                      </el-button>
-                    </div>
-                  </div>
-                </div>
-              </template>
-            </el-dropdown>
-          </div>
+          <ModuleFilter
+            :parts="rootStore.parts"
+            :edit-part-choose="rootStore.editPartChoose"
+            @update-part="rootStore.handlePartShowChange"
+            @select-edit-part="rootStore.selectEditPart"
+            @copy-edit-code="rootStore.copyEditCode"
+            @delete-part="rootStore.deletePart"
+            @add-new-part="rootStore.addNewPart"
+          />
 
           <!--蓝图存储相关-->
-          <el-button-group style="overflow: hidden">
-            <el-button @click="rootStore.saveBluePrint" primary>
-              <template #icon>
-                <div>
-                  <img
-                    src="@/assets/img/save.png"
-                    style="width: 18px; height: 18px"
-                  />
-                </div>
-              </template>
-            </el-button>
-            <el-button @click="rootStore.handleBluePrintImportDialog" primary>
-              <img
-                src="@/assets/img/import.png"
-                style="width: 18px; height: 18px"
-              />
-            </el-button>
-            <el-button @click="rootStore.exportBluePrint" primary>
-              <img
-                src="@/assets/img/export.png"
-                style="width: 18px; height: 18px"
-              />
-            </el-button>
-          </el-button-group>
+          <BlueprintActions
+            @save="rootStore.saveBluePrint"
+            @import="rootStore.handleBluePrintImportDialog"
+            @export="rootStore.exportBluePrint"
+          />
         </div>
       </div>
 
@@ -489,7 +282,7 @@
           @click="CommandEvent.handleLeftClick"
           id="grid-stack"
           class="grid-stack bottom-grid-bg"
-          style="background-color: transparent"
+          style="background-color: #e5e7eb"
           :style="{
             pointerEvents:
               rootStore.quickPlaceMode === 'belt' ? 'auto' : 'none',
@@ -520,9 +313,18 @@ import { useSelectStore } from "../stores/SelectStore";
 import { machineComponentMap } from "../utils/MachineMap";
 import { MachineData, iconStyle, gridStackDataProcess } from "../utils/DataMap";
 import { useRoute, useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
+import { toast } from "../components/ui/wrapper-v1/toast";
 import { ArrowDown } from "@element-plus/icons-vue";
-import { ElMessageBox } from "element-plus";
+import messagebox from "../components/ui/wrapper-v1/messagebox/messagebox.js";
+import {
+  ToolbarModeSelector,
+  QuickPlacement,
+  QuickPlaceMode,
+  LayerSettings,
+  ModuleFilter,
+  BlueprintActions
+} from "../components/ui/wrapper-v1/toolbar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/wrapper-v1/dialog";
 
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
@@ -544,23 +346,23 @@ onMounted(async () => {
   // 根据是否有hashCode参数加载相应的蓝图
   if (hashCode) {
     try {
-      ElMessage.info(`正在加载蓝图: ${hashCode}`);
+      toast.info(`正在加载蓝图: ${hashCode}`);
       await rootStore.loadBlueprintByHashCode(hashCode);
-      ElMessage.success(`蓝图 ${hashCode} 加载成功！`);
+      toast.success(`蓝图 ${hashCode} 加载成功！`);
     } catch (error) {
       console.error("加载蓝图失败：", error);
-      ElMessage.error(`加载蓝图失败: ${error.message}`);
+      toast.error(`加载蓝图失败: ${error.message}`);
     }
   } else {
     // 没有hashCode参数，加载本地蓝图
     try {
       const localBlueprint = rootStore.loadLocalBlueprint();
       if (localBlueprint) {
-        ElMessage.success("本地蓝图加载成功！");
+        toast.success("本地蓝图加载成功！");
       }
     } catch (error) {
       console.error("加载本地蓝图失败：", error);
-      ElMessage.error(`加载本地蓝图失败: ${error.message}`);
+      toast.error(`加载本地蓝图失败: ${error.message}`);
     }
   }
 
@@ -581,7 +383,7 @@ onMounted(async () => {
   rootStore.rootGrid.on("dropped", (event, prev, next) => {
     if (!rootStore.rootPipeGrid.isAreaEmpty(next.x, next.y, next.w, next.h)) {
       rootStore.rootGrid.removeWidget(next.el, true);
-      ElMessage.error("该位置已被占用，请选择其他位置");
+      toast.error("该位置已被占用，请选择其他位置");
       return;
     }
   });
@@ -624,26 +426,26 @@ const stopWatcher = watch(
     if (newHashCode && newHashCode !== oldHashCode) {
       // 有新的hashCode参数，加载远程蓝图
       try {
-        ElMessage.info(`正在加载蓝图: ${newHashCode}`);
+        toast.info(`正在加载蓝图: ${newHashCode}`);
         await rootStore.loadBlueprintByHashCode(newHashCode);
-        ElMessage.success(`蓝图 ${newHashCode} 加载成功！`);
+        toast.success(`蓝图 ${newHashCode} 加载成功！`);
       } catch (error) {
         console.error("加载蓝图失败：", error);
-        ElMessage.error(`加载蓝图失败: ${error.message}`);
+        toast.error(`加载蓝图失败: ${error.message}`);
       }
     } else if (!newHashCode && oldHashCode) {
       // 从有hashCode变为无hashCode，加载本地蓝图
       try {
-        ElMessage.info("正在加载本地蓝图...");
+        toast.info("正在加载本地蓝图...");
         const localBlueprint = rootStore.loadLocalBlueprint();
         if (localBlueprint) {
-          ElMessage.success("本地蓝图加载成功！");
+          toast.success("本地蓝图加载成功！");
         } else {
-          ElMessage.info("无本地蓝图数据");
+          toast.info("无本地蓝图数据");
         }
       } catch (error) {
         console.error("加载本地蓝图失败：", error);
-        ElMessage.error(`加载本地蓝图失败: ${error.message}`);
+        toast.error(`加载本地蓝图失败: ${error.message}`);
       }
     }
   },
@@ -651,26 +453,21 @@ const stopWatcher = watch(
 
 // 清空画布回调
 const handleStartClear = () => {
-  ElMessageBox.confirm(
+  messagebox.confirm(
     "你确定要清空画布吗？确认后会直接清空画布，若清空后保存将会彻底无法恢复。",
+    "确认清空",
     {
       confirmButtonText: "我确认清空画布",
       cancelButtonText: "取消",
-      type: "warning",
     },
   )
-    .then(() => {
-      ElMessage({
-        type: "success",
-        message: "已经清空画布",
-      });
-      rootStore.clearBlueprint();
-    })
-    .catch(() => {
-      ElMessage({
-        type: "info",
-        message: "清空画布已取消",
-      });
+    .then((result) => {
+      if (result) {
+        toast.success("已经清空画布");
+        rootStore.clearBlueprint();
+      } else {
+        toast.info("清空画布已取消");
+      }
     });
 };
 
@@ -684,7 +481,7 @@ onUnmounted(() => {
 .sheng-cont-grid {
   position: relative;
   overflow: scroll;
-  height: var(--sheng-self-simulation-grid-height);
+  height: 730px;
   background-color: var(--sheng-root-bg);
   border-radius: 4px;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
@@ -733,8 +530,8 @@ onUnmounted(() => {
 .sheng-cont-list {
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.08);
   overflow-y: scroll;
-  height: var(--sheng-self-simulation-list-height);
-  background-color: var(--el-color-white);
+  height: 780px;
+  background-color: #111827;
   padding: 12px;
   gap: 8px;
   border-radius: 0 4px 4px 0;
@@ -743,10 +540,10 @@ onUnmounted(() => {
 .sheng-cont-item {
   min-height: 56px;
   overflow: hidden;
-  transition: all 0.2s ease;
-  color: var(--el-text-color-primary);
-  background-color: var(--sim-color-primary-bg);
-  border: 1px solid var(--el-border-color-light);
+  transition: all 0.3s ease;
+  color: #ffffff;
+  background-color: #1f2937;
+  border: 1px solid #374151;
   box-sizing: border-box;
   gap: 12px;
   border-radius: 6px;
@@ -755,11 +552,11 @@ onUnmounted(() => {
 }
 
 .sheng-cont-item:hover {
-  background: var(--sim-color-primary-bg);
-  color: var(--sim-color-primary);
-  border-color: var(--sim-color-primary-lighter);
-  box-shadow: 0 2px 4px rgba(64, 158, 255, 0.1);
-  transform: translateX(2px);
+  background: #374151;
+  color: #fbbf24;
+  border-color: #fbbf24;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
 }
 
 .sheng-cont-item:hover > .sheng-cont-item-bg {
@@ -803,8 +600,8 @@ onUnmounted(() => {
 
 .sheng-tool-bar-cont {
   padding: 8px;
-  background-color: var(--sim-color-primary-bg);
-  border-bottom: 1px solid var(--el-border-color-light);
+  background-color: #1f2937;
+  border-bottom: 1px solid #374151;
   border-radius: 4px 4px 0 0;
 }
 
@@ -829,10 +626,10 @@ onUnmounted(() => {
 }
 
 .layer-dropdown {
-  background-color: #ffffff;
-  border: 1px solid #e4e7ed;
+  background-color: #111827;
+  border: 1px solid #374151;
   border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.3);
   min-width: 180px;
   overflow: hidden;
 }
@@ -846,30 +643,30 @@ onUnmounted(() => {
 }
 
 .layer-item:hover {
-  background-color: #f5f7fa;
+  background-color: #1f2937;
 }
 
 .layer-item span {
   font-size: 14px;
-  color: #303133;
+  color: #d1d5db;
 }
 
 .layer-item + .layer-item {
-  border-top: 1px solid #f0f2f5;
+  border-top: 1px solid #374151;
 }
 
 .module-filter-dropdown {
-  background-color: #ffffff;
-  border: 1px solid #e4e7ed;
+  background-color: #111827;
+  border: 1px solid #374151;
   border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.3);
   min-width: 180px;
   overflow: hidden;
 }
 
 .filter-actions {
   padding: 8px 16px;
-  border-top: 1px solid #f0f2f5;
+  border-top: 1px solid #374151;
   margin-top: 4px;
 }
 
