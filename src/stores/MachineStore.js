@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useRootStore } from "./SimStore";
-import { ElMessageBox } from "element-plus";
+import messagebox from "../components/ui/wrapper-v1/messagebox/messagebox.js";
 
 //test pr new branch
 export const useMachineStore = defineStore("sheng-machine-store", {
@@ -23,26 +23,24 @@ export const useMachineStore = defineStore("sheng-machine-store", {
       event.preventDefault();
       event.stopPropagation();
       
-      ElMessageBox.confirm(
+      messagebox.confirm(
         '确定要删除这个机器吗？',
         '删除确认',
         {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
-          type: 'warning',
         }
       )
-      .then(() => {
-        this.rootStore.rootGrid.removeWidget(
-          this.rootStore.gridWidgetElements[gs_id]
-        );
-        let part = this.rootStore.gridWidgets[gs_id].part;
-        this.rootStore.partsWidgetId[part].delete(gs_id);
-        delete this.rootStore.gridWidgetElements[gs_id];
-        delete this.rootStore.gridWidgets[gs_id];
-      })
-      .catch(() => {
-        // 取消删除操作
+      .then((result) => {
+        if (result) {
+          this.rootStore.rootGrid.removeWidget(
+            this.rootStore.gridWidgetElements[gs_id]
+          );
+          let part = this.rootStore.gridWidgets[gs_id].part;
+          this.rootStore.partsWidgetId[part].delete(gs_id);
+          delete this.rootStore.gridWidgetElements[gs_id];
+          delete this.rootStore.gridWidgets[gs_id];
+        }
       });
     },
   },

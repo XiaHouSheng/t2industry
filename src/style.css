@@ -1,12 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #fffa00;
+  --color-primary-foreground: #131313;
+  --color-secondary: #1e88e5;
+  --color-secondary-foreground: #ffffff;
+  --color-background: #131313;
+  --color-foreground: #ffffff;
+  --color-muted: #393939;
+  --color-muted-foreground: #a0a2a5;
+  --color-border: #323731;
+  --color-input: #393939;
+  --color-ring: #fffa00;
+  --color-destructive: #e51c23;
+  --color-destructive-foreground: #ffffff;
+}
+
+.dark {
+  --color-primary: #fffa00;
+  --color-primary-foreground: #131313;
+  --color-secondary: #1e88e5;
+  --color-secondary-foreground: #ffffff;
+  --color-background: #131313;
+  --color-foreground: #ffffff;
+  --color-muted: #393939;
+  --color-muted-foreground: #a0a2a5;
+  --color-border: #323731;
+  --color-input: #393939;
+  --color-ring: #fffa00;
+  --color-destructive: #e51c23;
+  --color-destructive-foreground: #ffffff;
+}
+
 :root {
   --sheng-self-height: 740px;
   --sheng-self-simulation-grid-height: 700px;
-  --sheng-self-simulation-list-height: 740px;
+  --sheng-self-simulation-list-height: 756px;
 
-  --sheng-grid-bg: #eef1f4;
-  --sheng-grid-line: #d8dee6;
+  --sheng-grid-bg: #f5f7fa;
+  --sheng-grid-line: #9ca3af;
   --sheng-grid-item-outline: #e4e7ed;
-  --sheng-root-bg: #f5f7fa;
+  --sheng-root-bg: #e5e7eb;
 
   --sheng-sidebar-bg: #111111;
   --sheng-sidebar-border: #e2e6ed;
@@ -96,15 +130,18 @@
 .el-menu {
   border-right: none;
 }
+
 .sheng-side-menu .el-menu-item {
-  transition: all 0.2s ease-in-out;
+  transition: all 0.1s ease-in-out;
   color: #848484;
 }
+
 .sheng-side-menu .el-menu-item[class*="is-active"] {
-  border-left: solid 5px blue;
+  border-left: solid 5px rgba(0, 0, 255, 0.604);
   color: var(--el-text-color-primary);
   background-color: var(--sheng-color-bg-sidebar-active);
 }
+
 .sheng-side-menu .el-menu-item:hover {
   background-color: var(--sheng-color-bg-sidebar-active);
 }
@@ -190,14 +227,6 @@ body {
   flex-direction: column-reverse;
 }
 
-.padding-0 {
-  padding: 0;
-}
-
-.margin-0 {
-  margin: 0;
-}
-
 .flex-grow-1 {
   flex-grow: 1;
 }
@@ -214,15 +243,6 @@ body {
   position: absolute;
 }
 
-.sim-inner-btn {
-  background-color: var(--sheng-btn-inner-bg);
-  margin-top: 3px;
-}
-
-.sim-outer-btn {
-  background-color: var(--sheng-btn-outer-bg);
-  margin-top: 3px;
-}
 
 .belt-bg {
   width: 100%;

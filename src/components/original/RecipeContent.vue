@@ -20,15 +20,15 @@ function handleRecipeSelect(targetId) {
 </script>
 
 <template>
-  <div class="display-flex flex-direation-col">
-    <div class="display-flex flex-direation-col sheng-recipe-header">
-      <h1 class="sheng-recipe-title">
+  <div class="flex flex-col bg-gray-900 rounded-lg p-4">
+    <div class="flex flex-col mb-4">
+      <h1 class="bg-gray-800 rounded-[3px] m-0 mt-[6px] mb-[6px] text-left text-gray-300 px-4 py-2">
         {{ machineNameMap[machineId] }} 当前配方
       </h1>
       <RecipeItem :target-id="chooseRecipe" :show-btn="false"></RecipeItem>
     </div>
-    <h1 class="sheng-recipe-title">{{ machineNameMap[machineId] }} 可选配方</h1>
-    <div class="sheng-recipe-grid">
+    <h1 class="bg-gray-800 rounded-[3px] m-0 mt-[6px] mb-[6px] text-left text-gray-300 px-4 py-2">{{ machineNameMap[machineId] }} 可选配方</h1>
+    <div class="overflow-auto max-h-[300px] grid grid-cols-2 gap-[6px] custom-scrollbar">
       <RecipeItem
         v-for="value of recipes"
         :target-id="value.id"
@@ -39,28 +39,27 @@ function handleRecipeSelect(targetId) {
 </template>
 
 <style scoped>
-.sheng-recipe-title {
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.838),
-    rgb(255, 255, 255) 2px,
-    transparent 2px,
-    transparent 4px
-  );
-  border-radius: 3px;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
-.sheng-recipe-grid {
-  overflow: auto;
-  display: grid;
-  max-height: 300px;
-  grid-template-columns: repeat(2, 1fr);
-  grid-column-gap: 6px;
-  grid-row-gap: 6px;
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1f2937;
+  border-radius: 4px;
 }
-h1 {
-  margin: 0;
-  margin-top: 6px;
-  margin-bottom: 6px;
-  text-align: left;
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: #1f2937;
 }
 </style>

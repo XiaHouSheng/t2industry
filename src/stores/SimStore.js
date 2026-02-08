@@ -6,10 +6,10 @@ import ConveyerBelt from "../components/simulation/ConveyerBelt.vue";
 import Pipe from "../components/simulation/Pipe.vue";
 import {
   ElNotification,
-  ElMessageBox,
   treeEmits,
-  ElMessage,
 } from "element-plus";
+import toast from "../components/ui/wrapper-v1/toast/toast.js";
+import messagebox from "../components/ui/wrapper-v1/messagebox/messagebox.js";
 import keyboardHandler from "../utils/keyboardHandler";
 import dragScrollHandler from "../utils/dragScrollHandler";
 import BeltIndicator from "../utils/BeltIndicator";
@@ -221,7 +221,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       // Leaflet 风格：小步长
       const delta = -event.deltaY * 0.0005;
       this.gridElContScale = Math.max(
-        0.2,
+        0.35,
         Math.min(2, this.gridElContScale + delta),
       );
       // 更新键盘处理器的缩放比例
@@ -711,7 +711,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       });
 
       if (!canMove) {
-        ElMessage.error(errorMessage);
+        toast.error(errorMessage);
         return false;
       }
 
@@ -928,7 +928,8 @@ export const useRootStore = defineStore("sheng-root-store", {
     },
 
     handlePartShowChange(part, value) {
-      this.showPartWidgets(part, value);
+      this.showPartWidgets(part, value)
+      console.log(part, value)
     },
 
     showPartWidgets(part, value) {
@@ -950,16 +951,17 @@ export const useRootStore = defineStore("sheng-root-store", {
       const part = this.parts[index];
 
       // 显示确认对话框
-      ElMessageBox.confirm(
+      messagebox.confirm(
         "是否删除？模块中的机器和传送带会被并入part0",
         "确认删除",
         {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
-          type: "warning",
         },
       )
-        .then(() => {
+        .then((result) => {
+          if (!result) return;
+          
           // 如果模块显示为 true，则不重新赋值 opacity 为 1
           for (let widgetId of this.partsWidgetId[part.name]) {
             this.partsWidgetId["part0"].add(widgetId);
@@ -985,9 +987,6 @@ export const useRootStore = defineStore("sheng-root-store", {
           this.parts.splice(index, 1);
           // 将 editPartChoose 重置为 part0
           this.editPartChoose = "part0";
-        })
-        .catch(() => {
-          // 取消删除
         });
     },
 
@@ -998,18 +997,16 @@ export const useRootStore = defineStore("sheng-root-store", {
       if (!part) return;
       keyboardHandler.disable();
       // 显示输入对话框
-      ElMessageBox.prompt("编辑模块代码", "代码编辑", {
+      messagebox.prompt("编辑模块代码", "代码编辑", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        inputValue: part.code || "",
-        inputPlaceholder: "请输入模块代码",
+        defaultValue: part.code || "",
       })
-        .then(({ value }) => {
-          // 直接通过索引更新parts数组中的对象
-          this.parts[index].code = value;
-        })
-        .catch(() => {
-          // 取消编辑
+        .then((value) => {
+          if (value !== null) {
+            // 直接通过索引更新parts数组中的对象
+            this.parts[index].code = value;
+          }
         })
         .finally(() => {
           keyboardHandler.enable();

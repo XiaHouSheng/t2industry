@@ -9,10 +9,23 @@ import {
   View,
   Share,
   Link,
+  Lock,
+  Message,
+  Check,
 } from "@element-plus/icons-vue";
 import { useHomeStore } from "../stores/HomeStore";
-import apiClient from "../utils/api-client";
-
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "../components/ui/wrapper-v1/dialog/index.js";
+import {
+  SelfCard,
+  SidebarMenu,
+  LoginActions,
+} from "../components/ui/wrapper-v1/sidebar/index.js";
 const router = useRouter();
 const route = useRoute();
 const homeStore = useHomeStore();
@@ -236,258 +249,215 @@ onUnmounted(() => {
 <template>
   <el-row :gutter="6">
     <el-col :span="4">
-      <div class="sheng-side-menu test-border display-flex flex-direation-col">
-        <div
-          class="sheng-menu-header display-flex flex-direation-col p-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg shadow-md"
-        >
-          <div
-            class="display-flex flex-direation-row align-items-center justify-content-center mb-3"
-          >
-            <el-avatar
-              size="large"
-              :icon="User"
-              :src="null"
-              class="bg-white text-blue-600"
-            >
-              {{ homeStore.userInfo.avatar }}
-            </el-avatar>
-          </div>
-          <div class="display-flex flex-direation-col align-items-center">
-            <el-text
-              v-if="homeStore.userInfo.isLoggedIn"
-              class="font-bold text-lg mb-1"
-            >
-              {{ homeStore.userInfo.username }}
-            </el-text>
-            <el-text v-else class="font-bold text-lg mb-1">未登录</el-text>
-            <el-text
-              v-if="homeStore.userInfo.isLoggedIn"
-              size="small"
-              class="text-blue-100 mb-2"
-            >
-              ID: {{ homeStore.userInfo.id }}
-            </el-text>
-            <el-text v-else size="small" class="text-blue-100 mb-2 text-center">
-              请登录以使用完整功能
-            </el-text>
-            <div
-              v-if="homeStore.userInfo.isLoggedIn"
-              class="w-full bg-blue-700 bg-opacity-50 rounded-full h-1 mt-1 mb-1"
-            ></div>
-            <div
-              v-if="homeStore.userInfo.isLoggedIn"
-              class="w-full display-flex flex-direation-row justify-content-center gap-2"
-            >
-              <el-tag
-                size="small"
-                effect="light"
-                class="bg-blue-700 text-white"
-              >
-                用户
-              </el-tag>
-            </div>
-          </div>
-        </div>
-        <div class="sheng-menu">
-          <div class="sheng-menu-item">
-            <el-menu :default-active="activeMenu" @select="handleMenuSelect">
-              <el-menu-item index="/home">
-                <el-icon><House /></el-icon>
-                <span>首页</span>
-              </el-menu-item>
-              <el-menu-item index="/home/discover">
-                <el-icon><Grid /></el-icon>
-                <span>发现蓝图</span>
-              </el-menu-item>
-              <el-menu-item index="/home/self">
-                <el-icon><User /></el-icon>
-                <span>个人蓝图</span>
-              </el-menu-item>
-            </el-menu>
-          </div>
-        </div>
-        <div
-          style="margin-top: auto"
-          class="sheng-login-cont display-flex flex-direation-column justify-content-center gap-2"
-        >
-          <el-button color="blue" @click="openLoginDialog" style="width: 100%"
-            >登录</el-button
-          >
-          <el-button
-            color="blue"
-            @click="openRegisterDialog"
-            style="width: 100%"
-            >注册</el-button
-          >
-        </div>
+      <div class="h-[780px] p-[15px] bg-[#111827] shadow-xl flex flex-col">
+        <SelfCard :userInfo="homeStore.userInfo" />
+        <div class="h-px bg-gray-800 my-2"></div>
+        <SidebarMenu :active-menu="activeMenu" @select="handleMenuSelect" />
+        <LoginActions @login="openLoginDialog" @register="openRegisterDialog" />
 
         <!-- 登录对话框 -->
-        <el-dialog
-          v-model="loginDialogVisible"
-          title="用户登录"
-          width="450px"
-          :close-on-click-modal="false"
-        >
-          <form @submit.prevent="handleLogin">
-            <div style="padding: 0 20px">
-              <div style="margin-bottom: 20px">
-                <el-input
-                  v-model="loginForm.username"
-                  placeholder="请输入用户名"
-                  prefix-icon="User"
-                  autocomplete="username"
-                ></el-input>
+        <Dialog v-model:open="loginDialogVisible">
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>用户登录</DialogTitle>
+            </DialogHeader>
+            <form @submit.prevent="handleLogin" class="space-y-4">
+              <div>
+                <div class="relative">
+                  <User
+                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4"
+                  />
+                  <input
+                    v-model="loginForm.username"
+                    type="text"
+                    placeholder="请输入用户名"
+                    autocomplete="username"
+                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-700 bg-gray-850 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-colors"
+                  />
+                </div>
               </div>
-              <div style="margin-bottom: 20px">
-                <el-input
-                  v-model="loginForm.password"
-                  type="password"
-                  placeholder="请输入密码"
-                  prefix-icon="Lock"
-                  autocomplete="password"
-                ></el-input>
+              <div>
+                <div class="relative">
+                  <Lock
+                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4"
+                  />
+                  <input
+                    v-model="loginForm.password"
+                    type="password"
+                    placeholder="请输入密码"
+                    autocomplete="password"
+                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-700 bg-gray-850 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-colors"
+                  />
+                </div>
               </div>
-              <div v-if="loginError" style="margin-bottom: 20px">
-                <el-alert
-                  :title="loginError"
-                  type="error"
-                  :closable="false"
-                  show-icon
-                />
-              </div>
-            </div>
-          </form>
-          <template #footer>
-            <span>
-              <el-button @click="closeLoginDialog">取消</el-button>
-              <el-button
-                type="primary"
-                :loading="loginLoading"
-                @click="handleLogin"
+              <div
+                v-if="loginError"
+                class="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm"
               >
-                登录
-              </el-button>
-            </span>
-          </template>
-        </el-dialog>
+                {{ loginError }}
+              </div>
+            </form>
+            <DialogFooter>
+              <button
+                @click="closeLoginDialog"
+                class="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
+              >
+                取消
+              </button>
+              <button
+                @click="handleLogin"
+                :disabled="loginLoading"
+                class="px-4 py-2 rounded-lg bg-yellow-500 text-gray-900 hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[80px]"
+              >
+                {{ loginLoading ? "登录中..." : "登录" }}
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <!-- 注册对话框 -->
-        <el-dialog
-          v-model="registerDialogVisible"
-          title="用户注册"
-          width="450px"
-          :close-on-click-modal="false"
-        >
-          <form @submit.prevent="handleRegister">
-            <div style="padding: 0 20px">
-              <div style="margin-bottom: 20px">
-                <el-input
-                  v-model="registerForm.username"
-                  placeholder="请输入用户名"
-                  :prefix-icon="User"
-                  autocomplete="username"
-                ></el-input>
+        <Dialog v-model:open="registerDialogVisible">
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>用户注册</DialogTitle>
+            </DialogHeader>
+            <form @submit.prevent="handleRegister" class="space-y-4">
+              <div>
+                <div class="relative">
+                  <User
+                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4"
+                  />
+                  <input
+                    v-model="registerForm.username"
+                    type="text"
+                    placeholder="请输入用户名"
+                    autocomplete="username"
+                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-700 bg-gray-850 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-colors"
+                  />
+                </div>
               </div>
-              <div style="margin-bottom: 20px">
-                <el-input
-                  v-model="registerForm.nickname"
-                  placeholder="请输入昵称"
-                  :prefix-icon="UserFilled"
-                  autocomplete="nickname"
-                ></el-input>
+              <div>
+                <div class="relative">
+                  <UserFilled
+                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4"
+                  />
+                  <input
+                    v-model="registerForm.nickname"
+                    type="text"
+                    placeholder="请输入昵称"
+                    autocomplete="nickname"
+                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-700 bg-gray-850 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-colors"
+                  />
+                </div>
               </div>
-              <div style="margin-bottom: 20px">
-                <el-input
-                  v-model="registerForm.email"
-                  placeholder="请输入邮箱"
-                  :prefix-icon="Mail"
-                  autocomplete="email"
-                ></el-input>
+              <div>
+                <div class="relative">
+                  <Message
+                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4"
+                  />
+                  <input
+                    v-model="registerForm.email"
+                    type="email"
+                    placeholder="请输入邮箱"
+                    autocomplete="email"
+                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-700 bg-gray-850 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-colors"
+                  />
+                </div>
               </div>
-              <div style="margin-bottom: 20px">
-                <el-input
-                  v-model="registerForm.verificationCode"
-                  placeholder="请输入验证码"
-                  :prefix-icon="Message"
-                  autocomplete="one-time-code"
-                >
-                  <template #append>
-                    <el-button
-                      :loading="homeStore.sendCodeLoading"
-                      :disabled="homeStore.codeCountdown > 0"
-                      @click="sendVerificationCode"
-                    >
-                      {{
-                        homeStore.codeCountdown > 0
-                          ? `${homeStore.codeCountdown}s后重发`
-                          : "发送验证码"
-                      }}
-                    </el-button>
-                  </template>
-                </el-input>
+              <div>
+                <div class="flex gap-2">
+                  <div class="relative flex-1">
+                    <Check
+                      class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4"
+                    />
+                    <input
+                      v-model="registerForm.verificationCode"
+                      type="text"
+                      placeholder="请输入验证码"
+                      autocomplete="one-time-code"
+                      class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-700 bg-gray-850 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-colors"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    @click="sendVerificationCode"
+                    :disabled="
+                      homeStore.sendCodeLoading || homeStore.codeCountdown > 0
+                    "
+                    class="px-4 py-2.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap min-w-[120px]"
+                  >
+                    {{
+                      homeStore.codeCountdown > 0
+                        ? `${homeStore.codeCountdown}s后重发`
+                        : "发送验证码"
+                    }}
+                  </button>
+                </div>
               </div>
-              <div style="margin-bottom: 20px">
-                <el-input
-                  v-model="registerForm.password"
-                  type="password"
-                  placeholder="请输入密码"
-                  :prefix-icon="Lock"
-                  autocomplete="new-password"
-                ></el-input>
+              <div>
+                <div class="relative">
+                  <Lock
+                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4"
+                  />
+                  <input
+                    v-model="registerForm.password"
+                    type="password"
+                    placeholder="请输入密码"
+                    autocomplete="new-password"
+                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-700 bg-gray-850 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-colors"
+                  />
+                </div>
               </div>
-              <div style="margin-bottom: 20px">
-                <el-input
-                  v-model="registerForm.confirmPassword"
-                  type="password"
-                  placeholder="请确认密码"
-                  :prefix-icon="Check"
-                  autocomplete="new-password"
-                ></el-input>
+              <div>
+                <div class="relative">
+                  <Check
+                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4"
+                  />
+                  <input
+                    v-model="registerForm.confirmPassword"
+                    type="password"
+                    placeholder="请确认密码"
+                    autocomplete="new-password"
+                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-700 bg-gray-850 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-colors"
+                  />
+                </div>
               </div>
-              <div v-if="registerError" style="margin-bottom: 20px">
-                <el-alert
-                  :title="registerError"
-                  type="error"
-                  :closable="false"
-                  show-icon
-                />
-              </div>
-            </div>
-          </form>
-          <template #footer>
-            <span>
-              <el-button @click="closeRegisterDialog">取消</el-button>
-              <el-button
-                type="primary"
-                :loading="registerLoading"
-                @click="handleRegister"
+              <div
+                v-if="registerError"
+                class="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm"
               >
-                注册
-              </el-button>
-            </span>
-          </template>
-        </el-dialog>
+                {{ registerError }}
+              </div>
+            </form>
+            <DialogFooter>
+              <button
+                @click="closeRegisterDialog"
+                class="px-4 py-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
+              >
+                取消
+              </button>
+              <button
+                @click="handleRegister"
+                :disabled="registerLoading"
+                class="px-4 py-2 rounded-lg bg-yellow-500 text-gray-900 hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[80px]"
+              >
+                {{ registerLoading ? "注册中..." : "注册" }}
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </el-col>
     <el-col :span="20">
-      <div class="sheng-home-main display-flex flex-direation-col test-border">
-        <div class="display-flex flex-direation-row">
-          <div
-            class="display-flex flex-direation-col justify-content-center"
-            style="margin-left: 12px;padding-top: 2px"
-          >
-            <el-icon :size="28"><Grid></Grid></el-icon>
-          </div>
-
-          <div
-            class="sheng-main-header display-flex flex-direation-col justify-content-center"
-          >
-            <h2 style="margin: 0">{{ pageTitle }}</h2>
-          </div>
-        </div>
-
-        <div class="sheng-child-main flex-grow-1">
+      <div class="h-[780px] bg-[#1a1a1a] shadow-xl flex flex-col">
+        <img
+            src="https://patchwiki.biligame.com/images/zmd/0/0a/7oc2v8kqfgzaltfwm42og404l57kha4.png"
+            alt="装饰图片"
+            class="absolute top-1/2 left-3/5 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] object-contain opacity-50 pointer-events-none z-0"
+          />
+        <div class="flex-1 overflow-y-auto overflow-x-hidden relative">
           <router-view @openLoginDialog="openLoginDialog"></router-view>
+          
         </div>
       </div>
     </el-col>
@@ -495,64 +465,24 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.sheng-child-main {
-  overflow-y: auto;
-  overflow-x: hidden;
-  min-height: auto;
-  padding: 6px;
-}
-.sheng-main-header {
-  width: 100%;
-  height: auto;
-  padding: 12px 0 12px 0;
-}
-.sheng-login-cont {
-  padding: 12px;
-  margin-top: 10px;
-}
-.sheng-menu-header {
-  margin-bottom: 15px;
-}
-.sheng-side-menu {
-  height: 740px;
-  padding: 15px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-.sheng-home-main {
-  height: 740px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-.sheng-menu {
-  margin-bottom: 20px;
-}
-.sheng-login-cont {
-  padding: 0;
-  border: none;
-}
-.font-bold {
-  font-weight: 700;
+/* 滚动条美化 */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
 }
 
-.text-lg {
-  font-size: 18px;
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
 }
 
-.mb-1 {
-  margin-bottom: 4px;
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  transition: background 0.3s ease;
 }
 
-.mb-2 {
-  margin-bottom: 8px;
-}
-
-.mt-1 {
-  margin-top: 4px;
-}
-
-.text-center {
-  text-align: center;
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* 响应式调整 */
@@ -570,24 +500,6 @@ onUnmounted(() => {
   }
   .sheng-menu-header > div:first-child {
     margin-bottom: 10px;
-  }
-
-  /* 登录对话框响应式调整 */
-  .login-dialog {
-    width: 90% !important;
-  }
-
-  .dialog-footer {
-    flex-direction: column;
-  }
-
-  .dialog-footer .el-button {
-    width: 100% !important;
-    margin-bottom: 10px;
-  }
-
-  .dialog-footer .el-button:last-child {
-    margin-bottom: 0;
   }
 }
 </style>

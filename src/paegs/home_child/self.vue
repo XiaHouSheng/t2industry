@@ -2,16 +2,23 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { Edit, Upload, Share, Delete } from "@element-plus/icons-vue";
-import { ElMessage } from "element-plus";
+import toast from "../../components/ui/wrapper-v1/toast/toast.js";
 import { useHomeStore } from "../../stores/HomeStore";
 import apiClient from "../../utils/api-client";
+import { StatsCard } from "../../components/ui/wrapper-v1/card/index.js";
+import { SelfBlueprintCard } from "../../components/ui/wrapper-v1/card/index.js";
+import { GuideCard } from "../../components/ui/wrapper-v1/card/index.js";
+import { ActionFilter } from "../../components/ui/wrapper-v1/action/index.js";
+import { Pagination } from "../../components/ui/wrapper-v1/pagination/index.js";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/wrapper-v1/dialog";
+import { Alert } from "../../components/ui/wrapper-v1/card/index.js";
 
 const homeStore = useHomeStore();
 const router = useRouter();
 
 // 地区筛选
 const selectedArea = ref("");
-const areas = ref(["", "四号谷地", "武陵"]);
+const areas = ref(["四号谷地", "武陵"]);
 
 // 本地蓝图数据
 const localBlueprints = ref([
@@ -21,7 +28,7 @@ const localBlueprints = ref([
     description: "本地保存的蓝图",
     createdAt: "2026-01-10",
     lastEdited: "2026-01-12",
-    area: "四号谷地/",
+    area: "塔卫二",
     thumbnail: "#",
     type: "local",
   },
@@ -92,7 +99,7 @@ const handleEdit = async (blueprint) => {
     }
   } catch (err) {
     console.error("编辑蓝图失败:", err);
-    ElMessage.error('操作失败，请重试');
+    toast.error('操作失败，请重试');
   }
 };
 
@@ -101,7 +108,7 @@ const handleReupload = async (blueprint) => {
   try {
     if (!blueprint.fileHash) {
       // 没有fileHash，是本地蓝图，提示用户
-      ElMessage.warning('本地蓝图不需要重新上传');
+      toast.warning('本地蓝图不需要重新上传');
       return;
     }
     
@@ -126,10 +133,10 @@ const handleReupload = async (blueprint) => {
         await homeStore.loadBlueprints();
         
         // 显示成功提示
-        ElMessage.success('蓝图重新上传成功');
+        toast.success('蓝图重新上传成功');
       } catch (err) {
         // 显示失败提示
-        ElMessage.error(err.message || '蓝图重新上传失败');
+        toast.error(err.message || '蓝图重新上传失败');
         console.error('蓝图重新上传失败:', err);
       } finally {
         // 隐藏加载状态
@@ -141,7 +148,7 @@ const handleReupload = async (blueprint) => {
     fileInput.click();
   } catch (err) {
     console.error("重新上传蓝图失败:", err);
-    ElMessage.error('操作失败，请重试');
+    toast.error('操作失败，请重试');
   }
 };
 
@@ -150,7 +157,7 @@ const handleShare = async (blueprint) => {
   try {
     if (!blueprint.fileHash) {
       // 没有fileHash，是本地蓝图，提示用户
-      ElMessage.warning('本地蓝图无法分享');
+      toast.warning('本地蓝图无法分享');
       return;
     }
     
@@ -158,7 +165,7 @@ const handleShare = async (blueprint) => {
     // 这里可以添加分享蓝图的逻辑
   } catch (err) {
     console.error("分享蓝图失败:", err);
-    ElMessage.error('操作失败，请重试');
+    toast.error('操作失败，请重试');
   }
 };
 
@@ -184,10 +191,10 @@ const confirmDelete = async () => {
     currentBlueprint.value = null;
     
     // 显示成功提示
-    ElMessage.success('蓝图删除成功');
+    toast.success('蓝图删除成功');
   } catch (err) {
     // 显示失败提示
-    ElMessage.error(err.message || '蓝图删除失败');
+    toast.error(err.message || '蓝图删除失败');
     console.error('蓝图删除失败:', err);
   }
 };
@@ -202,7 +209,7 @@ const cancelDelete = () => {
 const handleUploadBlueprint = () => {
   if (!homeStore.userInfo.isLoggedIn) {
     // 未登录时提示登录
-    ElMessage.warning('请先登录后再上传蓝图');
+    toast.warning('请先登录后再上传蓝图');
     return;
   }
   // 重置表单
@@ -238,6 +245,22 @@ const areaStats = computed(() => {
   });
   return stats;
 });
+
+// 构造统计卡片数据
+const statsData = computed(() => ({
+  blueprints: totalBlueprints.value,
+  users: uploadedBlueprintsCount.value,
+  views: areaStats.value['四号谷地'],
+  downloads: areaStats.value['武陵']
+}));
+
+// 构造统计卡片标签
+const statsLabels = computed(() => ({
+  blueprints: '总蓝图数',
+  users: '上传蓝图',
+  views: '四号谷地',
+  downloads: '武陵'
+}));
 
 // 格式化时间为 y-m-d 格式
 const formatDate = (dateString) => {
@@ -289,10 +312,10 @@ const submitUploadForm = async () => {
     uploadDialogVisible.value = false;
     
     // 显示成功提示
-    ElMessage.success('蓝图上传成功');
+    toast.success('蓝图上传成功');
   } catch (err) {
     // 显示失败提示
-    ElMessage.error(err.message || '蓝图上传失败');
+    toast.error(err.message || '蓝图上传失败');
     console.error('蓝图上传失败:', err);
   } finally {
     uploadLoading.value = false;
@@ -338,215 +361,59 @@ onMounted(() => {
   <el-row :gutter="12">
     <el-col :span="24">
       <!-- 未登录提示 -->
-      <el-alert
+      <Alert
         v-if="!homeStore.userInfo.isLoggedIn"
         title="请先登录以查看和管理您的蓝图"
         type="info"
-        :closable="false"
         show-icon
-        class="mb-4"
       >
         <template #default>
-          <el-button type="primary" size="small" @click="$emit('openLoginDialog')">去登录</el-button>
+          <button
+            @click="$emit('openLoginDialog')"
+            class="px-4 py-2 text-sm font-medium rounded bg-yellow-500 text-gray-900 hover:bg-yellow-400 transition-colors"
+          >
+            去登录
+          </button>
         </template>
-      </el-alert>
+      </Alert>
 
       <!-- 统计信息卡片 -->
-      <div class="stats-section">
-        <el-card class="stats-card">
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-content">
-                <div class="stat-value">{{ totalBlueprints }}</div>
-                <div class="stat-label">总蓝图数</div>
-              </div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-content">
-                <div class="stat-value">{{ uploadedBlueprintsCount }}</div>
-                <div class="stat-label">上传蓝图</div>
-              </div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-content">
-                <div class="stat-value">{{ areaStats["四号谷地"] }}</div>
-                <div class="stat-label">四号谷地</div>
-              </div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-content">
-                <div class="stat-value">{{ areaStats["武陵"] }}</div>
-                <div class="stat-label">武陵</div>
-              </div>
-            </div>
-          </div>
-        </el-card>
+      <div class="stats-section mx-6 mt-6">
+        <StatsCard :stats="statsData" :labels="statsLabels" />
       </div>
 
       <!-- 操作按钮和地区筛选 -->
-      <div class="action-filter-section">
-        <div class="filter-section">
-          <el-select
-            v-model="selectedArea"
-            placeholder="按地区筛选"
-            style="width: 200px"
-          >
-            <el-option
-              v-for="area in areas"
-              :key="area"
-              :label="area || '全部地区'"
-              :value="area"
-            ></el-option>
-          </el-select>
-        </div>
-        <div class="action-section">
-          <el-button
-            type="primary"
-            :icon="Upload"
-            @click="handleUploadBlueprint"
-            :disabled="!homeStore.userInfo.isLoggedIn"
-            :loading="homeStore.loading.blueprints"
-          >
-            上传蓝图
-          </el-button>
-        </div>
-      </div>
+      <ActionFilter
+        v-model:selected-area="selectedArea"
+        :areas="areas"
+        :is-logged-in="homeStore.userInfo.isLoggedIn"
+        :loading="homeStore.loading.blueprints"
+        @upload="handleUploadBlueprint"
+        class="mx-6 mt-6"
+      />
 
       <!-- 所有蓝图（本地在前，上传在后） -->
-      <div class="blueprint-section">
-        <el-skeleton :loading="homeStore.loading.blueprints" animated>
-          <template #template>
-            <div class="blueprint-grid">
-              <el-card class="blueprint-card" v-for="i in 3" :key="i">
-                <template #header>
-                  <div class="blueprint-header">
-                    <el-skeleton-item variant="text" style="width: 150px; height: 20px;" />
-                    <div class="blueprint-tags">
-                      <el-skeleton-item variant="text" style="width: 60px; height: 20px;" />
-                      <el-skeleton-item variant="text" style="width: 60px; height: 20px;" />
-                    </div>
-                  </div>
-                </template>
-                <div class="blueprint-content">
-                  <el-skeleton-item variant="text" style="width: 100%; height: 16px; margin-bottom: 8px;" />
-                  <el-skeleton-item variant="text" style="width: 100%; height: 16px; margin-bottom: 8px;" />
-                  <el-skeleton-item variant="text" style="width: 80%; height: 16px; margin-bottom: 16px;" />
-                  <el-skeleton-item variant="text" style="width: 120px; height: 16px; margin-bottom: 5px;" />
-                  <el-skeleton-item variant="text" style="width: 120px; height: 16px; margin-bottom: 5px;" />
-                  <el-skeleton-item variant="text" style="width: 100px; height: 16px; margin-bottom: 16px;" />
-                  <div class="blueprint-actions">
-                    <el-skeleton-item variant="text" style="width: 80px; height: 32px;" />
-                    <el-skeleton-item variant="text" style="width: 80px; height: 32px;" />
-                    <el-skeleton-item variant="text" style="width: 80px; height: 32px;" />
-                  </div>
-                </div>
-              </el-card>
-            </div>
-          </template>
-          <div v-if="!homeStore.loading.blueprints && filteredBlueprints.length === 0" class="text-center py-8">
-            <el-empty description="暂无蓝图数据" />
-          </div>
-          <div v-else-if="!homeStore.loading.blueprints" class="blueprint-grid">
-            <el-card
-              v-for="blueprint in filteredBlueprints"
-              :key="blueprint.id"
-              class="blueprint-card"
-            >
-              <template #header>
-                <div class="blueprint-header">
-                  <h2>{{ blueprint.name || '未命名蓝图' }}</h2>
-                  <div class="blueprint-header-actions">
-                    <div class="blueprint-tags">
-                      <el-tag
-                        size="small"
-                        :type="!blueprint.fileHash ? 'info' : 'success'"
-                      >
-                        {{ !blueprint.fileHash ? "本地" : "已上传" }}
-                      </el-tag>
-                      <el-tag size="small" type="warning">{{
-                        blueprint.area || '未知地区'
-                      }}</el-tag>
-                    </div>
-                    <el-button
-                      v-if="blueprint.fileHash"
-                      size="small"
-                      type="danger"
-                      circle
-                      :icon="Delete"
-                      @click="handleDelete(blueprint)"
-                      class="delete-button"
-                    />
-                  </div>
-                </div>
-              </template>
-              <div class="blueprint-content">
-                <div class="blueprint-description">
-                  {{ blueprint.description || '暂无描述' }}
-                </div>
-                <div class="blueprint-meta">
-                  <el-text size="small"
-                    >创建时间: {{ formatDate(blueprint.createdAt) }}</el-text
-                  >
-                  <el-text size="small"
-                    >最近编辑: {{ formatDate(blueprint.lastEdited) }}</el-text
-                  >
-                  <div class="author-info" v-if="blueprint.creator">
-                    <el-avatar :size="20">{{ blueprint.creator?.name?.charAt(0) || '用户' }}</el-avatar>
-                    <el-text size="small" style="margin-left: 5px">{{
-                      blueprint.creator?.name || '未知作者'
-                    }}</el-text>
-                  </div>
-                  <div
-                    class="blueprint-stats"
-                  >
-                    <el-text size="small" style="margin-right: 10px">
-                      浏览: {{ blueprint.views || 0 }}
-                    </el-text>
-                    <el-text size="small">
-                      下载: {{ blueprint.downloads || 0 }}
-                    </el-text>
-                  </div>
-                </div>
-                <div class="blueprint-actions">
-                  <el-button
-                    size="medium"
-                    :icon="Edit"
-                    @click="handleEdit(blueprint)"
-                    type="primary"
-                  >
-                    编辑
-                  </el-button>
-                  <el-button
-                    size="medium"
-                    :icon="Upload"
-                    @click="handleReupload(blueprint)"
-                    :loading="blueprint.uploading"
-                    :disabled="!blueprint.fileHash"
-                    type="primary"
-                    plain
-                  >
-                    重新上传
-                  </el-button>
-                  <el-button
-                    size="medium"
-                    :icon="Share"
-                    @click="handleShare(blueprint)"
-                    :disabled="!blueprint.fileHash"
-                    type="default"
-                    plain
-                  >
-                    分享
-                  </el-button>
-                </div>
-              </div>
-            </el-card>
-          </div>
-        </el-skeleton>
+      <div class="blueprint-section mx-6 mt-6">
+        <div v-if="filteredBlueprints.length === 0" class="text-center py-8">
+          <div class="text-gray-500 text-lg">暂无蓝图数据</div>
+        </div>
+        <div v-else class="blueprint-grid">
+          <SelfBlueprintCard
+            v-for="blueprint in filteredBlueprints"
+            :key="blueprint.id"
+            :blueprint="blueprint"
+            :loading="homeStore.loading.blueprints"
+            @edit="handleEdit"
+            @reupload="handleReupload"
+            @share="handleShare"
+            @delete="handleDelete"
+          />
+        </div>
       </div>
 
       <!-- 分页组件 -->
-      <div v-if="homeStore.userInfo.isLoggedIn && homeStore.userBlueprintsTotal > 0" class="pagination-container">
-        <el-pagination
+      <div v-if="homeStore.userInfo.isLoggedIn && homeStore.userBlueprintsTotal > 0" class="pagination-container mx-6 mt-6">
+        <Pagination
           v-model:current-page="homeStore.userBlueprintsPage"
           v-model:page-size="homeStore.userBlueprintsLimit"
           :page-sizes="[10, 20, 30, 50]"
@@ -558,67 +425,89 @@ onMounted(() => {
       </div>
 
       <!-- 上传蓝图对话框 -->
-      <el-dialog
-        v-model="uploadDialogVisible"
-        title="上传蓝图"
-        width="500px"
-        :close-on-click-modal="false"
-      >
-        <el-form
-          ref="uploadFormRef"
-          :model="uploadForm"
-          :rules="uploadFormRules"
-          label-width="80px"
-        >
-          <el-form-item label="蓝图名称" prop="name">
-            <el-input v-model="uploadForm.name" placeholder="请输入蓝图名称" />
-          </el-form-item>
-          <el-form-item label="蓝图描述" prop="description">
-            <el-input
-              v-model="uploadForm.description"
-              type="textarea"
-              placeholder="请输入蓝图描述"
-              :rows="3"
-            />
-          </el-form-item>
-          <el-form-item label="地区" prop="area">
-            <el-select v-model="uploadForm.area" placeholder="请选择地区">
-              <el-option
-                v-for="area in areas"
-                :key="area"
-                :label="area || '全部地区'"
-                :value="area"
+      <Dialog v-model:open="uploadDialogVisible">
+        <DialogContent max-width="max-w-md">
+          <DialogHeader>
+            <DialogTitle>上传蓝图</DialogTitle>
+          </DialogHeader>
+          <el-form
+            ref="uploadFormRef"
+            :model="uploadForm"
+            :rules="uploadFormRules"
+            label-width="80px"
+            class="space-y-4"
+          >
+            <el-form-item label="蓝图名称" prop="name">
+              <el-input
+                v-model="uploadForm.name"
+                placeholder="请输入蓝图名称"
+                class="!bg-gray-800 !border-gray-700 !text-gray-300"
               />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="蓝图文件" prop="file">
-            <el-upload
-              class="upload-demo"
-              action=""
-              :auto-upload="false"
-              :on-change="handleFileChange"
-              :limit="1"
-              :file-list="[]"
-              accept=".json"
+            </el-form-item>
+            <el-form-item label="蓝图描述" prop="description">
+              <el-input
+                v-model="uploadForm.description"
+                type="textarea"
+                placeholder="请输入蓝图描述"
+                :rows="3"
+                class="!bg-gray-800 !border-gray-700 !text-gray-300"
+              />
+            </el-form-item>
+            <el-form-item label="地区" prop="area">
+              <el-select
+                v-model="uploadForm.area"
+                placeholder="请选择地区"
+                class="!bg-gray-800 !border-gray-700 !text-gray-300"
+              >
+                <el-option
+                  v-for="area in areas"
+                  :key="area"
+                  :label="area || '全部地区'"
+                  :value="area"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="蓝图文件" prop="file">
+              <el-upload
+                class="upload-demo"
+                action=""
+                :auto-upload="false"
+                :on-change="handleFileChange"
+                :limit="1"
+                :file-list="[]"
+                accept=".json"
+              >
+                <button
+                  type="button"
+                  class="px-4 py-0.1 rounded bg-yellow-400 text-gray-900 hover:bg-yellow-500 transition-colors"
+                >
+                  选择文件
+                </button>
+                <template #tip>
+                  <div class="el-upload__tip text-gray-400 text-sm">
+                    请选择 .json 格式的文件
+                  </div>
+                </template>
+              </el-upload>
+            </el-form-item>
+          </el-form>
+          <DialogFooter>
+            <button
+              class="px-3 py-1.5 rounded border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors text-sm"
+              @click="cancelUpload"
             >
-              <el-button type="primary">选择文件</el-button>
-              <template #tip>
-                <div class="el-upload__tip">
-                  请选择 .json 格式的文件
-                </div>
-              </template>
-            </el-upload>
-          </el-form-item>
-        </el-form>
-        <template #footer>
-          <span class="dialog-footer">
-            <el-button @click="cancelUpload">取消</el-button>
-            <el-button type="primary" :loading="uploadLoading" @click="submitUploadForm">
-              上传
-            </el-button>
-          </span>
-        </template>
-      </el-dialog>
+              取消
+            </button>
+            <button
+              class="px-3 py-1.5 rounded bg-yellow-400 text-gray-900 hover:bg-yellow-500 transition-colors text-sm"
+              :disabled="uploadLoading"
+              @click="submitUploadForm"
+            >
+              {{ uploadLoading ? '上传中...' : '上传' }}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <!-- 删除确认对话框 -->
       <el-dialog
@@ -637,29 +526,10 @@ onMounted(() => {
       </el-dialog>
 
       <!-- 使用指南 -->
-      <div class="guide-section">
-        <el-card class="guide-card">
-          <template #header>
-            <h3 style="margin: 0">使用指南</h3>
-          </template>
-          <div class="guide-content">
-            <div class="guide-item">
-              <h4>如何上传蓝图？</h4>
-              <p>
-                点击页面上方的"上传蓝图"按钮，选择你要上传的蓝图文件或创建新蓝图。
-              </p>
-            </div>
-            <div class="guide-item">
-              <h4>如何编辑蓝图？</h4>
-              <p>在蓝图卡片下方点击"编辑"按钮，进入蓝图编辑器修改你的布局。</p>
-            </div>
-            <div class="guide-item">
-              <h4>如何分享蓝图？</h4>
-              <p>在蓝图卡片下方点击"分享"按钮，生成分享链接或二维码。</p>
-            </div>
-          </div>
-        </el-card>
+      <div class="guide-section mx-6 mt-6 mb-6">
+        <GuideCard />
       </div>
+      
     </el-col>
   </el-row>
 </template>
@@ -669,166 +539,10 @@ onMounted(() => {
   margin-bottom: 12px;
 }
 
-.blueprint-section h3 {
-  margin: 0 0 15px 0;
-  font-size: 18px;
-  color: var(--el-text-color-primary);
-}
-
 .blueprint-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 15px;
-}
-
-.blueprint-card {
-  height: 100%;
-  border: 1px solid #dcdfe6;
-  transition: border-color 0.3s ease;
-}
-
-.blueprint-card:hover {
-  border-color: #409eff;
-}
-
-.blueprint-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.blueprint-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.delete-button {
-  margin-left: 5px;
-}
-
-.blueprint-header h2 {
-  margin: 0;
-  font-size: 20px;
-  color: var(--el-text-color-primary);
-}
-
-.blueprint-tags {
-  display: flex;
-  gap: 8px;
-}
-
-.blueprint-content {
-  display: flex;
-  flex-direction: column;
-  height: calc(100% - 40px);
-}
-
-.blueprint-description {
-  margin-bottom: 10px;
-  flex-grow: 1;
-  color: var(--el-text-color-primary);
-}
-
-.blueprint-meta {
-  margin-bottom: 15px;
-  font-size: 12px;
-  color: var(--el-text-color-placeholder);
-}
-
-.blueprint-stats {
-  margin-top: 5px;
-}
-
-.blueprint-actions {
-  display: flex;
-  margin-top: auto;
-  justify-content: space-between;
-}
-
-.stats-section {
-  margin-bottom: 20px;
-}
-
-.stats-card {
-  margin-bottom: 15px;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 15px;
-  background-color: var(--sheng-root-bg);
-  border-radius: 8px;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: var(--el-text-color-primary);
-  text-align: center;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: var(--el-text-color-placeholder);
-  text-align: center;
-}
-
-.action-filter-section {
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.action-section {
-  display: flex;
-  gap: 10px;
-  margin-left: auto;
-}
-
-.filter-section {
-  display: flex;
-  gap: 10px;
-}
-
-.guide-section {
-  margin-bottom: 30px;
-}
-
-.guide-card {
-  background-color: var(--sim-color-primary-bg);
-}
-
-.stats-card {
-  margin-bottom: 15px;
-}
-
-.guide-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.guide-item h4 {
-  margin: 0 0 10px 0;
-  font-size: 16px;
-  color: var(--el-text-color-primary);
-}
-
-.guide-item p {
-  margin: 0;
-  font-size: 14px;
-  color: var(--el-text-color-placeholder);
 }
 
 /* 分页容器样式 */
@@ -836,7 +550,7 @@ onMounted(() => {
   position: sticky;
   bottom: 0;
   z-index: 10;
-  background: white;
+  background: #111827;
   padding: 15px;
   border-radius: 8px;
   display: flex;
@@ -845,14 +559,6 @@ onMounted(() => {
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-  .action-filter-section {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  }
 }
 
 

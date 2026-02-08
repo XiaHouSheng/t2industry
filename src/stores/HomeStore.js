@@ -210,7 +210,7 @@ export const useHomeStore = defineStore('home', {
         this.totalDownloads = homepageData.totalDownloads || 0;
         
         // 更新热门蓝图
-        this.hotBlueprints = Array.isArray(homepageData.hotBlueprints) ? homepageData.hotBlueprints.slice(0, 4) : [];
+        this.hotBlueprints = Array.isArray(homepageData.hotBlueprints) ? homepageData.hotBlueprints.slice(0, 7) : [];
       } catch (err) {
         this.error = err.message || '加载统计数据失败';
         console.error('加载统计数据失败:', err);
