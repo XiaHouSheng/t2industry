@@ -32,7 +32,11 @@ const hadnleRotate = () => {
 </script>
 
 <template>
-  <div v-if="rootStore.isShowPipes" class="max-height-width position-relative" @click="hadnleRotate">
+  <div
+    v-if="rootStore.isShowPipes"
+    class="max-height-width position-relative"
+    @click="hadnleRotate"
+  >
     <div
       class="max-height-width belt-bg position-absolute"
       :class="testClass"

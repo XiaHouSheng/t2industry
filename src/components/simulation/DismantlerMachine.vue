@@ -4,7 +4,6 @@ import { useRootStore } from "../../stores/SimStore";
 import { useMachineStore } from "../../stores/MachineStore";
 import { machineNameMap } from "../../utils/MachineMap";
 import { iconStyle } from "../../utils/DataMap";
-import RecipeList from "../original/RecipeContent.vue";
 
 const rootStore = useRootStore();
 const machineStore = useMachineStore();
@@ -144,23 +143,21 @@ const portPosition = computed(() => {
   const rotation = currentIndex.value % 4;
   switch (rotation) {
     case 0:
-      return 'right-2';
+      return "right-2";
     case 1:
-      return 'bottom-3';
+      return "bottom-3";
     case 2:
-      return 'left-2';
+      return "left-2";
     case 3:
-      return 'top-3';
+      return "top-3";
     default:
-      return 'right-2';
+      return "right-2";
   }
 });
 
 onMounted(() => {
   onlyChangeFlexDirection(index);
-})
-
-
+});
 </script>
 <template>
   <div

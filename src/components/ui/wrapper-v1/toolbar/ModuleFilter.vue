@@ -30,17 +30,10 @@ const emit = defineEmits([
   "addNewPart",
 ]);
 
-watch(
-  () => props.parts,
-  (newParts, oldParts) => {
-    if (oldParts) {
-      newParts.forEach((newPart, index) => {
-        rootStore.handlePartShowChange(newPart, newPart.show);
-      });
-    }
-  },
-  { deep: true },
-);
+
+const handleSwitchChange = (index,part) => {
+  rootStore.handlePartShowChange(index, part.show);
+};
 
 const handleSelectEditPart = (name) => {
   emit("selectEditPart", name);
@@ -94,6 +87,7 @@ const handleAddNewPart = () => {
             <div class="flex-1 flex items-center">
               <SwitchRoot
                 v-model:checked="part.show"
+                :update:checked="handleSwitchChange(index,part)"
                 @click.stop
                 class="relative inline-flex h-5 w-9 items-center rounded-full bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-gray-900 data-[state=checked]:bg-yellow-400 mr-3"
               >

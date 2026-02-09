@@ -237,12 +237,7 @@ export const useHomeStore = defineStore('home', {
         this.userBlueprintsTotal = response.data?.total || 0;
         this.userBlueprintsPage = response.data?.page || 1;
         this.userBlueprintsLimit = response.data?.limit || 10;
-        
-        // 计算热门蓝图（按浏览量排序）
-        this.hotBlueprints = [...this.allBlueprints]
-          .sort((a, b) => (b.views || 0) - (a.views || 0))
-          .slice(0, 3);
-        
+                
         // 更新统计数据
         this.totalBlueprints = this.allBlueprints.length;
         // 确保在使用reduce之前allBlueprints是数组

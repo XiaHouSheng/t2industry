@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRootStore } from "../../stores/SimStore";
-
+// middleware <- rootstore machine
 const rootStore = useRootStore();
 const props = defineProps({
   gs_id: {

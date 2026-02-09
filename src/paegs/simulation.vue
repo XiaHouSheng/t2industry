@@ -20,7 +20,10 @@
   </el-popconfirm>
 
   <!--这个是配平配置的Dialog-->
-  <Dialog v-model:open="rootStore.isRecipeChoose" @update:open="rootStore.handleDialogRecipeClose">
+  <Dialog
+    v-model:open="rootStore.isRecipeChoose"
+    @update:open="rootStore.handleDialogRecipeClose"
+  >
     <DialogContent max-width="max-w-4xl">
       <DialogHeader>
         <DialogTitle>配方选择</DialogTitle>
@@ -32,7 +35,10 @@
   </Dialog>
 
   <!--这个是取货口配置的Dialog-->
-  <Dialog v-model:open="rootStore.isWareHouseRecipeChoose" @update:open="rootStore.handleDialogRecipeClose">
+  <Dialog
+    v-model:open="rootStore.isWareHouseRecipeChoose"
+    @update:open="rootStore.handleDialogRecipeClose"
+  >
     <DialogContent max-width="max-w-4xl">
       <DialogHeader>
         <DialogTitle>仓库取货口配置</DialogTitle>
@@ -51,7 +57,7 @@
     <el-upload
       drag
       accept=".json,application/json"
-      :on-change="rootStore.handleBluePrintUpload"
+      :on-change="MachineMiddleware.handleBluePrintUpload"
     >
       <el-icon class="el-icon--upload"><upload-filled /></el-icon>
       <div class="el-upload__text">
@@ -180,8 +186,12 @@
       </div>
     </el-col>
     <el-col :span="20">
-      <div class="flex flex-row p-2 bg-gray-800 border-b border-gray-700 rounded-t-lg sheng-tool-bar-cont">
-        <div class="w-full h-10 gap-2 items-center px-3 sheng-tool-bar display-flex flex-direation-row">
+      <div
+        class="flex flex-row p-2 bg-gray-800 border-b border-gray-700 rounded-t-lg sheng-tool-bar-cont"
+      >
+        <div
+          class="w-full h-10 gap-2 items-center px-3 sheng-tool-bar display-flex flex-direation-row"
+        >
           <!--电量显示
           <div
             style="width: 180px; height: 100%; background-color: var(--el-color-white)"
@@ -223,11 +233,7 @@
           <!--快速放置模式-->
           <QuickPlaceMode v-model="rootStore.quickPlaceMode" />
 
-          
-          <el-button
-            class="ml-auto"
-            icon="Delete"
-            @click="handleStartClear"
+          <el-button class="ml-auto" icon="Delete" @click="handleStartClear"
             >清空</el-button
           >
 
@@ -310,11 +316,10 @@ import CommandEvent from "../utils/CommandEvent";
 import { GridStack } from "gridstack";
 import { useRootStore } from "../stores/SimStore";
 import { useSelectStore } from "../stores/SelectStore";
-import { machineComponentMap } from "../utils/MachineMap";
+import { machineComponentMap } from "../utils/MachineComponentMap";
 import { MachineData, iconStyle, gridStackDataProcess } from "../utils/DataMap";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { toast } from "../components/ui/wrapper-v1/toast";
-import { ArrowDown } from "@element-plus/icons-vue";
 import messagebox from "../components/ui/wrapper-v1/messagebox/messagebox.js";
 import {
   ToolbarModeSelector,
@@ -322,9 +327,19 @@ import {
   QuickPlaceMode,
   LayerSettings,
   ModuleFilter,
-  BlueprintActions
+  BlueprintActions,
 } from "../components/ui/wrapper-v1/toolbar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/wrapper-v1/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/wrapper-v1/dialog";
+import MachineMiddleware from "../utils/MachineMiddleware.js";
+import keyboardHandler from "../utils/keyboardHandler.js";
+import dragScrollHandler from "../utils/dragScrollHandler.js";
+import BeltIndicator from "../utils/BeltIndicator.js";
+import SelectIndicator from "../utils/SelectIndicator.js";
 
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
@@ -340,14 +355,29 @@ onMounted(async () => {
   const selector = document.querySelector(".selection-box");
   const overLay = document.querySelector(".sheng-overlay");
   const pipeGrid = document.querySelector("#pipe-grid");
+
   selectStore.initSelector(selector);
   rootStore.initGrid(targetGridEl, targetGridCont, overLay, appContext);
   rootStore.initPipeGrid(pipeGrid);
+
+  MachineMiddleware.init();
+  // 初始化键盘事件监听
+  keyboardHandler.init(rootStore.gridElCont);
+  keyboardHandler.updateScale(rootStore.gridElContScale);
+  // 初始化右键拖动滚动监听
+  dragScrollHandler.init(rootStore.gridElCont);
+  // 初始化传送带指示器
+  BeltIndicator.init(rootStore.overlay);
+  // 初始化框选指示器
+  SelectIndicator.init(rootStore.overlay);
+  // 初始化命令事件控制
+  CommandEvent.init();
+
   // 根据是否有hashCode参数加载相应的蓝图
   if (hashCode) {
     try {
       toast.info(`正在加载蓝图: ${hashCode}`);
-      await rootStore.loadBlueprintByHashCode(hashCode);
+      await MachineMiddleware.loadBlueprintByHashCode(hashCode);
       toast.success(`蓝图 ${hashCode} 加载成功！`);
     } catch (error) {
       console.error("加载蓝图失败：", error);
@@ -356,7 +386,7 @@ onMounted(async () => {
   } else {
     // 没有hashCode参数，加载本地蓝图
     try {
-      const localBlueprint = rootStore.loadLocalBlueprint();
+      const localBlueprint = MachineMiddleware.loadLocalBlueprint();
       if (localBlueprint) {
         toast.success("本地蓝图加载成功！");
       }
@@ -387,6 +417,7 @@ onMounted(async () => {
       return;
     }
   });
+
   rootStore.rootGrid.on("added", (event, items) => {
     const item = items[0];
     const el = item.el;
@@ -427,7 +458,7 @@ const stopWatcher = watch(
       // 有新的hashCode参数，加载远程蓝图
       try {
         toast.info(`正在加载蓝图: ${newHashCode}`);
-        await rootStore.loadBlueprintByHashCode(newHashCode);
+        await MachineMiddleware.loadBlueprintByHashCode(newHashCode);
         toast.success(`蓝图 ${newHashCode} 加载成功！`);
       } catch (error) {
         console.error("加载蓝图失败：", error);
@@ -437,7 +468,7 @@ const stopWatcher = watch(
       // 从有hashCode变为无hashCode，加载本地蓝图
       try {
         toast.info("正在加载本地蓝图...");
-        const localBlueprint = rootStore.loadLocalBlueprint();
+        const localBlueprint = MachineMiddleware.loadLocalBlueprint();
         if (localBlueprint) {
           toast.success("本地蓝图加载成功！");
         } else {
@@ -453,14 +484,15 @@ const stopWatcher = watch(
 
 // 清空画布回调
 const handleStartClear = () => {
-  messagebox.confirm(
-    "你确定要清空画布吗？确认后会直接清空画布，若清空后保存将会彻底无法恢复。",
-    "确认清空",
-    {
-      confirmButtonText: "我确认清空画布",
-      cancelButtonText: "取消",
-    },
-  )
+  messagebox
+    .confirm(
+      "你确定要清空画布吗？确认后会直接清空画布，若清空后保存将会彻底无法恢复。",
+      "确认清空",
+      {
+        confirmButtonText: "我确认清空画布",
+        cancelButtonText: "取消",
+      },
+    )
     .then((result) => {
       if (result) {
         toast.success("已经清空画布");

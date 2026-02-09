@@ -1,9 +1,10 @@
 import { watch } from "vue";
-import toast from "../components/ui/wrapper-v1/toast/toast.js";
 import { useRootStore } from "../stores/SimStore";
+import { useSelectStore } from "../stores/SelectStore";
+import toast from "../components/ui/wrapper-v1/toast/toast.js";
 import BeltIndicator from "./BeltIndicator";
 import SelectIndicator from "./SelectIndicator";
-import { useSelectStore } from "../stores/SelectStore";
+import MachineMiddleware from "./MachineMiddleware.js";
 
 class CommandEvent {
   constructor() {
@@ -80,19 +81,31 @@ class CommandEvent {
     const nowMode = this.rootStore.toolbarMode;
     //快速放置传送带
     if (nowMode == "belts") {
-      this.rootStore.handleClickBelts(event);
+      MachineMiddleware.handleClickBelts(event);
       console.log("belts");
     }
     //放置单个的传送带元素
     if (this.isSingleBeltMode(nowMode)) {
-      this.rootStore.handleClickSingleBoP(event);
+      MachineMiddleware.handleClickSingleBoP(event);
     }
     //批量移动选中机器
     if (this.rootStore.selectSubMode === "move") {
-
       const { biasX, biasY } = SelectIndicator.bias;
       const { minX, maxX, minY, maxY } = SelectIndicator.selectRange;
-      console.log("biasX", biasX,"biasY", biasY, "minX", minX, "maxX", maxX, "minY", minY, "maxY", maxY);
+      console.log(
+        "biasX",
+        biasX,
+        "biasY",
+        biasY,
+        "minX",
+        minX,
+        "maxX",
+        maxX,
+        "minY",
+        minY,
+        "maxY",
+        maxY,
+      );
       // 边界检查：确保移动后不超出网格边界
       const isWithinBounds =
         minX + biasX >= 0 &&
