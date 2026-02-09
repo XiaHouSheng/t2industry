@@ -310,9 +310,6 @@ import {
   onUnmounted,
 } from "vue";
 import "gridstack/dist/gridstack.min.css";
-import RecipeContent from "../components/original/RecipeContent.vue";
-import WareHouseContent from "../components/original/WareHouseContent.vue";
-import CommandEvent from "../utils/CommandEvent";
 import { GridStack } from "gridstack";
 import { useRootStore } from "../stores/SimStore";
 import { useSelectStore } from "../stores/SelectStore";
@@ -336,10 +333,13 @@ import {
   DialogTitle,
 } from "../components/ui/wrapper-v1/dialog";
 import MachineMiddleware from "../utils/MachineMiddleware.js";
-import keyboardHandler from "../utils/keyboardHandler.js";
-import dragScrollHandler from "../utils/dragScrollHandler.js";
+import KeyBoardHandler from "../utils/KeyBoardHandler.js";
+import DragScrollHandler from "../utils/dragScrollHandler.js";
 import BeltIndicator from "../utils/BeltIndicator.js";
 import SelectIndicator from "../utils/SelectIndicator.js";
+import RecipeContent from "../components/original/RecipeContent.vue";
+import WareHouseContent from "../components/original/WareHouseContent.vue";
+import CommandEvent from "../utils/CommandEvent";
 
 const { appContext } = getCurrentInstance();
 const rootStore = useRootStore();
@@ -362,10 +362,10 @@ onMounted(async () => {
 
   MachineMiddleware.init();
   // 初始化键盘事件监听
-  keyboardHandler.init(rootStore.gridElCont);
-  keyboardHandler.updateScale(rootStore.gridElContScale);
+  KeyBoardHandler.init(rootStore.gridElCont);
+  KeyBoardHandler.updateScale(rootStore.gridElContScale);
   // 初始化右键拖动滚动监听
-  dragScrollHandler.init(rootStore.gridElCont);
+  DragScrollHandler.init(rootStore.gridElCont);
   // 初始化传送带指示器
   BeltIndicator.init(rootStore.overlay);
   // 初始化框选指示器
@@ -552,6 +552,7 @@ onUnmounted(() => {
   transform-origin: 0 0;
   pointer-events: none;
   background-color: rgba(0, 0, 0, 0);
+  z-index: 1
 }
 
 .sheng-test-border {

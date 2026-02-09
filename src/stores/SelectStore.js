@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import { useRootStore } from "./SimStore";
-import { nextTick } from "vue";
 import SelectIndicator from "../utils/SelectIndicator";
 
 export const useSelectStore = defineStore("sheng-select-store", {

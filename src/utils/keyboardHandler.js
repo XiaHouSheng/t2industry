@@ -1,7 +1,7 @@
 // 键盘事件处理器
 import { useRootStore } from "../stores/SimStore";
 
-class KeyboardHandler {
+class KeyBoardHandler {
   constructor() {
     this.rootStore = null;
     this.isListening = false;
@@ -100,4 +100,4 @@ class KeyboardHandler {
 }
 
 // 导出单例实例
-export default new KeyboardHandler();
+export default new KeyBoardHandler();

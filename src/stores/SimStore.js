@@ -1,20 +1,10 @@
 import { GridStack } from "gridstack";
 import { defineStore } from "pinia";
 import { markRaw } from "vue";
-
-/*
-render -> generateOnePipe / generateOneBelt / makeMachine
-makeMachine -> importBluePrint
-generateOnePipe -> replacePipeNodeAtPosition generateStraightPipe handleClickSingleBoP importBluePrint
-generateOneBelt -> replaceNodeAtPosition generateStraightBelt handleClickSingleBoP importBluePrint
-generateStraightPipe -> generatePipe
-generateStraightBelt -> generateBelt
-*/
-
 import { ElNotification } from "element-plus";
 import toast from "../components/ui/wrapper-v1/toast/toast.js";
 import messagebox from "../components/ui/wrapper-v1/messagebox/messagebox.js";
-import keyboardHandler from "../utils/keyboardHandler";
+import KeyBoardHandler from "../utils/KeyBoardHandler.js";
 
 export const useRootStore = defineStore("sheng-root-store", {
   state: () => ({
@@ -277,7 +267,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       //console.log("nowpart", this.parts);
       const part = this.parts[index];
       if (!part) return;
-      keyboardHandler.disable();
+      KeyBoardHandler.disable();
       // 显示输入对话框
       messagebox
         .prompt("编辑模块代码", "代码编辑", {
@@ -292,7 +282,7 @@ export const useRootStore = defineStore("sheng-root-store", {
           }
         })
         .finally(() => {
-          keyboardHandler.enable();
+          KeyBoardHandler.enable();
         });
     },
 
@@ -317,7 +307,7 @@ export const useRootStore = defineStore("sheng-root-store", {
         Math.min(2, this.gridElContScale + delta),
       );
       // 更新键盘处理器的缩放比例
-      keyboardHandler.updateScale(this.gridElContScale);
+      KeyBoardHandler.updateScale(this.gridElContScale);
       // 应用视觉缩放（通过CSS transform: scale()）
       this.gridEl.style.transform = `scale(${this.gridElContScale}) translate(100px, 100px)`;
       // 更新遮罩层的缩放
@@ -440,21 +430,6 @@ export const useRootStore = defineStore("sheng-root-store", {
     // ======================================================
     // -------------------- 事件处理 --------------------
     // ======================================================
-    /*
-    handleClickBelts(event) {
-      const position = this.getPositionFromClick(event);
-      if (this.quickPlaceMode === "belt") {
-        if (this.isCellEmpty(event) || event.isBeltPort) {
-          this.generateBelt(position, "belt");
-        }
-      }
-      if (this.quickPlaceMode === "pipe" && this.isCellEmptyPipe(event)) {
-        this.generatePipe(position, "pipe");
-        //console.log("test click pipe generate");
-      }
-    },
-    */
-
     handleDialogRecipeClose() {
       this.rootGrid.enableMove(true);
     },
@@ -512,135 +487,232 @@ export const useRootStore = defineStore("sheng-root-store", {
 
       // 临时存储需要移动的管道数据
       const pipesToMove = [];
+
+      // 第一步：遍历当前位置，清除数据
       Object.entries(nodes).forEach(([nodeId, node]) => {
         const preElement = node.el;
         const preNode = preElement.gridstackNode;
+        const oldX = preNode.x;
+        const oldY = preNode.y;
+
+        // 保存管道数据
+        const pipeData = this.gridPipes2d[oldX][oldY];
+        if (pipeData) {
+          pipesToMove.push({
+            element: preElement,
+            oldX,
+            oldY,
+            data: pipeData,
+          });
+
+          // 从原位置清除数据
+          this.gridPipes2d[oldX][oldY] = {};
+          delete this.gridPipe2dElement[`${oldX}-${oldY}`];
+        }
+      });
+
+      // 第二步：更新位置并设置新坐标的数据
+      pipesToMove.forEach(({ element, oldX, oldY, data }) => {
+        const preNode = element.gridstackNode;
         const newX = preNode.x + biasX;
         const newY = preNode.y + biasY;
-        const positionKey = `${preNode.x}-${preNode.y}`;
 
-        pipesToMove.push({
-          element: preElement,
-          oldX: preNode.x,
-          oldY: preNode.y,
-          newX: newX,
-          newY: newY,
-          positionKey: positionKey,
-        });
+        // 更新网格位置
+        this.rootPipeGrid.update(element, { x: newX, y: newY });
+
+        // 在新位置设置数据
+        this.gridPipes2d[newX][newY] = data;
+        this.gridPipe2dElement[`${newX}-${newY}`] = element;
+
+        // 更新partsPipes中的位置
+        const part = data.part;
+        if (part) {
+          this.partsPipes[part].delete(`${oldX}-${oldY}`);
+          this.partsPipes[part].add(`${newX}-${newY}`);
+        }
       });
 
-      // 批量移动
-      pipesToMove.forEach((pipe) => {
-        engine.moveNode(pipe.element.gridstackNode, pipe.newX, pipe.newY);
-      });
-
-      engine.batchUpdate(false);
+      //结束批量更新，进行提交
+      engine.batchUpdate(false, true);
       engine.float = true;
-
-      // 更新数据
-      pipesToMove.forEach((pipe) => {
-        const oldKey = `${pipe.oldX}-${pipe.oldY}`;
-        const newKey = `${pipe.newX}-${pipe.newY}`;
-
-        this.gridPipes2d[pipe.newX][pipe.newY] =
-          this.gridPipes2d[pipe.oldX][pipe.oldY];
-        this.gridPipes2d[pipe.oldX][pipe.oldY] = {};
-
-        this.gridPipe2dElement[newKey] = this.gridPipe2dElement[oldKey];
-        delete this.gridPipe2dElement[oldKey];
-
-        const part = this.gridPipes2d[pipe.newX][pipe.newY].part;
-        this.partsPipes[part].delete(oldKey);
-        this.partsPipes[part].add(newKey);
-      });
+      return true;
     },
 
     batchMoveBelt(nodes, bias) {
       const { biasX, biasY } = bias;
       const engine = this.rootGrid.engine;
 
-      // 第一步：检查所有节点的新位置是否可用
-      const beltsToMove = [];
-      Object.entries(nodes).forEach(([nodeId, node]) => {
-        const preElement = node.el;
-        const preNode = preElement.gridstackNode;
-        const newX = preNode.x + biasX;
-        const newY = preNode.y + biasY;
-        const positionKey = `${preNode.x}-${preNode.y}`;
-
-        beltsToMove.push({
-          element: preElement,
-          oldX: preNode.x,
-          oldY: preNode.y,
-          newX: newX,
-          newY: newY,
-          positionKey: positionKey,
-        });
-      });
-
       // 第二步：所有节点的新位置都可用，开始批量更新
       engine.batchUpdate(true, true);
       engine.float = false;
 
-      // 批量移动
-      beltsToMove.forEach((belt) => {
-        engine.moveNode(belt.element.gridstackNode, belt.newX, belt.newY);
+      // 临时存储需要移动的传送带数据
+      /*
+      this.gridBelt2dElement[`${position.x}-${position.y}`] = craftElement;
+      this.gridBelts2d[position.x][position.y] = {
+        rotate: rotate,
+        type: type,
+        id: id,
+        part: this.editPartChoose,
+      };
+       */
+      const beltsToMove = [];
+
+      // 第一步：遍历当前位置，清除数据
+      Object.entries(nodes).forEach(([nodeId, node]) => {
+        const preElement = node.el;
+        const preNode = preElement.gridstackNode;
+        const oldX = preNode.x;
+        const oldY = preNode.y;
+
+        // 保存传送带数据
+        const beltData = this.gridBelts2d[oldX][oldY];
+        if (beltData) {
+          beltsToMove.push({
+            element: preElement,
+            oldX,
+            oldY,
+            data: beltData,
+          });
+
+          // 从原位置清除数据
+          this.gridBelts2d[oldX][oldY] = {};
+          delete this.gridBelt2dElement[`${oldX}-${oldY}`];
+        }
       });
 
-      engine.batchUpdate(false);
+      // 第二步：更新位置并设置新坐标的数据
+      beltsToMove.forEach(({ element, oldX, oldY, data }) => {
+        const preNode = element.gridstackNode;
+        const newX = preNode.x + biasX;
+        const newY = preNode.y + biasY;
+
+        // 更新网格位置
+        this.rootGrid.update(element, { x: newX, y: newY });
+
+        // 在新位置设置数据
+        this.gridBelts2d[newX][newY] = data;
+        this.gridBelt2dElement[`${newX}-${newY}`] = element;
+
+        // 更新partsBelts中的位置
+        const part = data.part;
+        if (part) {
+          this.partsBelts[part].delete(`${oldX}-${oldY}`);
+          this.partsBelts[part].add(`${newX}-${newY}`);
+        }
+      });
+
+      //结束批量更新，进行提交
+      engine.batchUpdate(false, true);
       engine.float = true;
-
-      // 更新数据
-      beltsToMove.forEach((belt) => {
-        const oldKey = `${belt.oldX}-${belt.oldY}`;
-        const newKey = `${belt.newX}-${belt.newY}`;
-
-        this.gridBelts2d[belt.newX][belt.newY] =
-          this.gridBelts2d[belt.oldX][belt.oldY];
-        this.gridBelts2d[belt.oldX][belt.oldY] = {};
-
-        this.gridBelt2dElement[newKey] = this.gridBelt2dElement[oldKey];
-        delete this.gridBelt2dElement[oldKey];
-
-        const part = this.gridBelts2d[belt.newX][belt.newY].part;
-        this.partsBelts[part].delete(oldKey);
-        this.partsBelts[part].add(newKey);
-      });
+      return true;
     },
 
-    batchMoveMachine(nodes, bias) {
+    batchMoveMahcine(nodes, bias) {
       const { biasX, biasY } = bias;
       const engine = this.rootGrid.engine;
 
-      // 第一步：检查所有节点的新位置是否可用
-      const canMove = Object.entries(nodes).every(([nodeId, node]) => {
-        const preElement = node.el;
-        const preNode = preElement.gridstackNode;
-        const newX = preNode.x + biasX;
-        const newY = preNode.y + biasY;
-        return engine.isAreaEmpty(newX, newY, preNode.w, preNode.h);
-      });
-
-      if (!canMove) {
-        toast.error("移动目标位置已被占用");
-        return;
-      }
-
       // 第二步：所有节点的新位置都可用，开始批量更新
       engine.batchUpdate(true, true);
       engine.float = false;
+      //进行批量MOVE操作
+      Object.entries(nodes)
+        .reverse()
+        .forEach(([nodeId, node]) => {
+          const preElement = node.el;
+          const preNode = preElement.gridstackNode;
+          const newX = preNode.x + biasX;
+          const newY = preNode.y + biasY;
+          this.rootGrid.update(preElement, { x: newX, y: newY });
+        });
 
-      // 批量移动
-      Object.entries(nodes).forEach(([nodeId, node]) => {
-        const preElement = node.el;
-        const preNode = preElement.gridstackNode;
-        const newX = preNode.x + biasX;
-        const newY = preNode.y + biasY;
-        engine.moveNode(preNode, newX, newY);
-      });
-
-      engine.batchUpdate(false);
+      //结束批量更新，进行提交
+      engine.batchUpdate(false, true);
       engine.float = true;
+      return true;
+    },
+
+    batchMove(nodes, bias) {
+      const { machineNodes, beltNodes, pipeNodes } = nodes;
+      const engine = this.rootGrid.engine;
+      const pipeEngine = this.rootPipeGrid.engine;
+
+      const isOkMachine = this.checkNodesCanMove(
+        engine,
+        machineNodes,
+        bias,
+        "有机器位置冲突，无法移动",
+      );
+      const isOkBelt = this.checkNodesCanMove(
+        engine,
+        beltNodes,
+        bias,
+        "有传送带位置冲突，无法移动",
+      );
+      const isOkPipe = this.checkNodesCanMove(
+        pipeEngine,
+        pipeNodes,
+        bias,
+        "有管道位置冲突，无法移动",
+      );
+
+      if (!isOkMachine || !isOkBelt || !isOkPipe) {
+        return false;
+      }
+
+      this.batchMoveMahcine(machineNodes, bias);
+      this.batchMoveBelt(beltNodes, bias);
+      this.batchMovePipe(pipeNodes, bias);
+      return true;
+    },
+
+    deleteMachineById(gs_id) {
+      this.rootGrid.removeWidget(this.gridWidgetElements[gs_id]);
+      let part = this.gridWidgets[gs_id].part;
+      this.partsWidgetId[part].delete(gs_id);
+      delete this.gridWidgetElements[gs_id];
+      delete this.gridWidgets[gs_id];
+    },
+
+    deleteTarget(config) {
+      const { machineObjs, beltObjs, pipeObjs } = config;
+      const machineNodes = Object.entries(machineObjs);
+      const beltNodes = Object.entries(beltObjs);
+      const pipeNodes = Object.entries(pipeObjs);
+      const deleteMachine = (machineNodes, pipeNodes, beltNodes) => {
+        if (machineNodes.length > 0) {
+          machineNodes.forEach(([nodeId, node]) => {
+            console.log(nodeId, node);
+            this.deleteMachineById(nodeId);
+          });
+        }
+        if (beltNodes.length > 0) {
+          beltNodes.forEach(([nodeId, node]) => {
+            this.deleteOneBelt({ x: node.x, y: node.y });
+          });
+        }
+        if (pipeNodes.length > 0) {
+          pipeNodes.forEach(([nodeId, node]) => {
+            this.deleteOnePipe({ x: node.x, y: node.y });
+          });
+        }
+        this.toolbarMode = "default";
+      };
+
+      if (machineNodes.length > 3) {
+        messagebox
+          .confirm("确认删除所选？", "删除确认", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+          })
+          .then((result) => {
+            if (result) {
+              deleteMachine(machineNodes, pipeNodes, beltNodes);
+            }
+          });
+      } else {
+        deleteMachine(machineNodes, pipeNodes, beltNodes);
+      }
     },
 
     // ======================================================
@@ -893,423 +965,5 @@ export const useRootStore = defineStore("sheng-root-store", {
         this.editPartChoose = part.editPartChoose || "part0";
       }
     },
-
-    /*
-    generateOneBelt(position, type = "belt-img", rotate = 0, id_in = null) {
-      let craftElement = document.createElement("div");
-      let id = id_in
-        ? id_in
-        : `${id_in}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-      let vnode = createVNode(ConveyerBelt, {
-        gs_id: id,
-        rotate: rotate,
-        type: type,
-        position: position,
-      });
-      render(vnode, craftElement);
-      craftElement = this.rootGrid.makeWidget(craftElement, {
-        x: position.x,
-        y: position.y,
-        w: 1,
-        h: 1,
-        float: false,
-        noResize: true,
-        locked: true,
-        id: id,
-      });
-      this.rootGrid.movable(craftElement, false);
-      // 记录传送带对应的模块
-      this.partsBelts[this.editPartChoose].add(`${position.x}-${position.y}`);
-      this.gridBelt2dElement[`${position.x}-${position.y}`] = craftElement;
-      this.gridBelts2d[position.x][position.y] = {
-        rotate: rotate,
-        type: type,
-        id: id,
-        part: this.editPartChoose,
-      };
-    },
-
-    generateOnePipe(
-      position,
-      type = "belt-img-pipe",
-      rotate = 0,
-      id_in = null,
-    ) {
-      let craftElement = document.createElement("div");
-      let id = id_in
-        ? id_in
-        : `${id_in}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-      let vnode = createVNode(Pipe, {
-        gs_id: id,
-        rotate: rotate,
-        type: type,
-        position: position,
-      });
-      render(vnode, craftElement);
-      craftElement = this.rootPipeGrid.makeWidget(craftElement, {
-        x: position.x,
-        y: position.y,
-        w: 1,
-        h: 1,
-        float: false,
-        noResize: true,
-        locked: true,
-        id: id,
-      });
-      this.rootPipeGrid.movable(craftElement, false);
-      // 记录传送带对应的模块 - 需要修改part的数据
-      this.partsPipes[this.editPartChoose].add(`${position.x}-${position.y}`);
-      this.gridPipe2dElement[`${position.x}-${position.y}`] = craftElement;
-      this.gridPipes2d[position.x][position.y] = {
-        rotate: rotate,
-        type: type,
-        id: id,
-        part: this.editPartChoose,
-      };
-    },
-
-    replacePipeNodeAtPosition(position, { type, rotate }, id = "pipe") {
-      const el = this.gridPipe2dElement[`${position.x}-${position.y}`];
-      if (!el) return;
-      this.rootPipeGrid.removeWidget(el, true);
-      this.gridPipes2d[position.x][position.y] = {};
-      this.generateOnePipe(position, type, rotate, id);
-    },
-
-    replaceNodeAtPosition(position, { type, rotate }, id = "belt") {
-      const el = this.gridBelt2dElement[`${position.x}-${position.y}`];
-      if (!el) return;
-      this.rootGrid.removeWidget(el, true);
-      this.gridBelts2d[position.x][position.y] = {};
-      this.generateOneBelt(position, type, rotate, id);
-    },
-
-    generateStraightPipe(from, to, id = "pipe") {
-      const dx = to.x - from.x;
-      const dy = to.y - from.y;
-
-      // 必须是直线
-      if (dx !== 0 && dy !== 0) return false;
-
-      const stepX = dx === 0 ? 0 : dx > 0 ? 1 : -1;
-      const stepY = dy === 0 ? 0 : dy > 0 ? 1 : -1;
-      const steps = Math.abs(dx + dy);
-
-      const curDir = this.getStraightRotateIndex(stepX, stepY);
-
-      // 拐点处理
-      if (this.lastDir !== null && this.lastDir !== curDir) {
-        const turnRotate = this.getTurnRotateIndex(this.lastDir, curDir);
-        if (turnRotate === undefined) return false;
-
-        this.replacePipeNodeAtPosition(from, {
-          type: "turn-img-pipe",
-          rotate: turnRotate,
-        });
-      }
-
-      // 判空
-      for (let i = 1; i <= steps; i++) {
-        const x = from.x + stepX * i;
-        const y = from.y + stepY * i;
-        if (!this.isCellEmptyForPipe(x, y)) return false;
-      }
-
-      // 生成 pipe
-      for (let i = 1; i <= steps; i++) {
-        const x = from.x + stepX * i;
-        const y = from.y + stepY * i;
-        this.generateOnePipe({ x, y }, "belt-img-pipe", curDir, id);
-      }
-
-      this.lastDir = curDir;
-      return true;
-    },
-
-    generateStraightBelt(from, to, id = "belt") {
-      const dx = to.x - from.x;
-      const dy = to.y - from.y;
-
-      // 必须是直线
-      if (dx !== 0 && dy !== 0) return false;
-
-      const stepX = dx === 0 ? 0 : dx > 0 ? 1 : -1;
-      const stepY = dy === 0 ? 0 : dy > 0 ? 1 : -1;
-      const steps = Math.abs(dx + dy);
-
-      const curDir = this.getStraightRotateIndex(stepX, stepY);
-
-      // 拐点处理
-      if (this.lastDir !== null && this.lastDir !== curDir) {
-        const turnRotate = this.getTurnRotateIndex(this.lastDir, curDir);
-        if (turnRotate === undefined) return false;
-
-        this.replaceNodeAtPosition(from, {
-          type: "turn-img",
-          rotate: turnRotate,
-        });
-      }
-
-      // 判空
-      for (let i = 1; i <= steps; i++) {
-        const x = from.x + stepX * i;
-        const y = from.y + stepY * i;
-        if (!this.isCellEmptyByPosition(x, y)) return false;
-      }
-
-      // 生成 belt
-      for (let i = 1; i <= steps; i++) {
-        const x = from.x + stepX * i;
-        const y = from.y + stepY * i;
-        this.generateOneBelt({ x, y }, "belt-img", curDir, id);
-      }
-
-      this.lastDir = curDir;
-      return true;
-    },
-
-    getStraightRotateIndex(dx, dy) {
-      if (dx === 1 && dy === 0) return 0; // →
-      if (dx === 0 && dy === 1) return 1; // ↓
-      if (dx === -1 && dy === 0) return 2; // ←
-      if (dx === 0 && dy === -1) return 3; // ↑
-    },
-
-    getTurnRotateIndex(fromDir, toDir) {
-      const map = {
-        "0-3": 0, // 左 → 上
-        "0-1": 3,
-
-        "1-1": 3, // 右 → 下
-        "1-2": 0,
-        "1-0": 1,
-
-        "3-0": 2, // 上 → 右
-        "3-2": 3,
-
-        "2-3": 1,
-        "2-1": 2,
-      };
-      return map[`${fromDir}-${toDir}`];
-    },
-
-    generateBelt(newPosition, id = "belt") {
-      // 第一次调用：只记录基准点
-      if (!this.lastBaseNode) {
-        this.lastBaseNode = { ...newPosition };
-        this.lastDir = null;
-        return;
-      }
-
-      const startNode = { ...this.lastBaseNode };
-
-      // ===== 曼哈顿路径：先 X 后 Y =====
-
-      // 第一段：X
-      const midNode = { x: newPosition.x, y: startNode.y };
-
-      if (
-        (midNode.x !== startNode.x &&
-          !this.generateStraightBelt(startNode, midNode)) ||
-        (newPosition.y !== midNode.y &&
-          !this.generateStraightBelt(midNode, newPosition))
-      ) {
-        return;
-      }
-
-      // 更新基准点
-      this.lastBaseNode = { ...newPosition };
-    },
-
-    generatePipe(newPosition, id = "pipe") {
-      // 第一次调用：只记录基准点
-      if (!this.lastBaseNode) {
-        this.lastBaseNode = { ...newPosition };
-        this.lastDir = null;
-        return;
-      }
-
-      const startNode = { ...this.lastBaseNode };
-
-      // ===== 曼哈顿路径：先 X 后 Y =====
-      const midNode = { x: newPosition.x, y: startNode.y };
-
-      if (
-        (midNode.x !== startNode.x &&
-          !this.generateStraightPipe(startNode, midNode)) ||
-        (newPosition.y !== midNode.y &&
-          !this.generateStraightPipe(midNode, newPosition))
-      ) {
-        return;
-      }
-
-      // 更新基准点
-      this.lastBaseNode = { ...newPosition };
-    },
-
-    handleClickSingleBoP(event) {
-      //对于pipe模式下需要修改材质
-      const position = this.getPositionFromClick(event);
-      //特殊
-      if (
-        this.quickPlaceMode === "pipe" &&
-        ["belt", "turn"].includes(this.toolbarMode) &&
-        this.isCellEmptyPipe(event)
-      ) {
-        let name = `${this.toolbarMode}-img-pipe`;
-        this.generateOnePipe(position, name, 0, this.toolbarMode);
-        return;
-      }
-      //标准
-      if (
-        this.quickPlaceMode === "pipe" &&
-        !["belt", "turn"].includes(this.toolbarMode) &&
-        this.isCellEmpty(event)
-      ) {
-        let name = `${this.toolbarMode}-img-pipe`;
-        this.generateOneBelt(position, name, 0, this.toolbarMode);
-        return;
-      }
-      if (this.quickPlaceMode === "belt" && this.isCellEmpty(event)) {
-        let name = `${this.toolbarMode}-img`;
-        this.generateOneBelt(position, name, 0, this.toolbarMode);
-        return;
-      }
-    },
-
-    makeMachine(config) {
-      const { id, machine_id, recipe, rotate, x, y, w, h, part } = config;
-      //step2 创建元素并指向id对应的element项
-      const vnode = createVNode(machineComponentMap[machine_id], {
-        gs_id: id,
-        el_name: machine_id,
-        el_size: { w: w, h: h },
-        rotate: rotate,
-      });
-      //step1 gridWidgets创建对应id的dict 并导入 rotate和recipe数据
-      this.gridWidgets[id] = { rotate: rotate, recipe: recipe, part: part };
-
-      //测试：将新创建的widget添加到当前编辑的模块中
-      //this.partsWidgetId[this.editPartChoose].push(id);
-      //vnode.appContext = this.appContext;
-
-      const container = document.createElement("div");
-      render(vnode, container);
-      this.gridWidgetElements[id] = this.rootGrid.makeWidget(container, {
-        x: x,
-        y: y,
-        w: w,
-        h: h,
-        noResize: true,
-        id: id,
-      });
-    },
-
-    handleBluePrintUpload(file) {
-      if (file.status !== "ready") return;
-      const rawFile = file.raw;
-      if (!rawFile) return;
-      if (!rawFile.name.endsWith(".json")) {
-        //ElMessage.error("只能导入 JSON 蓝图文件");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        const blueprint = JSON.parse(reader.result);
-        this.importBluePrint(blueprint);
-      };
-      reader.readAsText(rawFile);
-    },
-
-    importBluePrint(blueprint) {
-      let { machine, belt, part, pipe } = blueprint;
-      for (let mac of machine) {
-        this.makeMachine(mac);
-      }
-      for (let blt of belt) {
-        this.generateOneBelt(blt.position, blt.type, blt.rotate, blt.id);
-      }
-      for (let pip of pipe) {
-        this.generateOnePipe(pip.position, pip.type, pip.rotate, pip.id);
-      }
-
-      // 加载 part 数据
-      if (part) {
-        this.parts = part.parts || [];
-        // 加载 partsWidgetId，将数组转换回 Set
-        this.partsWidgetId = {};
-        if (part.partsWidgetId) {
-          for (let partName of Object.keys(part.partsWidgetId)) {
-            this.partsWidgetId[partName] = new Set(
-              part.partsWidgetId[partName],
-            );
-          }
-        }
-
-        // 加载 partsBelts，将数组转换回 Set
-        this.partsBelts = {};
-        if (part.partsBelts) {
-          for (let partName of Object.keys(part.partsBelts)) {
-            this.partsBelts[partName] = new Set(part.partsBelts[partName]);
-          }
-        }
-
-        this.partsPipes = {};
-        if (part.partsPipes) {
-          for (let partName of Object.keys(part.partsPipes)) {
-            this.partsPipes[partName] = new Set(part.partsPipes[partName]);
-          }
-        }
-
-        // 加载 editPartChoose
-        this.editPartChoose = part.editPartChoose || "part0";
-      }
-    },
-
-    async loadBlueprintByHashCode(hashCode) {
-      if (!hashCode) return;
-
-      try {
-        // 构建蓝图URL
-        const blueprintUrl = `${this.host}/download/${hashCode}.json`;
-
-        // 发送请求获取蓝图数据
-        const response = await fetch(blueprintUrl);
-
-        if (!response.ok) {
-          throw new Error(`无法获取蓝图: ${response.status}`);
-        }
-        // 解析蓝图数据
-        const blueprintData = await response.json();
-        // 清空当前蓝图数据
-        this.clearBlueprint();
-        // 导入蓝图
-        this.importBluePrint(blueprintData);
-
-        //console.log(`蓝图 ${hashCode} 加载成功！`);
-        return blueprintData;
-      } catch (error) {
-        console.error("加载蓝图出错：", error);
-        throw error;
-      }
-    },
-
-    loadLocalBlueprint() {
-      if (localStorage.blueprint) {
-        // 清空当前蓝图数据
-        this.clearBlueprint();
-        try {
-          const blueprint = JSON.parse(localStorage.blueprint);
-          this.importBluePrint(blueprint);
-          //console.log("本地蓝图加载成功！");
-          return blueprint;
-        } catch (error) {
-          console.error("加载本地蓝图出错：", error);
-          throw error;
-        }
-      }
-      return null;
-    },
-    */
   },
 });

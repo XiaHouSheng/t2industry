@@ -33,13 +33,7 @@ export const useMachineStore = defineStore("sheng-machine-store", {
       )
       .then((result) => {
         if (result) {
-          this.rootStore.rootGrid.removeWidget(
-            this.rootStore.gridWidgetElements[gs_id]
-          );
-          let part = this.rootStore.gridWidgets[gs_id].part;
-          this.rootStore.partsWidgetId[part].delete(gs_id);
-          delete this.rootStore.gridWidgetElements[gs_id];
-          delete this.rootStore.gridWidgets[gs_id];
+          this.rootStore.deleteMachineById(gs_id);
         }
       });
     },

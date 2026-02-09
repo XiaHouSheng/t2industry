@@ -154,7 +154,6 @@ class SelectIndicator {
 
   //更新指示器的内容
   updateIndicatorContent(position) {
-    console.log("updateIndicatorContent", position);
     const { startCell, endCell } = position;
 
     // 重置选择范围
@@ -231,8 +230,6 @@ class SelectIndicator {
         }
       }
     }
-
-    //
 
     // 遍历选中的配置对象，生成拓印
     Object.values(this.selectedConfigs).forEach((config) => {

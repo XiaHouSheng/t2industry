@@ -182,7 +182,7 @@ EndfieldSimulation/
 │   │   ├── CommandEvent.js          # 命令事件处理
 │   │   ├── BeltIndicator.js         # 传送带指示器
 │   │   ├── SelectIndicator.js       # 选择指示器
-│   │   ├── keyboardHandler.js      # 键盘事件处理
+│   │   ├── KeyBoardHandler.js      # 键盘事件处理
 │   │   ├── dragScrollHandler.js    # 拖动滚动处理
 │   │   └── api-client.js           # API 客户端
 │   ├── App.vue              # 根组件

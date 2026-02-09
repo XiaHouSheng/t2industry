@@ -45,8 +45,9 @@ class CommandEvent {
         this.rootStore.rootGrid.setStatic(false);
         this.rootStore.gridElCont.style.overflow = "scroll";
         this.rootStore.selectSubMode = null;
-        SelectIndicator.reset();
         this.selectStore.disableSelect();
+        SelectIndicator.reset()
+        SelectIndicator.deactivateMouseMoveListener();
         break;
 
       case "belts":
@@ -92,20 +93,6 @@ class CommandEvent {
     if (this.rootStore.selectSubMode === "move") {
       const { biasX, biasY } = SelectIndicator.bias;
       const { minX, maxX, minY, maxY } = SelectIndicator.selectRange;
-      console.log(
-        "biasX",
-        biasX,
-        "biasY",
-        biasY,
-        "minX",
-        minX,
-        "maxX",
-        maxX,
-        "minY",
-        minY,
-        "maxY",
-        maxY,
-      );
       // 边界检查：确保移动后不超出网格边界
       const isWithinBounds =
         minX + biasX >= 0 &&
@@ -241,6 +228,12 @@ class CommandEvent {
           case "select-fold":
             if (this.rootStore.toolbarMode !== "select") return;
             //这里不需要删除的子模式，因为fold模式是用于删除的瞬间模式
+            const config = {
+              machineObjs: SelectIndicator.selectedConfigs,
+              beltObjs: SelectIndicator.selectedBeltConfigs,
+              pipeObjs: SelectIndicator.selectedPipeConfigs,
+            }
+            this.rootStore.deleteTarget(config);
             break;
 
           case "select-move":

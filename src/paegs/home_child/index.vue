@@ -32,21 +32,6 @@ const stats = computed(() => ({
   downloads: totalDownloads.value,
 }));
 
-// 地区统计
-const areaStats = computed(() => {
-  const stats = {
-    四号谷地: 0,
-    武陵: 0,
-  };
-  if (Array.isArray(homeStore.hotBlueprints)) {
-    homeStore.hotBlueprints.forEach((bp) => {
-      if (bp.area === "四号谷地") stats.四号谷地++;
-      if (bp.area === "武陵") stats.武陵++;
-    });
-  }
-  return stats;
-});
-
 // 快速导航
 const quickLinks = [
   {

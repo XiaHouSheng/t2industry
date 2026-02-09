@@ -21,36 +21,7 @@ class MachineMiddleware {
     for (let pip of pipe) {
       this.generateOnePipe(pip.position, pip.type, pip.rotate, pip.id);
     }
-
-    // 加载 part 数据
     this.rootStore.initPart(part);
-    /*
-    if (part) {
-      this.parts = part.parts || [];
-      // 加载 partsWidgetId，将数组转换回 Set
-      this.partsWidgetId = {};
-      if (part.partsWidgetId) {
-        for (let partName of Object.keys(part.partsWidgetId)) {
-          this.partsWidgetId[partName] = new Set(part.partsWidgetId[partName]);
-        }
-      }
-      // 加载 partsBelts，将数组转换回 Set
-      this.partsBelts = {};
-      if (part.partsBelts) {
-        for (let partName of Object.keys(part.partsBelts)) {
-          this.partsBelts[partName] = new Set(part.partsBelts[partName]);
-        }
-      }
-      this.partsPipes = {};
-      if (part.partsPipes) {
-        for (let partName of Object.keys(part.partsPipes)) {
-          this.partsPipes[partName] = new Set(part.partsPipes[partName]);
-        }
-      }
-      // 加载 editPartChoose
-      this.editPartChoose = part.editPartChoose || "part0";
-    }
-    */
   }
 
   generateOneBelt(position, type = "belt-img", rotate = 0, id_in = null) {
@@ -85,16 +56,6 @@ class MachineMiddleware {
       craftElement,
     };
     this.rootStore.addBelt(config);
-    /*
-    this.partsBelts[this.editPartChoose].add(`${position.x}-${position.y}`);
-    this.gridBelt2dElement[`${position.x}-${position.y}`] = craftElement;
-    this.gridBelts2d[position.x][position.y] = {
-      rotate: rotate,
-      type: type,
-      id: id,
-      part: this.editPartChoose,
-    };
-    */
   }
 
   generateOnePipe(position, type = "belt-img-pipe", rotate = 0, id_in = null) {
@@ -129,38 +90,14 @@ class MachineMiddleware {
       craftElement,
     };
     this.rootStore.addPipe(config);
-    /*
-    this.partsPipes[this.editPartChoose].add(`${position.x}-${position.y}`);
-    this.gridPipe2dElement[`${position.x}-${position.y}`] = craftElement;
-    this.gridPipes2d[position.x][position.y] = {
-      rotate: rotate,
-      type: type,
-      id: id,
-      part: this.editPartChoose,
-    };
-    */
   }
 
   replacePipeNodeAtPosition(position, { type, rotate }, id = "pipe") {
-    /*
-    const el = this.gridPipe2dElement[`${position.x}-${position.y}`];
-    if (!el) return;
-    this.rootPipeGrid.removeWidget(el, true);
-    this.gridPipes2d[position.x][position.y] = {};
-    */
-    console.log("ok")
     if (!this.rootStore.removeTargetPipe(position)) return false;
     this.generateOnePipe(position, type, rotate, id);
   }
 
   replaceNodeAtPosition(position, { type, rotate }, id = "belt") {
-    /*
-    const el = this.gridBelt2dElement[`${position.x}-${position.y}`];
-    if (!el) return;
-    this.rootGrid.removeWidget(el, true);
-    this.gridBelts2d[position.x][position.y] = {};
-    */
-   console.log("ok")
     if (!this.rootStore.removeTargetBelt(position)) return false;
     this.generateOneBelt(position, type, rotate, id);
   }
@@ -386,10 +323,6 @@ class MachineMiddleware {
     });
     const machine_config = { id, recipe, rotate, part, machineElement };
     this.rootStore.addMachine(machine_config);
-    /*
-    this.gridWidgetElements[id] = machineElement;
-    this.gridWidgets[id] = { rotate: rotate, recipe: recipe, part: part };
-    */
   }
 
   handleBluePrintUpload = (file) => {
@@ -461,7 +394,6 @@ class MachineMiddleware {
     }
     if (this.rootStore.quickPlaceMode === "pipe" && this.rootStore.isCellEmptyPipe(event)) {
       this.generatePipe(position, "pipe");
-      //console.log("test click pipe generate");
     }
   }
 }
