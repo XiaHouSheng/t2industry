@@ -118,6 +118,34 @@ class CommandEvent {
       //退出选择模式
       this.rootStore.toolbarMode = "default";
     }
+    //复制选中的机器
+    if (this.rootStore.selectSubMode === "copy") {
+      const { biasX, biasY } = SelectIndicator.bias;
+      const { minX, maxX, minY, maxY } = SelectIndicator.selectRange;
+      // 边界检查：确保移动后不超出网格边界
+      const isWithinBounds =
+        minX + biasX >= 0 &&
+        maxX + biasX <= 72 &&
+        minY + biasY >= 0 &&
+        maxY + biasY <= 72;
+      if (!isWithinBounds) {
+        toast.error("移动超出边界，无法移动");
+        return;
+      }
+      //复制选中的机器
+      const copySuccess = MachineMiddleware.batchCopy(
+        {
+          machineNodes: SelectIndicator.selectedConfigs,
+          beltNodes: SelectIndicator.selectedBeltConfigs,
+          pipeNodes: SelectIndicator.selectedPipeConfigs,
+        },
+        SelectIndicator.bias,
+      );
+      if (!copySuccess) return;
+      //退出选择模式
+      this.rootStore.toolbarMode = "default";
+    }
+
   }
 
   //蓝图-全局右键管理
@@ -188,12 +216,21 @@ class CommandEvent {
         SelectIndicator.deactivateMouseMoveListener();
         this.selectStore.enableSelect();
         break;
+      case "copy":
+        SelectIndicator.reset();
+        SelectIndicator.deactivateMouseMoveListener();
+        this.selectStore.enableSelect();
+        break;
     }
   }
 
   enterModeSelectSub(submode) {
     switch (submode) {
       case "move":
+        SelectIndicator.activateMouseMoveListener();
+        this.selectStore.disableSelect();
+        break;
+      case "copy":
         SelectIndicator.activateMouseMoveListener();
         this.selectStore.disableSelect();
         break;
@@ -227,6 +264,7 @@ class CommandEvent {
 
           case "select-fold":
             if (this.rootStore.toolbarMode !== "select") return;
+            if (this.rootStore.selectSubMode) return;
             //这里不需要删除的子模式，因为fold模式是用于删除的瞬间模式
             const config = {
               machineObjs: SelectIndicator.selectedConfigs,
@@ -240,6 +278,16 @@ class CommandEvent {
             if (this.rootStore.toolbarMode !== "select") return;
             this.rootStore.selectSubMode = "move";
             break;
+
+          case "select-copy":
+            //非瞬时任务
+            if (this.rootStore.toolbarMode !== "select") return;
+            this.rootStore.selectSubMode = "copy";
+            break
+
+          case "select-rotate":
+            //瞬间任务，改rotate值
+            break
 
           case "escape":
             //框选模式下
@@ -255,7 +303,7 @@ class CommandEvent {
             break;
         }
 
-        // 🔥 关键：命令消费完立刻清空
+        //  关键：命令消费完立刻清空
         this.rootStore.keyboardCommand = null;
       },
     );

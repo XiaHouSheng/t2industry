@@ -930,6 +930,7 @@ export const useRootStore = defineStore("sheng-root-store", {
       const { id, recipe, rotate, part, machineElement } = config;
       this.gridWidgetElements[id] = machineElement;
       this.gridWidgets[id] = { rotate: rotate, recipe: recipe, part: part };
+      this.partsWidgetId[part].add(id);
     },
 
     initPart(part) {

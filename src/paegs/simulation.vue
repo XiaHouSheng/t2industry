@@ -288,7 +288,7 @@
           @click="CommandEvent.handleLeftClick"
           id="grid-stack"
           class="grid-stack bottom-grid-bg"
-          style="background-color: #e5e7eb"
+          style="background-color: transparent"
           :style="{
             pointerEvents:
               rootStore.quickPlaceMode === 'belt' ? 'auto' : 'none',
@@ -552,7 +552,7 @@ onUnmounted(() => {
   transform-origin: 0 0;
   pointer-events: none;
   background-color: rgba(0, 0, 0, 0);
-  z-index: 1
+  z-index: 3
 }
 
 .sheng-test-border {

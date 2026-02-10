@@ -9,7 +9,6 @@ class MachineMiddleware {
     this.rootStore = useRootStore();
   }
 
-
   importBluePrint(blueprint) {
     let { machine, belt, part, pipe } = blueprint;
     for (let mac of machine) {
@@ -26,9 +25,7 @@ class MachineMiddleware {
 
   generateOneBelt(position, type = "belt-img", rotate = 0, id_in = null) {
     let craftElement = document.createElement("div");
-    let id = id_in
-      ? id_in
-      : `${id_in}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    let id = id_in ? id_in : `${id_in}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     let vnode = createVNode(ConveyerBelt, {
       gs_id: id,
       rotate: rotate,
@@ -325,20 +322,43 @@ class MachineMiddleware {
     this.rootStore.addMachine(machine_config);
   }
 
+  makeNewMachine(config) {
+    const { machineId, recipe, rotate, x, y, w, h, part } = config;
+    const id = `${machineId}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const vnode = createVNode(machineComponentMap[machineId], {
+      gs_id: id,
+      el_name: machineId,
+      el_size: { w: w, h: h },
+      rotate: rotate,
+    });
+    const container = document.createElement("div");
+    render(vnode, container);
+    const machineElement = this.rootStore.rootGrid.makeWidget(container, {
+      x: x,
+      y: y,
+      w: w,
+      h: h,
+      noResize: true,
+      id: id,
+    });
+    const machine_config = { id, recipe, rotate, part, machineElement };
+    this.rootStore.addMachine(machine_config);
+  }
+
   handleBluePrintUpload = (file) => {
-  if (file.status !== "ready") return;
+    if (file.status !== "ready") return;
 
-  const rawFile = file.raw;
-  if (!rawFile) return;
+    const rawFile = file.raw;
+    if (!rawFile) return;
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    const blueprint = JSON.parse(reader.result);
-    this.importBluePrint(blueprint);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const blueprint = JSON.parse(reader.result);
+      this.importBluePrint(blueprint);
+    };
+
+    reader.readAsText(rawFile);
   };
-
-  reader.readAsText(rawFile);
-};
 
   async loadBlueprintByHashCode(hashCode) {
     if (!hashCode) return;
@@ -392,9 +412,72 @@ class MachineMiddleware {
         this.generateBelt(position, "belt");
       }
     }
-    if (this.rootStore.quickPlaceMode === "pipe" && this.rootStore.isCellEmptyPipe(event)) {
+    if (
+      this.rootStore.quickPlaceMode === "pipe" &&
+      this.rootStore.isCellEmptyPipe(event)
+    ) {
       this.generatePipe(position, "pipe");
     }
+  }
+
+  batchCopyMachine(nodes, bias) {
+    const { biasX, biasY } = bias;
+    Object.entries(nodes)
+      .reverse()
+      .forEach(([nodeId, node]) => {
+        const preNode = node.el.gridstackNode;
+        const old_config = this.rootStore.gridWidgets[nodeId];
+        const newX = preNode.x + biasX;
+        const newY = preNode.y + biasY;
+        const machineId = preNode.id.match(/^[a-zA-Z]+/)[0];
+        const config = {
+          machineId,
+          recipe: old_config.recipe,
+          rotate: old_config.rotate,
+          x: newX,
+          y: newY,
+          w: preNode.w,
+          h: preNode.h,
+          part: old_config.part,
+        };
+        this.makeNewMachine(config);
+      });
+    return true;
+  }
+
+  batchCopyBelt(nodes, bias) {
+    const { biasX, biasY } = bias;
+    Object.entries(nodes)
+      .reverse()
+      .forEach(([nodeId, node]) => {
+        const preNode = node.el.gridstackNode;
+        const old_config = this.rootStore.gridBelts2d[preNode.x][preNode.y];
+        const x = preNode.x + biasX;
+        const y = preNode.y + biasY;
+        this.generateOneBelt({x, y}, old_config.type, old_config.rotate, old_config.id);
+      });
+    return true;
+  }
+
+  batchCopyPipe(nodes, bias) {
+    const { biasX, biasY } = bias;
+    Object.entries(nodes)
+      .reverse()
+      .forEach(([nodeId, node]) => {
+        const preNode = node.el.gridstackNode;
+        const old_config = this.rootStore.gridPipes2d[preNode.x][preNode.y];
+        const x = preNode.x + biasX;
+        const y = preNode.y + biasY;
+        this.generateOnePipe({x, y}, old_config.type, old_config.rotate, old_config.id);
+      });
+    return true;
+  }
+
+  batchCopy(nodes, bias) {
+    const { machineNodes, beltNodes, pipeNodes } = nodes;
+    this.batchCopyMachine(machineNodes, bias);
+    this.batchCopyBelt(beltNodes, bias);
+    this.batchCopyPipe(pipeNodes, bias);
   }
 }
 

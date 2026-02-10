@@ -39,6 +39,13 @@ class KeyBoardHandler {
       return;
     }
 
+    //Ctrl + C 复制
+    if (key === "c" && event.ctrlKey) {
+      event.preventDefault();
+      this.rootStore.keyboardCommand = "select-copy";
+      return;
+    }
+
     // 只做一件事：写命令
     switch (key) {
       case "q":
@@ -56,6 +63,10 @@ class KeyBoardHandler {
       case "f":
         event.preventDefault();
         this.rootStore.keyboardCommand = "select-fold";
+        break;
+      case "r":
+        event.preventDefault();
+        this.rootStore.keyboardCommand = "select-rotate";
         break;
       case "m":
         event.preventDefault();
