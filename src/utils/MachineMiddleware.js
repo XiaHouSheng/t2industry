@@ -425,7 +425,7 @@ class MachineMiddleware {
     Object.entries(nodes)
       .reverse()
       .forEach(([nodeId, node]) => {
-        const preNode = node.el.gridstackNode;
+        const preNode = this.rootStore.gridWidgetElements[nodeId].gridstackNode;
         const old_config = this.rootStore.gridWidgets[nodeId];
         const newX = preNode.x + biasX;
         const newY = preNode.y + biasY;
@@ -450,7 +450,7 @@ class MachineMiddleware {
     Object.entries(nodes)
       .reverse()
       .forEach(([nodeId, node]) => {
-        const preNode = node.el.gridstackNode;
+        const preNode = this.rootStore.gridBelt2dElement[`${node.x}-${node.y}`].gridstackNode;
         const old_config = this.rootStore.gridBelts2d[preNode.x][preNode.y];
         const x = preNode.x + biasX;
         const y = preNode.y + biasY;
@@ -464,7 +464,7 @@ class MachineMiddleware {
     Object.entries(nodes)
       .reverse()
       .forEach(([nodeId, node]) => {
-        const preNode = node.el.gridstackNode;
+        const preNode = this.rootStore.gridPipe2dElement[`${node.x}-${node.y}`].gridstackNode;
         const old_config = this.rootStore.gridPipes2d[preNode.x][preNode.y];
         const x = preNode.x + biasX;
         const y = preNode.y + biasY;

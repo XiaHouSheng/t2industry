@@ -22,12 +22,23 @@ class SelectIndicator {
     this.selectedConfigs = {};
     this.selectedBeltConfigs = {};
     this.selectedPipeConfigs = {};
+    // 复制选中的配置
+    this.selectedConfigsCopy = {};
+    this.selectedBeltConfigsCopy = {};
+    this.selectedPipeConfigsCopy = {};
+    // 旋转配置
+    this.rotate = 0;
     //鼠标移动事件
     this.handleMouseMove = this.handleMouseMove.bind(this);
     //偏移
     this.bias = {
       biasX: 0,
       biasY: 0,
+    };
+    //旋转中心点a
+    this.center = {
+      centerX: 0,
+      centerY: 0,
     };
   }
 
@@ -65,20 +76,39 @@ class SelectIndicator {
   //生成指示器
   createIndicator() {
     this.indicatorContainer = document.createElement("div");
-    this.indicatorContainer.style.position = "absolute";
+    this.indicatorContainer.style.position = "relative";
     this.indicatorContainer.style.zIndex = 1000;
     this.indicatorContainer.style.pointerEvents = "none";
-    this.indicatorContainer.style.backgroundColor = "rgba(0, 115, 255, 0.82)";
+    this.indicatorContainer.style.left = "0px";
+    this.indicatorContainer.style.top = "0px";
     this.rootContainer.appendChild(this.indicatorContainer);
+  }
+
+  updateSelectRange(x, y, w, h) {
+    this.selectRange.minX = Math.min(this.selectRange.minX ?? x, x);
+    this.selectRange.maxX = Math.max(this.selectRange.maxX ?? x + w, x + w);
+    this.selectRange.minY = Math.min(this.selectRange.minY ?? y, y);
+    this.selectRange.maxY = Math.max(this.selectRange.maxY ?? y + h, y + h);
+    //更新指示器的尺寸
+    this.indicatorContainer.style.width = `${(this.selectRange.maxX - this.selectRange.minX) * this.gridSize}px`;
+    this.indicatorContainer.style.height = `${(this.selectRange.maxY - this.selectRange.minY) * this.gridSize}px`;
+  }
+
+  clearSelectRange() {
+    this.selectRange.minX = null;
+    this.selectRange.maxX = null;
+    this.selectRange.minY = null;
+    this.selectRange.maxY = null;
   }
 
   //生成拓印
   generatePrint(config) {
     const { x, y, width, height } = config;
+    const { minX, minY, maxX, maxY } = this.selectRange;
     const indicator = document.createElement("div");
     indicator.style.position = "absolute";
-    indicator.style.left = `${x * this.gridSize}px`;
-    indicator.style.top = `${y * this.gridSize}px`;
+    indicator.style.left = `${(x - minX) * this.gridSize}px`;
+    indicator.style.top = `${(y - minY) * this.gridSize}px`;
     indicator.style.width = `${width * this.gridSize}px`;
     indicator.style.height = `${height * this.gridSize}px`;
     indicator.style.backgroundColor = "rgba(0, 115, 255, 0.66)";
@@ -107,14 +137,6 @@ class SelectIndicator {
   //处理MouseMove事件
   handleMouseMove(event) {
     if (!this.indicatorContainer) return;
-    const biasX = Math.floor(
-      this.selectRange.minX +
-        (this.selectRange.maxX - this.selectRange.minX) / 2,
-    );
-    const biasY = Math.floor(
-      this.selectRange.minY +
-        (this.selectRange.maxY - this.selectRange.minY) / 2,
-    );
 
     const rect = this.rootContainer.getBoundingClientRect();
     // 屏幕坐标 → 容器视觉坐标
@@ -123,18 +145,30 @@ class SelectIndicator {
     // 视觉坐标 → 逻辑坐标（关键）
     const logicX = visualX / this.rootStore.gridElContScale;
     const logicY = visualY / this.rootStore.gridElContScale;
-    // 网格吸附（逻辑空间）
-    const col = Math.floor(logicX / this.gridSize) - biasX;
-    const row = Math.floor(logicY / this.gridSize) - biasY;
 
-    // 偏移量
-    this.bias = {
-      biasX: col,
-      biasY: row,
-    };
+    const newBaseX = Math.floor(logicX / this.gridSize);
+    const newBaseY = Math.floor(logicY / this.gridSize);
+
+    const width = this.selectRange.maxX - this.selectRange.minX;
+    const height = this.selectRange.maxY - this.selectRange.minY;
+
+    // 网格吸附（逻辑空间）
+    const col = newBaseX - Math.floor(width / 2);
+    const row = newBaseY - Math.floor(height / 2);
 
     const snappedX = col * this.gridSize;
     const snappedY = row * this.gridSize;
+
+    this.bias = {
+      biasX: newBaseX - this.selectRange.minX - Math.floor(width / 2),
+      biasY: newBaseY - this.selectRange.minY - Math.floor(height / 2),
+    };
+
+    this.center = {
+      centerX: newBaseX,
+      centerY: newBaseY,
+    };
+
     // 放回逻辑坐标（不要再 * scale）
     this.indicatorContainer.style.left = `${snappedX}px`;
     this.indicatorContainer.style.top = `${snappedY}px`;
@@ -145,11 +179,103 @@ class SelectIndicator {
     this.selectedConfigs = {};
     this.selectedBeltConfigs = {};
     this.selectedPipeConfigs = {};
+    // 清空复制配置
+    this.selectedConfigsCopy = {};
+    this.selectedBeltConfigsCopy = {};
+    this.selectedPipeConfigsCopy = {};
     // 清空偏移数据
     this.bias = {
       biasX: 0,
       biasY: 0,
     };
+  }
+
+  rotatePoint90(machine, rotate) {
+    const { x, y, width, height } = machine;
+    const { biasX, biasY } = this.bias;
+    const { centerX, centerY } = this.center;
+
+    const step = this.rotate / 90;
+    console.log(step)
+
+    const machineCenterX = Math.floor(x + width / 2) + biasX;
+    const machineCenterY = Math.floor(y + height / 2) + biasY;
+
+    let vx = machineCenterX - centerX;
+    let vy = machineCenterY - centerY;
+
+    let rx = vx;
+    let ry = vy;
+
+    let newWidth = width;
+    let newHeight = height;
+
+    switch (step) {
+      case 0:
+        break;
+      case 1: // 90°
+        rx = -vy;
+        ry = vx;
+        newWidth = height;
+        newHeight = width;
+        break;
+      case 2: // 180°
+        rx = -vx;
+        ry = -vy;
+        break;
+      case 3: // 270°
+        rx = vy;
+        ry = -vx;
+        newWidth = height;
+        newHeight = width;
+        break;
+    }
+
+    return {
+      rotateX: rx + centerX,
+      rotateY: ry + centerY,
+      newWidth:  newWidth,
+      newHeight: newHeight,
+    };
+  }
+
+  rotateClockwise() {
+    /*  
+    base baseX,baseY 基准坐标：位移元素群环绕的基准坐标（跟随鼠标移动）
+    bias biasX,biasY 偏移坐标：选中元素群相对于基准坐标的偏移量（可以通过copy的config文件的坐标推算位移后的坐标）
+    rotate 旋转角度：选中元素群的旋转角度（顺时针旋转90度）
+    this.selectedConfigsCopy = {};
+    this.selectedBeltConfigsCopy = {};
+    this.selectedPipeConfigsCopy = {};
+    const config = {
+          x: x,
+          y: y,
+          width: w,
+          height: h,
+          id: id,
+          //el: item,
+        };
+    */
+
+    //const firstMachine = this.selectedConfigs[Object.keys(this.selectedConfigs)[0]];
+    //const { centerX, centerY } = this.center; //旋转中心点坐标
+    //const { biasX, biasY } = this.bias; //选中元素群相对于基准坐标的偏移量
+    //const { x, y, width, height } = firstMachine;
+
+    if (this.rotate === 0) {
+      this.rotate = 90;
+    } else if (this.rotate === 90) {
+      this.rotate = 180;
+    } else if (this.rotate === 180) {
+      this.rotate = 270;
+    } else if (this.rotate === 270) {
+      this.rotate = 0;
+    }
+
+    //const { rotateX, rotateY } = this.rotatePoint90(firstMachine, this.rotate);
+    //console.log("rotateX", rotateX, "rotateY", rotateY);
+
+    this.indicatorContainer.style.transform = `rotate(${this.rotate}deg)`;
   }
 
   //更新指示器的内容
@@ -182,13 +308,6 @@ class SelectIndicator {
 
       // 检查是否在框选范围内
       if (x >= startX && x <= endX && y >= startY && y <= endY) {
-        
-        //贪心维护
-        this.selectRange.minX = Math.min(this.selectRange.minX ?? x, x);
-        this.selectRange.maxX = Math.max(this.selectRange.maxX ?? x + w, x + w);
-        this.selectRange.minY = Math.min(this.selectRange.minY ?? y, y);
-        this.selectRange.maxY = Math.max(this.selectRange.maxY ?? y + h, y + h);
-
         // 创建配置对象
         const config = {
           x: x,
@@ -196,8 +315,11 @@ class SelectIndicator {
           width: w,
           height: h,
           id: id,
-          el: item,
+          //el: item,
         };
+
+        this.updateSelectRange(x, y, w, h);
+
         // 添加到对应选中的配置集合
         if (type === "machine") {
           this.selectedConfigs[id] = config;
@@ -231,6 +353,10 @@ class SelectIndicator {
       }
     }
 
+    console.log(this.selectRange)
+    this.indicatorContainer.style.left = `${this.selectRange.minX * this.gridSize}px`;
+    this.indicatorContainer.style.top = `${this.selectRange.minY * this.gridSize}px`;
+
     // 遍历选中的配置对象，生成拓印
     Object.values(this.selectedConfigs).forEach((config) => {
       //console.log(config)
@@ -249,6 +375,20 @@ class SelectIndicator {
   //清空指示器
   clearIndicator() {
     this.indicatorContainer.innerHTML = "";
+  }
+
+  processConfigData() {
+    Object.entries(this.selectedConfigs).forEach(([nodeId, node]) => {
+      const { x, y, width, height, id } = node;
+      const { rotateX, rotateY, newWidth, newHeight } = this.rotatePoint90(node, this.rotate)
+      this.selectedConfigs[id] = {
+        x: rotateX - newWidth / 2,
+        y: rotateY - newHeight / 2,
+        width: newWidth,
+        height: newHeight,
+        id: id,
+      };
+    });
   }
 
   //重置指示器

@@ -65,9 +65,9 @@ class KeyBoardHandler {
         this.rootStore.keyboardCommand = "select-fold";
         break;
       case "r":
-        event.preventDefault();
-        this.rootStore.keyboardCommand = "select-rotate";
         break;
+        //event.preventDefault();
+        //this.rootStore.keyboardCommand = "select-rotate";
       case "m":
         event.preventDefault();
         this.rootStore.keyboardCommand = "select-move";

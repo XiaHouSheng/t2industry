@@ -91,6 +91,7 @@ class CommandEvent {
     }
     //批量移动选中机器
     if (this.rootStore.selectSubMode === "move") {
+      SelectIndicator.processConfigData()
       const { biasX, biasY } = SelectIndicator.bias;
       const { minX, maxX, minY, maxY } = SelectIndicator.selectRange;
       // 边界检查：确保移动后不超出网格边界
@@ -103,14 +104,16 @@ class CommandEvent {
         toast.error("移动超出边界，无法移动");
         return;
       }
-
       const moveSuccess = this.rootStore.batchMove(
         {
           machineNodes: SelectIndicator.selectedConfigs,
           beltNodes: SelectIndicator.selectedBeltConfigs,
           pipeNodes: SelectIndicator.selectedPipeConfigs,
         },
-        SelectIndicator.bias,
+        {
+          biasX: Math.floor(biasX),
+          biasY: Math.floor(biasY),
+        },
       );
 
       if (!moveSuccess) return;
@@ -139,7 +142,10 @@ class CommandEvent {
           beltNodes: SelectIndicator.selectedBeltConfigs,
           pipeNodes: SelectIndicator.selectedPipeConfigs,
         },
-        SelectIndicator.bias,
+        {
+          biasX: Math.floor(biasX),
+          biasY: Math.floor(biasY),
+        },
       );
       if (!copySuccess) return;
       //退出选择模式
@@ -287,6 +293,9 @@ class CommandEvent {
 
           case "select-rotate":
             //瞬间任务，改rotate值
+            if (this.rootStore.toolbarMode !== "select") return;
+            if (!this.rootStore.selectSubMode) return;
+            SelectIndicator.rotateClockwise()
             break
 
           case "escape":

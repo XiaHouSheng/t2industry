@@ -458,11 +458,18 @@ export const useRootStore = defineStore("sheng-root-store", {
     // -------------------- 机器管理 --------------------
     // ======================================================
 
-    checkNodesCanMove(engine, nodes, bias, errorMessage) {
+    checkNodesCanMove(engine, nodes, bias, errorMessage, type) {
       const { biasX, biasY } = bias;
 
       const canMove = Object.entries(nodes).every(([nodeId, node]) => {
-        const preElement = node.el;
+        let preElement = null;
+        if (type == "machine") {
+          preElement = this.gridWidgetElements[nodeId];
+        } else if (type == "belt") {
+          preElement = this.gridBelt2dElement[`${node.x}-${node.y}`];
+        } else if (type == "pipe") {
+          preElement = this.gridPipe2dElement[`${node.x}-${node.y}`];
+        }
         const preNode = preElement.gridstackNode;
         const newX = preNode.x + biasX;
         const newY = preNode.y + biasY;
@@ -490,7 +497,7 @@ export const useRootStore = defineStore("sheng-root-store", {
 
       // 第一步：遍历当前位置，清除数据
       Object.entries(nodes).forEach(([nodeId, node]) => {
-        const preElement = node.el;
+        const preElement = this.gridPipe2dElement[`${node.x}-${node.y}`];
         const preNode = preElement.gridstackNode;
         const oldX = preNode.x;
         const oldY = preNode.y;
@@ -560,7 +567,7 @@ export const useRootStore = defineStore("sheng-root-store", {
 
       // 第一步：遍历当前位置，清除数据
       Object.entries(nodes).forEach(([nodeId, node]) => {
-        const preElement = node.el;
+        const preElement = this.gridBelt2dElement[`${node.x}-${node.y}`];
         const preNode = preElement.gridstackNode;
         const oldX = preNode.x;
         const oldY = preNode.y;
@@ -619,11 +626,11 @@ export const useRootStore = defineStore("sheng-root-store", {
       Object.entries(nodes)
         .reverse()
         .forEach(([nodeId, node]) => {
-          const preElement = node.el;
+          const preElement = this.gridWidgetElements[nodeId];
           const preNode = preElement.gridstackNode;
           const newX = preNode.x + biasX;
           const newY = preNode.y + biasY;
-          this.rootGrid.update(preElement, { x: newX, y: newY });
+          this.rootGrid.update(preElement, { x: newX, y: newY, w: node.width, h: node.height });
         });
 
       //结束批量更新，进行提交
@@ -642,24 +649,26 @@ export const useRootStore = defineStore("sheng-root-store", {
         machineNodes,
         bias,
         "有机器位置冲突，无法移动",
+        "machine",
       );
       const isOkBelt = this.checkNodesCanMove(
         engine,
         beltNodes,
         bias,
         "有传送带位置冲突，无法移动",
+        "belt",
       );
       const isOkPipe = this.checkNodesCanMove(
         pipeEngine,
         pipeNodes,
         bias,
         "有管道位置冲突，无法移动",
+        "pipe",
       );
 
       if (!isOkMachine || !isOkBelt || !isOkPipe) {
         return false;
       }
-
       this.batchMoveMahcine(machineNodes, bias);
       this.batchMoveBelt(beltNodes, bias);
       this.batchMovePipe(pipeNodes, bias);
