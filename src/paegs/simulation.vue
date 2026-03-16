@@ -160,19 +160,26 @@
           class="sheng-cont-item sidebar-item display-flex flex-direation-row"
           style="position: relative"
         >
+        <!--这里这个尺寸需要更改，懒得再写一个函数了-->
           <div
             class="sheng-cont-item-bg"
-            :style="iconStyle(machine.icon, 120, '#ffffff00')"
+            style="
+                width: 120px;
+                height: 120px;
+                background-size: 1680px auto;
+              "
+              :style="iconStyle(machine.icon, 120, '#fffffff')"
           ></div>
           <div
             class="display-flex flex-direation-col justify-content-center"
             style="margin-left: 3px"
           >
+          <!--这里这个尺寸需要更改，懒得再写一个函数了-->
             <div
               style="
                 width: 35px;
                 height: 35px;
-                background-size: 420px auto;
+                background-size: 490px auto;
                 margin-left: 6px;
               "
               :style="iconStyle(machine.icon, 35)"

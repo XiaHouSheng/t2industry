@@ -108,6 +108,50 @@
     "icon": "liquid_cleaner_1"
   },
   {
+    "id": "miner_2",
+    "name": "电驱矿机",
+    "stack": 47,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 5,
+      "totalRecipe": true
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "miner_2"
+  },
+  {
+    "id": "miner_3",
+    "name": "二型电驱矿机",
+    "stack": 102,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 10,
+      "totalRecipe": true
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "miner_3"
+  },
+  {
+    "id": "miner_4",
+    "name": "水驱矿机",
+    "stack": 97,
+    "machine": {
+      "speed": 1,
+      "type": "burner",
+      "locations": [
+        "jinlong"
+      ],
+      "totalRecipe": true
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "miner_4"
+  },
+  {
     "id": "mix_pool_1",
     "name": "反应池",
     "stack": 99,
@@ -162,6 +206,22 @@
     "icon": "power_sta_1"
   },
   {
+    "id": "pump_1",
+    "name": "水泵",
+    "stack": 97,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 10,
+      "locations": [
+        "jinlong"
+      ]
+    },
+    "category": "machine",
+    "row": 999,
+    "icon": "pump_1"
+  },
+  {
     "id": "seedcol_1",
     "name": "采种机",
     "stack": 111,
@@ -177,6 +237,40 @@
     "category": "machine",
     "row": 999,
     "icon": "seedcol_1"
+  },
+  {
+    "id": "settlement-jinlong_coupon",
+    "name": "据点供货(武陵)",
+    "icon": "jinlong_coupon",
+    "stack": 108,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 0,
+      "hideRate": true,
+      "locations": [
+        "jinlong"
+      ]
+    },
+    "category": "machine",
+    "row": 999
+  },
+  {
+    "id": "settlement-tundra_coupon",
+    "name": "据点供货(四号谷地)",
+    "icon": "tundra_coupon",
+    "stack": 97,
+    "machine": {
+      "speed": 1,
+      "type": "electric",
+      "usage": 0,
+      "hideRate": true,
+      "locations": [
+        "tundra"
+      ]
+    },
+    "category": "machine",
+    "row": 999
   },
   {
     "id": "shaper_1",

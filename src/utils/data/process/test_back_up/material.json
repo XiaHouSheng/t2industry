@@ -2,7 +2,7 @@
   {
     "id": "plant_moss_seed_1",
     "name": "荞花种子",
-    "stack": 105,
+    "stack": 50,
     "category": "material",
     "row": 0,
     "icon": "plant_moss_seed_1"
@@ -10,7 +10,7 @@
   {
     "id": "plant_moss_1",
     "name": "荞花",
-    "stack": 104,
+    "stack": 50,
     "category": "material",
     "row": 0,
     "icon": "plant_moss_1"
@@ -18,7 +18,7 @@
   {
     "id": "plant_moss_powder_1",
     "name": "荞花粉末",
-    "stack": 110,
+    "stack": 50,
     "category": "material",
     "row": 0,
     "icon": "plant_moss_powder_1"
@@ -26,7 +26,7 @@
   {
     "id": "plant_moss_enr_powder_1",
     "name": "细磨荞花粉末",
-    "stack": 40,
+    "stack": 50,
     "category": "material",
     "row": 0,
     "icon": "plant_moss_enr_powder_1"
@@ -34,7 +34,7 @@
   {
     "id": "plant_moss_seed_3",
     "name": "砂叶种子",
-    "stack": 108,
+    "stack": 50,
     "category": "material",
     "row": 0,
     "icon": "plant_moss_seed_3"
@@ -42,7 +42,7 @@
   {
     "id": "plant_moss_3",
     "name": "砂叶",
-    "stack": 98,
+    "stack": 50,
     "category": "material",
     "row": 0,
     "icon": "plant_moss_3"
@@ -50,7 +50,7 @@
   {
     "id": "plant_moss_powder_3",
     "name": "砂叶粉末",
-    "stack": 102,
+    "stack": 50,
     "category": "material",
     "row": 0,
     "icon": "plant_moss_powder_3"
@@ -58,7 +58,7 @@
   {
     "id": "plant_grass_seed_1",
     "name": "锦草种子",
-    "stack": 105,
+    "stack": 50,
     "category": "material",
     "row": 0,
     "icon": "plant_grass_seed_1"
@@ -66,7 +66,7 @@
   {
     "id": "plant_grass_1",
     "name": "锦草",
-    "stack": 98,
+    "stack": 50,
     "category": "material",
     "row": 0,
     "icon": "plant_grass_1"
@@ -74,22 +74,15 @@
   {
     "id": "plant_grass_powder_1",
     "name": "锦草粉末",
-    "stack": 1,
+    "stack": 50,
     "category": "material",
     "row": 0,
     "icon": "plant_grass_powder_1"
   },
   {
-    "id": "liquid_plant_grass_1",
-    "name": "锦草溶液",
-    "category": "material",
-    "row": 0,
-    "icon": "liquid_plant_grass_1"
-  },
-  {
     "id": "carbon_mtl",
     "name": "碳块",
-    "stack": 108,
+    "stack": 50,
     "category": "material",
     "row": 0,
     "icon": "carbon_mtl"
@@ -97,7 +90,7 @@
   {
     "id": "carbon_powder",
     "name": "碳粉末",
-    "stack": 100,
+    "stack": 50,
     "category": "material",
     "row": 0,
     "icon": "carbon_powder"
@@ -105,7 +98,7 @@
   {
     "id": "plant_moss_seed_2",
     "name": "柑实种子",
-    "stack": 101,
+    "stack": 50,
     "category": "material",
     "row": 1,
     "icon": "plant_moss_seed_2"
@@ -113,7 +106,7 @@
   {
     "id": "plant_moss_2",
     "name": "柑实",
-    "stack": 117,
+    "stack": 50,
     "category": "material",
     "row": 1,
     "icon": "plant_moss_2"
@@ -121,7 +114,7 @@
   {
     "id": "plant_moss_powder_2",
     "name": "柑实粉末",
-    "stack": 100,
+    "stack": 50,
     "category": "material",
     "row": 1,
     "icon": "plant_moss_powder_2"
@@ -129,7 +122,7 @@
   {
     "id": "plant_moss_enr_powder_2",
     "name": "细磨柑实粉末",
-    "stack": 101,
+    "stack": 50,
     "category": "material",
     "row": 1,
     "icon": "plant_moss_enr_powder_2"
@@ -137,7 +130,7 @@
   {
     "id": "plant_bbflower_seed_1",
     "name": "酮化树种",
-    "stack": 97,
+    "stack": 50,
     "category": "material",
     "row": 1,
     "icon": "plant_bbflower_seed_1"
@@ -145,7 +138,7 @@
   {
     "id": "plant_bbflower_1",
     "name": "酮化灌木",
-    "stack": 111,
+    "stack": 50,
     "category": "material",
     "row": 1,
     "icon": "plant_bbflower_1"
@@ -153,7 +146,7 @@
   {
     "id": "plant_bbflower_powder_1",
     "name": "酮化灌木粉末",
-    "stack": 108,
+    "stack": 50,
     "category": "material",
     "row": 1,
     "icon": "plant_bbflower_powder_1"
@@ -161,7 +154,7 @@
   {
     "id": "plant_grass_seed_2",
     "name": "芽针种子",
-    "stack": 116,
+    "stack": 50,
     "category": "material",
     "row": 1,
     "icon": "plant_grass_seed_2"
@@ -169,7 +162,7 @@
   {
     "id": "plant_grass_2",
     "name": "芽针",
-    "stack": 41,
+    "stack": 50,
     "category": "material",
     "row": 1,
     "icon": "plant_grass_2"
@@ -177,22 +170,15 @@
   {
     "id": "plant_grass_powder_2",
     "name": "芽针粉末",
-    "stack": 71,
+    "stack": 50,
     "category": "material",
     "row": 1,
     "icon": "plant_grass_powder_2"
   },
   {
-    "id": "liquid_plant_grass_2",
-    "name": "芽针溶液",
-    "category": "material",
-    "row": 1,
-    "icon": "liquid_plant_grass_2"
-  },
-  {
     "id": "carbon_enr_powder",
     "name": "致密碳粉末",
-    "stack": 101,
+    "stack": 50,
     "category": "material",
     "row": 1,
     "icon": "carbon_enr_powder"
@@ -200,7 +186,7 @@
   {
     "id": "carbon_enr",
     "name": "稳定碳块",
-    "stack": 105,
+    "stack": 50,
     "category": "material",
     "row": 1,
     "icon": "carbon_enr"
@@ -208,7 +194,7 @@
   {
     "id": "originium_ore",
     "name": "源矿",
-    "stack": 111,
+    "stack": 50,
     "category": "material",
     "row": 2,
     "icon": "originium_ore"
@@ -216,7 +202,7 @@
   {
     "id": "crystal_shell",
     "name": "晶体外壳",
-    "stack": 114,
+    "stack": 50,
     "category": "material",
     "row": 2,
     "icon": "crystal_shell"
@@ -224,7 +210,7 @@
   {
     "id": "crystal_powder",
     "name": "晶体外壳粉末",
-    "stack": 111,
+    "stack": 50,
     "category": "material",
     "row": 2,
     "icon": "crystal_powder"
@@ -232,7 +218,7 @@
   {
     "id": "crystal_enr_powder",
     "name": "致密晶体粉末",
-    "stack": 116,
+    "stack": 50,
     "category": "material",
     "row": 2,
     "icon": "crystal_enr_powder"
@@ -240,7 +226,7 @@
   {
     "id": "crystal_enr",
     "name": "密制晶体",
-    "stack": 99,
+    "stack": 50,
     "category": "material",
     "row": 2,
     "icon": "crystal_enr"
@@ -248,7 +234,7 @@
   {
     "id": "originium_powder",
     "name": "源石粉末",
-    "stack": 114,
+    "stack": 50,
     "category": "material",
     "row": 2,
     "icon": "originium_powder"
@@ -256,7 +242,7 @@
   {
     "id": "originium_enr_powder",
     "name": "致密源石粉末",
-    "stack": 116,
+    "stack": 50,
     "category": "material",
     "row": 2,
     "icon": "originium_enr_powder"
@@ -264,7 +250,7 @@
   {
     "id": "quartz_sand",
     "name": "紫晶矿",
-    "stack": 105,
+    "stack": 50,
     "category": "material",
     "row": 3,
     "icon": "quartz_sand"
@@ -272,7 +258,7 @@
   {
     "id": "quartz_glass",
     "name": "紫晶纤维",
-    "stack": 111,
+    "stack": 50,
     "category": "material",
     "row": 3,
     "icon": "quartz_glass"
@@ -280,7 +266,7 @@
   {
     "id": "quartz_powder",
     "name": "紫晶粉末",
-    "stack": 114,
+    "stack": 50,
     "category": "material",
     "row": 3,
     "icon": "quartz_powder"
@@ -288,7 +274,7 @@
   {
     "id": "quartz_enr_powder",
     "name": "高晶粉末",
-    "stack": 116,
+    "stack": 50,
     "category": "material",
     "row": 3,
     "icon": "quartz_enr_powder"
@@ -296,7 +282,7 @@
   {
     "id": "quartz_enr",
     "name": "高晶纤维",
-    "stack": 99,
+    "stack": 50,
     "category": "material",
     "row": 3,
     "icon": "quartz_enr"
@@ -304,7 +290,7 @@
   {
     "id": "glass_bottle",
     "name": "紫晶质瓶",
-    "stack": 105,
+    "stack": 50,
     "category": "material",
     "row": 3,
     "icon": "glass_bottle"
@@ -312,7 +298,7 @@
   {
     "id": "glass_enr_bottle",
     "name": "高晶质瓶",
-    "stack": 104,
+    "stack": 50,
     "category": "material",
     "row": 3,
     "icon": "glass_enr_bottle"
@@ -320,7 +306,7 @@
   {
     "id": "glass_cmpt",
     "name": "紫晶零件",
-    "stack": 116,
+    "stack": 50,
     "category": "material",
     "row": 3,
     "icon": "glass_cmpt"
@@ -328,7 +314,7 @@
   {
     "id": "glass_enr_cmpt",
     "name": "高晶零件",
-    "stack": 117,
+    "stack": 50,
     "category": "material",
     "row": 3,
     "icon": "glass_enr_cmpt"
@@ -336,7 +322,7 @@
   {
     "id": "iron_ore",
     "name": "蓝铁矿",
-    "stack": 99,
+    "stack": 50,
     "category": "material",
     "row": 4,
     "icon": "iron_ore"
@@ -344,7 +330,7 @@
   {
     "id": "iron_nugget",
     "name": "蓝铁块",
-    "stack": 45,
+    "stack": 50,
     "category": "material",
     "row": 4,
     "icon": "iron_nugget"
@@ -352,7 +338,7 @@
   {
     "id": "iron_powder",
     "name": "蓝铁粉末",
-    "stack": 97,
+    "stack": 50,
     "category": "material",
     "row": 4,
     "icon": "iron_powder"
@@ -360,7 +346,7 @@
   {
     "id": "iron_enr_powder",
     "name": "致密蓝铁粉末",
-    "stack": 100,
+    "stack": 50,
     "category": "material",
     "row": 4,
     "icon": "iron_enr_powder"
@@ -368,7 +354,7 @@
   {
     "id": "iron_enr",
     "name": "钢块",
-    "stack": 105,
+    "stack": 50,
     "category": "material",
     "row": 4,
     "icon": "iron_enr"
@@ -376,7 +362,7 @@
   {
     "id": "iron_bottle",
     "name": "蓝铁瓶",
-    "stack": 40,
+    "stack": 50,
     "category": "material",
     "row": 4,
     "icon": "iron_bottle"
@@ -384,7 +370,7 @@
   {
     "id": "iron_enr_bottle",
     "name": "钢质瓶",
-    "stack": 101,
+    "stack": 50,
     "category": "material",
     "row": 4,
     "icon": "iron_enr_bottle"
@@ -392,7 +378,7 @@
   {
     "id": "iron_cmpt",
     "name": "铁制零件",
-    "stack": 102,
+    "stack": 50,
     "category": "material",
     "row": 4,
     "icon": "iron_cmpt"
@@ -400,7 +386,7 @@
   {
     "id": "iron_enr_cmpt",
     "name": "钢制零件",
-    "stack": 108,
+    "stack": 50,
     "category": "material",
     "row": 4,
     "icon": "iron_enr_cmpt"
@@ -412,7 +398,7 @@
       "iron_bottle",
       "liquid_water"
     ],
-    "stack": 100,
+    "stack": 50,
     "category": "material",
     "row": 4,
     "icon": "iron_bottle-liquid_water"
@@ -424,7 +410,7 @@
       "iron_bottle",
       "liquid_plant_grass_1"
     ],
-    "stack": 101,
+    "stack": 50,
     "category": "material",
     "row": 4,
     "icon": "iron_bottle-liquid_plant_grass_1"
@@ -436,124 +422,17 @@
       "iron_bottle",
       "liquid_plant_grass_2"
     ],
-    "stack": 110,
+    "stack": 50,
     "category": "material",
     "row": 4,
     "icon": "iron_bottle-liquid_plant_grass_2"
   },
   {
-    "id": "copper_ore",
-    "name": "赤铜矿",
-    "stack": 102,
-    "category": "material",
-    "row": 5,
-    "icon": "copper_ore"
-  },
-  {
-    "id": "copper_nugget",
-    "name": "赤铜块",
-    "stack": 47,
-    "category": "material",
-    "row": 5,
-    "icon": "copper_nugget"
-  },
-  {
-    "id": "copper_powder",
-    "name": "赤铜粉末",
-    "stack": 97,
-    "category": "material",
-    "row": 5,
-    "icon": "copper_powder"
-  },
-  {
-    "id": "copper_bottle",
-    "name": "赤铜瓶",
-    "stack": 99,
-    "category": "material",
-    "row": 5,
-    "icon": "copper_bottle"
-  },
-  {
-    "id": "copper_cmpt",
-    "name": "赤铜零件",
-    "stack": 99,
-    "category": "material",
-    "row": 5,
-    "icon": "copper_cmpt"
-  },
-  {
-    "id": "copper_bottle-liquid_plant_grass_1",
-    "name": "赤铜瓶(锦草溶液)",
-    "buildIcon": [
-      "copper_bottle",
-      "liquid_plant_grass_1"
-    ],
-    "stack": 97,
-    "category": "material",
-    "row": 5,
-    "icon": "copper_bottle-liquid_plant_grass_1"
-  },
-  {
-    "id": "copper_bottle-liquid_plant_grass_2",
-    "name": "赤铜瓶(芽针溶液)",
-    "buildIcon": [
-      "copper_bottle",
-      "liquid_plant_grass_2"
-    ],
-    "stack": 108,
-    "category": "material",
-    "row": 5,
-    "icon": "copper_bottle-liquid_plant_grass_2"
-  },
-  {
-    "id": "liquid_water",
-    "name": "清水",
-    "category": "material",
-    "row": 6,
-    "icon": "liquid_water"
-  },
-  {
-    "id": "liquid_sewage",
-    "name": "污水",
-    "category": "material",
-    "row": 6,
-    "icon": "liquid_sewage"
-  },
-  {
-    "id": "liquid_xiranite",
-    "name": "液化息壤",
-    "category": "material",
-    "row": 6,
-    "icon": "liquid_xiranite"
-  },
-  {
     "id": "xiranite_powder",
     "name": "息壤",
-    "stack": 117,
+    "stack": 50,
     "category": "material",
-    "row": 6,
+    "row": 5,
     "icon": "xiranite_powder"
-  },
-  {
-    "id": "liquid_xiranite_poly",
-    "name": "壤晶废液",
-    "category": "material",
-    "row": 6,
-    "icon": "liquid_xiranite_poly"
-  },
-  {
-    "id": "liquid_xiranite_lowpoly",
-    "name": "惰性壤晶废液",
-    "category": "material",
-    "row": 6,
-    "icon": "liquid_xiranite_lowpoly"
-  },
-  {
-    "id": "xiranite_poly",
-    "name": "壤晶",
-    "stack": 104,
-    "category": "material",
-    "row": 6,
-    "icon": "xiranite_poly"
   }
 ]
