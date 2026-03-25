@@ -1,286 +1,193 @@
-# t2industry | 塔卫二工业
+# t2industry ｜ 塔卫二工业
+
+> 基于《明日方舟：终末地》的工业蓝图编辑与分享工具。  
+> 前端项目目录：`EndfieldSimulation`
 
 <div align="center">
-  <img src="https://placeholder.pics/svg/800x200/2C3E50/ECF0F1/t2industry%20%7C%20%E5%A1%94%E5%8D%AB%E4%BA%8C%E5%B7%A5%E4%B8%9A" alt="t2industry Logo" />
-  <p>🎮 基于《明日方舟：终末地》的物料配平与效率模拟工具</p>
-  <p>🌐 网站名称：<strong>t2blueprint | 塔卫二蓝图</strong></p>
-  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" />
-  <img src="https://img.shields.io/badge/Vue-3.x-brightgreen.svg" alt="Vue 3" />
-  <img src="https://img.shields.io/badge/Element%20Plus-Latest-blueviolet.svg" alt="Element Plus" />
-  <img src="https://img.shields.io/badge/Gridstack.js-Latest-orange.svg" alt="Gridstack.js" />
+  <img src="https://img.shields.io/badge/Vue-3.x-42b883" alt="Vue" />
+  <img src="https://img.shields.io/badge/Vite-7.x-646cff" alt="Vite" />
+  <img src="https://img.shields.io/badge/Pinia-3.x-f7c948" alt="Pinia" />
+  <img src="https://img.shields.io/badge/GridStack-12.x-ff8c00" alt="GridStack" />
+  <img src="https://img.shields.io/badge/License-MIT-blue" alt="MIT" />
 </div>
 
-## 📋 项目简介
+## 项目简介
 
-<strong>t2industry | 塔卫二工业</strong> 是一款专门为《明日方舟：终末地》游戏设计的多功能工具平台，旨在帮助玩家进行物料配平计算、生产效率模拟以及蓝图管理与分享。通过直观的可视化界面，玩家可以轻松规划和优化自己的工业生产线。
+`t2industry` 是一个面向《明日方舟：终末地》工业玩法的可视化工具，支持：
 
-<strong>t2blueprint | 塔卫二蓝图</strong> 是本项目的官方网站，提供蓝图分享、工具下载等服务。
+- 蓝图编辑（机器、传送带、管道）
+- 模块化分区管理
+- 蓝图导入 / 导出 / 本地保存
+- 在线蓝图库浏览与分享
+- 基础账号能力（登录、注册、个人蓝图）
 
-## 🌟 历史星星
-
-[![Star History Chart](https://api.star-history.com/svg?repos=XiaHouSheng/t2industry&type=date&legend=top-left)](https://www.star-history.com/#XiaHouSheng/t2industry&type=date&legend=top-left)
-
-## ✨ 核心功能
-
-### 1. 蓝图编辑与管理
-- **可视化网格编辑**：使用 Gridstack.js 实现的拖拽式场景编辑
-- **机器与传送带放置**：支持多种机器和传送带的拖拽放置
-- **机器旋转与配置**：可旋转机器并设置配方参数
-- **传送带方向标注**：直观显示传送带的传输方向
-- **蓝图导出与导入**：支持保存和分享你的生产蓝图
-- **模块化管理**：支持多模块分区管理
-
-### 2. 物料配平计算
-- 基于配方的物料需求计算
-- 生产效率分析与优化
-- 资源平衡模拟
-
-### 3. 电力系统模拟
-- 电力需求计算
-- 供电网络规划
-
-### 4. 液体管道系统
-- 管道放置与连接
-- 液体传输模拟
-
-### 5. 交互系统
-- **键盘快捷键**：支持多种快捷键操作
-- **鼠标交互**：支持拖拽、框选、右键删除等操作
-- **工具栏**：快速切换不同编辑模式
-
-## 🛠 技术栈
-
-| 技术/框架 | 版本 | 用途 |
-|---------|------|------|
-| Vue.js | 3.x | 前端框架 |
-| Element Plus | Latest | UI 组件库 |
-| Gridstack.js | Latest | 网格编辑系统 |
-| Pinia | Latest | 状态管理 |
-| Vite | Latest | 构建工具 |
-| Radix Vue | Latest | 基础 UI 组件 |
-
-## 🚀 快速开始
-
-### 环境要求
-- Node.js 16.0+
-- npm 7.0+
-
-### 安装与运行
-
-1. **克隆项目**
-   ```bash
-   git clone https://github.com/yourusername/t2industry.git
-   cd t2industry
-   ```
-
-2. **安装依赖**
-   ```bash
-   npm install
-   ```
-
-3. **开发模式运行**
-   ```bash
-   npm run dev
-   ```
-
-4. **构建生产版本**
-   ```bash
-   npm run build
-   ```
-
-## 📁 项目结构
-
-```
-EndfieldSimulation/
-├── public/                    # 静态资源
-├── src/
-│   ├── assets/               # 项目资源文件
-│   │   ├── img/             # 图片资源（图标、背景等）
-│   │   └── svg/             # SVG 图标
-│   ├── components/           # Vue 组件
-│   │   ├── original/         # 原始组件（配方、仓库等）
-│   │   │   ├── RecipeContent.vue
-│   │   │   ├── RecipeItem.vue
-│   │   │   └── WareHouseContent.vue
-│   │   ├── simulation/       # 模拟相关组件（机器、传送带等）
-│   │   │   ├── ConveyerBelt.vue      # 传送带组件
-│   │   │   ├── Pipe.vue              # 管道组件
-│   │   │   ├── RefineryFurnace.vue   # 精炼炉
-│   │   │   ├── Crusher.vue           # 粉碎机
-│   │   │   ├── FillingMachine.vue    # 罐装机
-│   │   │   ├── PackagingMachine.vue  # 封装机
-│   │   │   ├── Grinder.vue          # 研磨机
-│   │   │   ├── Planter.vue          # 种植机
-│   │   │   ├── SeedHarvester.vue    # 采种机
-│   │   │   ├── AccessoryMachine.vue  # 配件机
-│   │   │   ├── ShapingMachine.vue   # 塑型机
-│   │   │   ├── EquipmentComponentMachine.vue  # 装备原件机
-│   │   │   ├── ProtocolStorageBox.vue       # 存储箱
-│   │   │   ├── ProtocolCore.vue            # 协议核心
-│   │   │   ├── WarehouseDepositPort.vue     # 存货口
-│   │   │   ├── WarehouseWithdrawalPort.vue  # 取货口
-│   │   │   ├── PowerStation.vue            # 热能池
-│   │   │   ├── PowerSupplier.vue          # 供电桩
-│   │   │   ├── DismantlerMachine.vue     # 拆解机
-│   │   │   ├── ReactionPool.vue          # 反应池
-│   │   │   ├── XiraniteFurnace.vue      # 天有洪炉
-│   │   │   ├── LiquidContainer.vue       # 储液罐
-│   │   │   ├── RootContainer.vue        # 根容器
-│   │   │   ├── RootMachine.vue         # 根机器
-│   │   │   ├── RootMachineCuboid.vue   # 根机器立方体
-│   │   │   └── RootSpecificContainer.vue  # 特殊容器
-│   │   └── ui/               # UI 组件库（基于 Radix Vue）
-│   │       └── wrapper-v1/     # UI 组件封装
-│   │           ├── action/         # 操作相关组件
-│   │           ├── alert/          # 警告组件
-│   │           ├── card/           # 卡片组件
-│   │           ├── dialog/         # 对话框组件
-│   │           ├── messagebox/     # 消息框组件
-│   │           ├── navbar/         # 导航栏组件
-│   │           ├── pagination/     # 分页组件
-│   │           ├── search/         # 搜索组件
-│   │           ├── sidebar/        # 侧边栏组件
-│   │           ├── toast/          # 提示组件
-│   │           └── toolbar/        # 工具栏组件
-│   │               ├── ToolbarModeSelector.vue  # 工具模式选择
-│   │               ├── QuickPlacement.vue        # 快速放置
-│   │               ├── QuickPlaceMode.vue      # 快速放置模式
-│   │               ├── LayerSettings.vue       # 图层设置
-│   │               ├── ModuleFilter.vue        # 模块滤镜
-│   │               └── BlueprintActions.vue   # 蓝图操作
-│   ├── paegs/               # 页面组件
-│   │   ├── home_child/       # 主页子页面
-│   │   │   ├── discover.vue   # 发现页面
-│   │   │   ├── self.vue       # 个人页面
-│   │   │   └── index.vue     # 索引页面
-│   │   ├── calculate.vue       # 配平计算页面
-│   │   ├── home.vue           # 主页
-│   │   ├── root.vue           # 根页面
-│   │   └── simulation.vue      # 模拟编辑页面
-│   ├── routers/             # 路由配置
-│   │   └── index.js
-│   ├── stores/              # Pinia 状态管理
-│   │   ├── SimStore.js       # 主模拟状态
-│   │   ├── MachineStore.js    # 机器状态
-│   │   ├── SelectStore.js     # 选择状态
-│   │   └── HomeStore.js      # 主页状态
-│   ├── utils/               # 工具函数
-│   │   ├── data/             # 数据文件
-│   │   │   ├── process/       # 数据处理脚本
-│   │   │   │   └── process.py
-│   │   │   ├── all_factory_list
-│   │   │   ├── data.json      # 机器数据
-│   │   │   ├── icon.json      # 图标数据
-│   │   │   ├── item.json      # 物品数据
-│   │   │   ├── machine.json   # 机器配置
-│   │   │   ├── material.json  # 材料数据
-│   │   │   └── recipe.json    # 配方数据
-│   │   ├── MachineComponentMap.js    # 机器组件映射（延迟加载）
-│   │   ├── MachineMap.js            # 机器名称映射
-│   │   ├── MachineMiddleware.js     # 机器中间件
-│   │   ├── DataMap.js              # 数据映射
-│   │   ├── CommandEvent.js          # 命令事件处理
-│   │   ├── BeltIndicator.js         # 传送带指示器
-│   │   ├── SelectIndicator.js       # 选择指示器
-│   │   ├── KeyBoardHandler.js      # 键盘事件处理
-│   │   ├── dragScrollHandler.js    # 拖动滚动处理
-│   │   └── api-client.js           # API 客户端
-│   ├── App.vue              # 根组件
-│   ├── main.js              # 应用入口
-│   └── style.css            # 全局样式
-├── package.json              # 项目配置
-├── vite.config.js           # Vite 配置
-└── README.md               # 项目说明
-```
-
-## 🔧 核心模块
-
-### 1. 模拟系统 (Simulation)
-- **GridStack 场景**：实现可视化网格编辑（72x72 网格）
-- **机器组件**：20+ 种生产机器的 Vue 组件
-- **传送带系统**：支持传送带的放置、删除、旋转和方向标注
-- **管道系统**：液体管道的放置、连接和方向控制
-- **模块管理**：支持多模块分区，可独立显示/隐藏各模块
-
-### 2. 配平系统 (Calculate)
-- 物料需求计算
-- 生产效率分析
-- 资源平衡优化
-
-### 3. 蓝图系统
-- 蓝图导出/导入（JSON 格式）
-- 蓝图分享与管理
-- 官方蓝图库
-- 本地存储支持
-
-### 4. 交互系统
-- **键盘快捷键**：
-  - `B`：传送带模式
-  - `P`：管道模式
-  - `S`：选择模式
-  - `Esc`：退出当前模式
-- **鼠标操作**：
-  - 左键：放置/选择
-  - 右键：删除/取消
-  - 拖拽：移动机器
-  - 框选：批量选择
-
-### 5. UI 组件库
-基于 Radix Vue 封装的 UI 组件：
-- **Dialog**：对话框
-- **Card**：卡片
-- **Toast**：提示消息
-- **MessageBox**：消息框
-- **Toolbar**：工具栏
-- **Pagination**：分页
-- **Search**：搜索框
-
-## 📖 开发指南
-
-### 代码规范
-- 使用 Vue 3 Composition API
-- 组件命名使用 PascalCase
-- 文件命名使用 kebab-case
-- 遵循 ESLint 代码规范
-
-### 新增机器组件
-1. 在 `src/components/simulation/` 目录下创建新的机器组件
-2. 在 `src/utils/MachineComponentMap.js` 中注册机器组件
-3. 在 `src/utils/MachineMap.js` 中添加机器名称映射
-4. 在 `src/utils/data/machine.json` 中添加机器数据
-
-### 新增配方
-1. 在 `src/utils/data/recipe.json` 中添加新配方
-2. 确保配方与机器对应关系正确
-
-## 🤝 贡献指南
-
-我们欢迎社区贡献！如果你有兴趣参与项目开发，请：
-
-1. **Fork 项目**
-2. **创建功能分支**
-   ```bash
-   git checkout -b feature/your-feature
-   ```
-3. **提交更改**
-   ```bash
-   git commit -m "Add your feature"
-   ```
-4. **推送到分支**
-   ```bash
-   git push origin feature/your-feature
-   ```
-5. **创建 Pull Request**
-
-## 📄 许可证
-
-本项目采用 **MIT 开源协议**，详情请查阅 [LICENSE](./LICENSE) 文件。
-
-## 📞 联系方式
-
-- **QQ 群**：615187598
-- **GitHub Issues**：[https://github.com/yourusername/t2industry/issues](https://github.com/yourusername/t2industry/issues)
+当前仓库主要是前端工程，使用 Vue 3 + Vite 构建。
 
 ---
 
-**免责声明**：本项目为非官方工具，与《明日方舟：终末地》游戏开发商无直接关联。所有游戏相关内容的版权归各自所有者所有。
+## 主要功能
+
+### 1) 蓝图编辑器
+
+- 网格化拖拽编辑（GridStack）
+- 支持机器、传送带、管道快速放置
+- 选择/框选/批量删除/批量移动
+- 缩放、右键拖动画布
+- 图层显示开关（机器/传送带/管道/接口）
+
+### 2) 模块管理
+
+- `part0 / part1 / ...` 多模块拆分
+- 模块显示与编辑切换
+- 模块代码（备注）编辑
+
+### 3) 蓝图能力
+
+- 本地蓝图自动读取（无 hashCode 时）
+- 远程蓝图加载（`/editor/:hashCode?`）
+- JSON 导入导出
+
+### 4) 蓝图广场与用户能力
+
+- 首页/发现页/个人页
+- 蓝图列表、搜索、热门/随机推荐
+- 登录、注册、用户信息、Token 校验
+
+---
+
+## 技术栈
+
+- **前端框架**：Vue 3
+- **构建工具**：Vite 7
+- **状态管理**：Pinia
+- **网格编辑**：GridStack
+- **UI 组件**：Element Plus + Radix Vue（封装）
+- **路由**：Vue Router
+
+---
+
+## 快速开始
+
+### 环境要求
+
+- Node.js >= 16
+- npm >= 7
+
+### 安装与运行
+
+```bash
+# 1) 进入项目目录
+cd EndfieldSimulation
+
+# 2) 安装依赖
+npm install
+
+# 3) 启动开发环境
+npm run dev
+```
+
+### 构建与预览
+
+```bash
+# 构建生产包
+npm run build
+
+# 本地预览
+npm run preview
+```
+
+### GitHub Pages 构建（带 base）
+
+```bash
+npm run github
+```
+
+---
+
+## 路由说明
+
+- `/home`：主页
+- `/home/discover`：发现蓝图
+- `/home/self`：个人蓝图
+- `/calculate`：配平页面（预留）
+- `/editor/:hashCode?`：蓝图编辑器（可选远程 hashCode）
+
+---
+
+## 项目结构（精简）
+
+```text
+EndfieldSimulation/
+├─ src/
+│  ├─ components/
+│  │  ├─ simulation/          # 机器、传送带、管道等核心组件
+│  │  ├─ original/            # 原有业务组件（配方/仓库）
+│  │  └─ ui/wrapper-v1/       # UI 二次封装
+│  ├─ paegs/                  # 页面（注：目录名为 paegs）
+│  ├─ stores/                 # Pinia 状态
+│  ├─ utils/                  # 工具层、数据映射、API 客户端
+│  ├─ routers/                # 路由
+│  ├─ App.vue
+│  └─ main.js
+├─ api_documentation.md       # 接口文档
+├─ package.json
+└─ README.md
+```
+
+---
+
+## 开发说明
+
+### 新增机器组件
+
+1. 在 `src/components/simulation/` 新建组件（如 `NewMachine.vue`）
+2. 在 `src/utils/MachineComponentMap.js` 注册懒加载映射
+3. 在 `src/utils/MachineMap.js` 增加名称映射
+4. 在 `src/utils/data/machine.json` 补充机器配置
+
+### API 对接
+
+统一通过：`src/utils/api-client.js` 访问后端。  
+详细接口请查看：`api_documentation.md`
+
+---
+
+## 常见问题
+
+### 1) 编辑器打开后没有本地蓝图？
+
+- 仅在浏览器存在 `localStorage.blueprint` 时会自动加载
+- 可通过“导入蓝图”上传 JSON
+
+### 2) 远程蓝图如何加载？
+
+访问：`/editor/<hashCode>`，页面会自动请求并加载对应蓝图。
+
+### 3) 构建后资源路径错乱？
+
+- 普通部署使用 `npm run build`
+- 若部署到 GitHub Pages 子路径，请使用 `npm run github`
+
+---
+
+## 贡献指南
+
+欢迎提交 Issue / PR。
+
+```bash
+git checkout -b feature/your-feature
+# coding...
+git commit -m "feat: your feature"
+git push origin feature/your-feature
+```
+
+---
+
+## 许可证
+
+本项目使用 [MIT License](./LICENSE)。
+
+## 免责声明
+
+本项目为非官方工具，与《明日方舟：终末地》官方无直接隶属关系。游戏相关素材与内容版权归其权利方所有。
+
