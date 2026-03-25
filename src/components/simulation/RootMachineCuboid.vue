@@ -185,7 +185,7 @@ onMounted(() => {
   width: 35px;
   height: 35px;
   background-repeat: no-repeat;
-  background-size: 420px auto;
+  background-size: var(--sheng-icons-size-35);
   border-radius: 4px;
   border: 1px solid gray;
 }

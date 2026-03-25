@@ -73,6 +73,17 @@ export const useRootStore = defineStore("sheng-root-store", {
     rootPipeGrid: null, //管道网格引擎
     // -------------------- 缩放相关配置 --------------------
     gridElContScale: 1,
+    zoomConfig: {
+      minScale: 0.35,
+      maxScale: 2,
+      stepFactor: 0.0005,
+      translateX: 100,
+      translateY: 100,
+      endDelay: 120,
+    },
+    _zoomEndTimer: null,
+    _scaleRafId: null,
+    _pendingScale: 1,
     defaultWidth: 3017,
     defaultHeight: 3017,
     defaultMaxWidth: 3017,
@@ -290,36 +301,59 @@ export const useRootStore = defineStore("sheng-root-store", {
     // -------------------- 缩放管理 --------------------
     // ======================================================
 
+    applyScaleTransform_(scale) {
+      const { translateX, translateY } = this.zoomConfig;
+      const transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+      [this.gridEl, this.overlay, this.pipeGrid].forEach((el) => {
+        if (el) el.style.transform = transform;
+      });
+    },
+
     handleScalingChange_(event) {
       event.preventDefault();
       event.stopPropagation();
+
       // select 模式禁用
       if (this.toolbarMode === "select" || this.isRecipeChoose) return;
+      if (!this.rootGrid) return;
+
+      const { minScale, maxScale, stepFactor, endDelay } = this.zoomConfig;
+      const delta = -event.deltaY * stepFactor;
+      if (!delta) return;
+
+      const nextScale = Math.max(
+        minScale,
+        Math.min(maxScale, this.gridElContScale + delta),
+      );
+
+      // 缩放值无变化则跳过后续更新
+      if (nextScale === this.gridElContScale) return;
+      this.gridElContScale = nextScale;
+
       // 初始化（只做一次）
       if (!this.isZomming) {
         this.isZomming = true;
         this.rootGrid.setStatic(true);
       }
-      // Leaflet 风格：小步长
-      const delta = -event.deltaY * 0.0005;
-      this.gridElContScale = Math.max(
-        0.35,
-        Math.min(2, this.gridElContScale + delta),
-      );
+
       // 更新键盘处理器的缩放比例
       KeyBoardHandler.updateScale(this.gridElContScale);
-      // 应用视觉缩放（通过CSS transform: scale()）
-      this.gridEl.style.transform = `scale(${this.gridElContScale}) translate(100px, 100px)`;
-      // 更新遮罩层的缩放
-      this.overlay.style.transform = `scale(${this.gridElContScale}) translate(100px, 100px)`;
-      // 更新管道网格的缩放
-      this.pipeGrid.style.transform = `scale(${this.gridElContScale}) translate(100px, 100px)`;
+
+      // 使用 rAF 合并高频 wheel 触发，减少不必要的样式重排
+      this._pendingScale = this.gridElContScale;
+      if (!this._scaleRafId) {
+        this._scaleRafId = requestAnimationFrame(() => {
+          this._scaleRafId = null;
+          this.applyScaleTransform_(this._pendingScale);
+        });
+      }
+
       // 缩放结束（防抖）
       clearTimeout(this._zoomEndTimer);
       this._zoomEndTimer = setTimeout(() => {
         this.isZomming = false;
         this.rootGrid.setStatic(false);
-      }, 120);
+      }, endDelay);
     },
 
     // ======================================================

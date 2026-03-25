@@ -14,6 +14,7 @@ export const machineDataFileMap = {
   dismantlerMachine: "dismantler_1",
   reactionPool: "mix_pool_1",
   xiraniteFurnace: "xiranite_oven_1",
+  liquidCleaner: "liquid_cleaner_1",
   waterPump: "pump_1", //水泵需要从蓝图区域外拉，暂不添加
 };
 
@@ -41,6 +42,7 @@ export const machineNameMap = {
   waterPump: "水泵",
   xiraniteFurnace: "天有洪炉",
   liquidContainer: "储液罐",
+  liquidCleaner: "废水处理机"
 };
 
 // 反向映射：中文名称 → 英文 key（方便根据中文查英文）

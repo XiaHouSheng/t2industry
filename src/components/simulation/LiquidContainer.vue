@@ -84,15 +84,6 @@ const showPipePorts = computed(() => {
 </template>
 
 <style scoped>
-.recipe-icon {
-  width: 35px;
-  height: 35px;
-  background-repeat: no-repeat;
-  background-size: 420px auto;
-  border-radius: 4px;
-  border: 1px solid gray;
-}
-
 @container (max-width: 60px) {
   .self-control-font {
     font-size: 12px;

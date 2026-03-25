@@ -51,14 +51,14 @@ function handleConfirm() {
   visible.value = false
   setTimeout(() => {
     emit('confirm')
-  }, 300)
+  }, 100)
 }
 
 function handleCancel() {
   visible.value = false
   setTimeout(() => {
     emit('cancel')
-  }, 300)
+  }, 100)
 }
 
 const typeIcons = {

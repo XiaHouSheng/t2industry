@@ -124,6 +124,10 @@
   /* 自定义的颜色 */
   --sheng-color-primary: #fffa00 --sheng-color-sidebar-active: #fffa00;
   --sheng-color-bg-sidebar-active: rgba(0, 0, 0, 0.021);
+
+  /* ICON的尺寸 */
+  --sheng-icons-size-35: 490px auto;
+
 }
 
 /*Element Plus UI自定义样式*/
@@ -302,3 +306,4 @@ body {
   border: solid 1px var(--sheng-recipe-cont-border);
   box-sizing: border-box;
 }
+

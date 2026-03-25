@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useMachineStore } from "../../stores/MachineStore";
 import { useRootStore } from "../../stores/SimStore";
 import { machineNameMap } from "../../utils/MachineMap";
@@ -21,8 +21,8 @@ const props = defineProps({
     required: false,
     type: Object,
     default: () => ({
-      top: true,
-      bottom: true,
+      top: false,
+      bottom: false,
     }),
   },
   rotate: {
@@ -37,25 +37,22 @@ const hadnleRotate = () => {
   rotateAngle.value = ((rotateAngle.value / 90 + 1) % 4) * 90;
   rootStore.gridWidgets[props.gs_id]["rotate"] = rotateAngle.value / 90;
 };
-//出入口点击拦截
-const handleBeltPortClick = (e) => {
-  e.stopPropagation();
-  e.preventDefault();
-  //console.log("出入口点击拦截", e);
-  rootStore.handleOverlayClick(e, { "isBeltPort": true });
-};
+
+//液体管口显示控制
+const showPipePorts = computed(() => {
+  return rootStore.isShowPipePort;
+});
 </script>
 
 <template>
   <div
     class="max-height-width display-flex flex-direation-col sheng-machine"
-    style="justify-content: space-between; background-color: white"
+    style="justify-content: space-between; background-color: white; position: relative"
     :style="{ transform: `rotate(${rotateAngle}deg)` }"
     @contextmenu="machineStore.handleRightClick($event, props.gs_id)"
     @click="hadnleRotate"
   >
     <div v-if="port.top"
-      @click="handleBeltPortClick"
       class="display-flex justify-content-center line-inner flex-direation-row"
       style="height: 15px"
     ></div>
@@ -71,9 +68,17 @@ const handleBeltPortClick = (e) => {
     </div>
 
     <div v-if="port.bottom"
-      @click="handleBeltPortClick"
       class="display-flex justify-content-center line-outter flex-direation-col"
       style="height: 15px"
+    ></div>
+
+    <div
+      v-if="showPipePorts"
+      class="pipe-port pipe-port-left-center"
+    ></div>
+    <div
+      v-if="false"
+      class="pipe-port pipe-port-right-center"
     ></div>
   </div>
 </template>
@@ -97,5 +102,26 @@ const handleBeltPortClick = (e) => {
   background-size: calc(100% / v-bind(widthEl)) calc(100% / 1);
   background-image: linear-gradient(to right, #ffffffa2 1px, transparent 1px),
     linear-gradient(to bottom, #ffffffa2 1px, transparent 1px);
+}
+
+.pipe-port {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: #4a90e2;
+  border: 2px solid #2c5aa0;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.pipe-port-left-center {
+  left: 0;
+  top: 50%;
+}
+
+.pipe-port-right-center {
+  right: -25px;
+  top: 50%;
 }
 </style>
