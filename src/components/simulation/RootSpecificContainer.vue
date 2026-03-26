@@ -86,7 +86,7 @@ const iconAutoSize = computed(() => {
     isEven = indexRef.value % 2 === 0;
   const calcVal = 35;
   return {
-    backgroundSize: `${(calcVal / 64) * 768}px auto`,
+    backgroundSize: `${(calcVal / 64) * 896}px auto`,
     ...(isEven
       ? { height: `${calcVal}px`, left: `${(w - calcVal) / 2}px` }
       : { width: `${calcVal}px`, top: `${(h - calcVal) / 2}px` }),

@@ -24,8 +24,8 @@ const menuItems = [
     label: '蓝图编辑'
   },
   {
-    index: '/calculate',
-    label: '计算器'
+    index: '/parser',
+    label: '蓝图解析'
   }
 ];
 

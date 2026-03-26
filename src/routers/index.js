@@ -35,10 +35,10 @@ const routes = [
     ]
   },
   {
-    path: '/calculate',
-    name: 'Calculate',
-    component: () => import('../paegs/calculate.vue'),
-    meta: { title: '物料配平计算' }
+    path: '/parser',
+    name: 'Parser',
+    component: () => import('../paegs/parser.vue'),
+    meta: { title: '蓝图解析' }
   },
   {
     path: '/editor/:hashCode?',
