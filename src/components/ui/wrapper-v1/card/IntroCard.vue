@@ -20,7 +20,11 @@
       <div class="intro-item">
         <h4 class="text-base font-semibold text-yellow-400 mb-2">公告</h4>
         <p class="text-sm text-gray-300">
-          目前没有开发管道相关的蓝图编辑功能，但是对于需要管道的机器可以进行配方配置与放置。
+          蓝图编辑的机器配方与新增机器已经同游戏同步，当前为1.1版本
+        </p>
+        <p class="text-sm text-gray-300">
+          Parse解析页面当前为Beta测试阶段，目前Parse界面只能识别1.0版本的机器与配方，
+          精度有限
         </p>
       </div>
       <div class="intro-item">
