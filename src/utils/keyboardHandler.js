@@ -7,85 +7,140 @@ class KeyBoardHandler {
     this.isListening = false;
     this.gridElCont = null;
     this.gridElContScale = 1;
+
+    // 支持“模式化”扩展（例如裁剪模式）
+    this.mode = "default";
+    this.modeHandlers = new Map();
+
+    this.commandMap = {
+      q: "pipes-pipe",
+      e: "belts-belt",
+      x: "enter-select",
+      f: "select-fold",
+      m: "select-move",
+      escape: "escape",
+    };
+
     this.handleKeydown = this.handleKeydown.bind(this);
   }
 
   // 初始化键盘事件监听
   init(gridElCont) {
+    this.gridElCont = gridElCont ?? this.gridElCont;
+    this.rootStore = this.rootStore ?? useRootStore();
+
     if (this.isListening) return;
-    this.gridElCont = gridElCont;
-    this.rootStore = useRootStore();
+
     window.addEventListener("keydown", this.handleKeydown);
     this.isListening = true;
   }
 
   // 更新缩放比例
   updateScale(scale) {
-    this.gridElContScale = scale;
+    this.gridElContScale = Number.isFinite(scale) ? scale : 1;
+  }
+
+  // 注册模式处理器：handler 返回 true 表示已消费事件
+  registerMode(modeName, handler) {
+    if (!modeName || typeof handler !== "function") return;
+    this.modeHandlers.set(modeName, handler);
+  }
+
+  // 切换模式
+  setMode(modeName = "default") {
+    this.mode = modeName;
+  }
+
+  // 注销模式
+  unregisterMode(modeName) {
+    if (!modeName) return;
+    this.modeHandlers.delete(modeName);
+    if (this.mode === modeName) this.mode = "default";
+  }
+
+  // 是否应忽略输入类元素中的按键
+  shouldIgnoreEvent(event) {
+    const target = event.target;
+    if (!target) return false;
+
+    const tagName = target.tagName?.toLowerCase();
+    const isTypingElement =
+      tagName === "input" ||
+      tagName === "textarea" ||
+      target.isContentEditable;
+
+    return isTypingElement;
+  }
+
+  writeCommand(command) {
+    if (!this.rootStore || !command) return;
+    this.rootStore.keyboardCommand = command;
+  }
+
+  handleWASD(event, key) {
+    if (!["w", "a", "s", "d"].includes(key)) return false;
+    if (!this.gridElCont) return false;
+
+    event.preventDefault();
+    const step = 50 * this.gridElContScale;
+
+    if (key === "w") this.gridElCont.scrollTop -= step;
+    if (key === "s") this.gridElCont.scrollTop += step;
+    if (key === "a") this.gridElCont.scrollLeft -= step;
+    if (key === "d") this.gridElCont.scrollLeft += step;
+
+    return true;
   }
 
   // 键盘按下事件处理
   handleKeydown(event) {
+    if (!this.rootStore) this.rootStore = useRootStore();
+
+    // 输入框中默认不劫持按键
+    if (this.shouldIgnoreEvent(event)) return;
+
     const key = event.key.toLowerCase();
 
-    // WASD 保留（输入层行为）
-    if (["w", "a", "s", "d"].includes(key)) {
-      event.preventDefault();
-      const step = 50 * this.gridElContScale;
-      if (key === "w") this.gridElCont.scrollTop -= step;
-      if (key === "s") this.gridElCont.scrollTop += step;
-      if (key === "a") this.gridElCont.scrollLeft -= step;
-      if (key === "d") this.gridElCont.scrollLeft += step;
-      return;
+    // 1) 优先执行当前模式处理器（例如裁剪模式）
+    const modeHandler = this.modeHandlers.get(this.mode);
+    if (typeof modeHandler === "function") {
+      const handled = modeHandler(event, {
+        key,
+        rootStore: this.rootStore,
+        gridElCont: this.gridElCont,
+        scale: this.gridElContScale,
+      });
+      if (handled) return;
     }
 
-    //Ctrl + C 复制
+    // 2) 默认行为：WASD 视图滚动
+    if (this.handleWASD(event, key)) return;
+
+    // 3) Ctrl + C 复制
     if (key === "c" && event.ctrlKey) {
       event.preventDefault();
-      this.rootStore.keyboardCommand = "select-copy";
+      this.writeCommand("select-copy");
       return;
     }
 
-    // 只做一件事：写命令
-    switch (key) {
-      case "q":
-        event.preventDefault();
-        this.rootStore.keyboardCommand = "pipes-pipe";
-        break;
-      case "e":
-        event.preventDefault();
-        this.rootStore.keyboardCommand = "belts-belt";
-        break;
-      case "x":
-        event.preventDefault();
-        this.rootStore.keyboardCommand = "enter-select";
-        break;
-      case "f":
-        event.preventDefault();
-        this.rootStore.keyboardCommand = "select-fold";
-        break;
-      case "r":
-        break;
-        //event.preventDefault();
-        //this.rootStore.keyboardCommand = "select-rotate";
-      case "m":
-        event.preventDefault();
-        this.rootStore.keyboardCommand = "select-move";
-        break;
-      case "escape":
-        event.preventDefault();
-        this.rootStore.keyboardCommand = "escape";
-        break;
+    // 4) 命令映射
+    const command = this.commandMap[key];
+    if (command) {
+      event.preventDefault();
+      this.writeCommand(command);
     }
   }
 
   // 销毁键盘事件监听
   destroy() {
-    if (!this.isListening) return;
+    if (this.isListening) {
+      window.removeEventListener("keydown", this.handleKeydown);
+      this.isListening = false;
+    }
 
-    window.removeEventListener("keydown", this.handleKeydown);
-    this.isListening = false;
     this.gridElCont = null;
+    this.mode = "default";
+
     // 重置状态变量
     if (this.rootStore) {
       this.rootStore.isXPressed = false;

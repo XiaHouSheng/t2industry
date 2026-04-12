@@ -10,8 +10,9 @@ export const useHomeStore = defineStore('home', {
       id: '',
       avatar: 'user'
     },
-    // 统计数据
+        // 统计数据
     totalBlueprints: 0,
+    totalUserBlueprints: 0,
     totalUsers: 0,
     totalViews: 0,
     totalDownloads: 0,
@@ -24,12 +25,13 @@ export const useHomeStore = defineStore('home', {
     userBlueprintsPage: 1,
     userBlueprintsLimit: 10,
     userBlueprintsTotal: 0,
+    userBlueprintsArea: null,
     // 筛选条件
     searchQuery: '',
     selectedArea: '',
     // 分页相关
     currentPage: 1,
-    pageSize: 12,
+    pageSize: 10,
     total: 0,
     // 验证码相关
     codeCountdown: 0,
@@ -44,20 +46,29 @@ export const useHomeStore = defineStore('home', {
     // 错误信息
     error: null
   }),
-  
+
   actions: {
+    resolveFileHash(uploadResponse) {
+      const payload = uploadResponse?.data;
+
+      if (typeof payload === 'string') {
+        return payload;
+      }
+
+      return payload?.fileHash || payload?.file_hash || payload?.hash || '';
+    },
+
     // 设置用户信息
     setUserInfo(info) {
-      //console.log("setUserInfo",info)
       this.userInfo = {
         isLoggedIn: true,
-        username: info.nickname || '',
+        username: info.nickname || info.username || '',
         id: info.id || '',
         avatar: info.avatar || 'user',
-        role: 'user' // 固定为user，不可外部传入
+        role: info.role || 'user'
       };
     },
-    
+
     // 注册
     async register(userData) {
       try {
@@ -71,24 +82,22 @@ export const useHomeStore = defineStore('home', {
         this.loading.user = false;
       }
     },
-    
+
     // 发送验证码
     async sendVerificationCode(email) {
       try {
         if (!email) {
           throw new Error('请输入邮箱');
         }
-        
+
         this.sendCodeLoading = true;
         this.error = null;
-        
-        // 调用发送验证码API
+
         await apiClient.sendVerificationCode({ email });
-        
-        // 开始倒计时
+
         this.codeCountdown = 60;
         this.startCountdown();
-        
+
         return { success: true, message: '验证码已发送，请查收' };
       } catch (err) {
         this.error = err.message || '发送验证码失败';
@@ -97,14 +106,13 @@ export const useHomeStore = defineStore('home', {
         this.sendCodeLoading = false;
       }
     },
-    
+
     // 开始倒计时
     startCountdown() {
-      // 清除之前的计时器
       if (this.countdownTimer) {
         clearInterval(this.countdownTimer);
       }
-      
+
       this.countdownTimer = setInterval(() => {
         if (this.codeCountdown > 0) {
           this.codeCountdown--;
@@ -114,7 +122,7 @@ export const useHomeStore = defineStore('home', {
         }
       }, 1000);
     },
-    
+
     // 清除倒计时
     clearCountdown() {
       if (this.countdownTimer) {
@@ -123,7 +131,7 @@ export const useHomeStore = defineStore('home', {
         this.codeCountdown = 0;
       }
     },
-    
+
     // 清除用户信息（登出）
     clearUserInfo() {
       this.userInfo = {
@@ -133,50 +141,35 @@ export const useHomeStore = defineStore('home', {
         avatar: 'user'
       };
     },
-    
+
     // 检查登录状态
-    checkLoginStatus() {
-      //console.log("checkLoginStatus")
-      const token = localStorage.getItem('token');
-      if (token) {
-        apiClient.setToken(token);
-        this.loadUserInfo();
-      }
+    async checkLoginStatus() {
+      // 当前后端使用 HttpOnly Cookie 维护登录态
+      await this.loadUserInfo();
     },
-    
+
     // 加载用户信息
     async loadUserInfo() {
       try {
         this.loading.user = true;
         const response = await apiClient.getUserInfo();
-        //console.log(response)
         this.setUserInfo(response.data || {});
       } catch (err) {
-        console.error('加载用户信息失败:', err);
-        // 如果加载失败，清除token
-        localStorage.removeItem('token');
-        apiClient.setToken(null);
         this.clearUserInfo();
       } finally {
         this.loading.user = false;
       }
     },
-    
+
     // 登录
     async login(credentials) {
-      
       try {
         this.loading.user = true;
         const response = await apiClient.login(credentials);
-        if (response.data.token) {
-          // 保存token
-          apiClient.setToken(response.data.token);
-          localStorage.setItem('token', response.data.token);
-          
-          // 设置用户信息
-          this.setUserInfo(response.data.user || {});
-          return response.data;
-        }
+
+        // 登录成功后通过 /user/info 获取完整用户信息
+        await this.loadUserInfo();
+        return response.data;
       } catch (err) {
         this.error = err.message || '登录失败';
         throw err;
@@ -184,33 +177,62 @@ export const useHomeStore = defineStore('home', {
         this.loading.user = false;
       }
     },
-    
-    // 登出
+
+        // 登出
     logout() {
-      // 清除token
-      apiClient.setToken(null);
-      localStorage.removeItem('token');
-      
-      // 清除用户信息
+      // Cookie 由后端控制，这里仅清理前端状态
       this.clearUserInfo();
     },
-    
+
+    // 上传文件并创建蓝图
+    async createUserBlueprint({ name, description, area, file }) {
+      const uploadResponse = await apiClient.uploadBlueprint(file);
+      const fileHash = this.resolveFileHash(uploadResponse);
+
+      if (!fileHash) {
+        throw new Error('上传失败：未获取到文件哈希');
+      }
+
+      return await apiClient.createBlueprint({
+        name,
+        description,
+        area,
+        fileHash
+      });
+    },
+
+    // 重新上传蓝图文件并更新 fileHash
+    async reuploadBlueprint(blueprintId, file) {
+      const uploadResponse = await apiClient.uploadBlueprint(file);
+      const fileHash = this.resolveFileHash(uploadResponse);
+
+      if (!fileHash) {
+        throw new Error('重新上传失败：未获取到文件哈希');
+      }
+
+      return await apiClient.updateBlueprint(blueprintId, { fileHash });
+    },
+
+    // 删除用户蓝图
+    async deleteUserBlueprint(blueprintId) {
+      return await apiClient.deleteBlueprint(blueprintId);
+    },
+
     // 加载统计数据
     async loadStats() {
       try {
         this.loading.stats = true;
-        // 使用新的主页数据接口获取统计数据
         const response = await apiClient.getHomepageData();
         const homepageData = response.data || {};
-        
-        // 更新统计数据
+
         this.totalBlueprints = homepageData.totalBlueprints || 0;
         this.totalUsers = homepageData.totalUsers || 0;
         this.totalViews = homepageData.totalViews || 0;
         this.totalDownloads = homepageData.totalDownloads || 0;
-        
-        // 更新热门蓝图
-        this.hotBlueprints = Array.isArray(homepageData.hotBlueprints) ? homepageData.hotBlueprints.slice(0, 7) : [];
+
+        this.hotBlueprints = Array.isArray(homepageData.hotBlueprints)
+          ? homepageData.hotBlueprints.slice(0, 7)
+          : [];
       } catch (err) {
         this.error = err.message || '加载统计数据失败';
         console.error('加载统计数据失败:', err);
@@ -218,87 +240,86 @@ export const useHomeStore = defineStore('home', {
         this.loading.stats = false;
       }
     },
-    
+
     // 加载蓝图列表
     async loadBlueprints(filters = {}) {
       try {
         this.loading.blueprints = true;
-        // 使用新的获取用户蓝图接口
         const response = await apiClient.getUserBlueprints({
-          sortBy: filters.sortBy || 'createdAt',
+          sortBy: filters.sortBy || 'views',
           sortOrder: filters.sortOrder || 'desc',
           page: filters.page || this.userBlueprintsPage,
-          limit: filters.limit || this.userBlueprintsLimit
+          limit: filters.limit || this.userBlueprintsLimit,
+          area: filters.area || this.userBlueprintsArea,
         });
-        // 确保allBlueprints始终是数组
+
         this.allBlueprints = Array.isArray(response.data?.items) ? response.data.items : [];
-        
-        // 更新用户蓝图分页相关数据
-        this.userBlueprintsTotal = response.data?.total || 0;
-        this.userBlueprintsPage = response.data?.page || 1;
-        this.userBlueprintsLimit = response.data?.limit || 10;
-                
-        // 更新统计数据
-        this.totalBlueprints = this.allBlueprints.length;
-        // 确保在使用reduce之前allBlueprints是数组
-        this.totalViews = Array.isArray(this.allBlueprints) ? this.allBlueprints.reduce((sum, bp) => sum + (bp.views || 0), 0) : 0;
-        this.totalDownloads = Array.isArray(this.allBlueprints) ? this.allBlueprints.reduce((sum, bp) => sum + (bp.downloads || 0), 0) : 0;
+
+                this.userBlueprintsTotal = response.data?.total || 0;
+                this.userBlueprintsPage = response.data?.page || 1;
+                this.userBlueprintsLimit = response.data?.limit || 10;
+                this.totalUserBlueprints = this.userBlueprintsTotal;
+
+                this.totalViews = Array.isArray(this.allBlueprints)
+          ? this.allBlueprints.reduce((sum, bp) => sum + (bp.views || 0), 0)
+          : 0;
+        this.totalDownloads = Array.isArray(this.allBlueprints)
+          ? this.allBlueprints.reduce((sum, bp) => sum + (bp.downloads || 0), 0)
+          : 0;
       } catch (err) {
         this.error = err.message || '加载蓝图失败';
-        // 出错时确保allBlueprints是数组
-        this.allBlueprints = [];
+                this.allBlueprints = [];
         this.userBlueprintsTotal = 0;
+        this.totalUserBlueprints = 0;
       } finally {
         this.loading.blueprints = false;
       }
     },
-    
+
     // 刷新数据
     async refreshData() {
-      await Promise.all([
-        this.loadStats(),
-        this.loadBlueprints()
-      ]);
+      if (this.userInfo.isLoggedIn) {
+        await Promise.all([
+          this.loadStats(),
+          this.loadBlueprints()
+        ]);
+        return;
+      }
+
+      await this.loadStats();
     },
-    
+
     // 加载发现页面蓝图数据（支持分页和筛选）
     async loadDiscoverBlueprints(page = 1, filters = {}) {
       try {
         this.loading.discover = true;
         this.error = null;
-        
-        // 构建筛选条件
+
         const searchFilters = {
           search: filters.search || this.searchQuery,
           area: filters.area || this.selectedArea,
           sortBy: 'views',
           sortOrder: 'desc',
-          page: page,
+          page,
           limit: filters.limit || this.pageSize
         };
-        
-        // 使用搜索接口获取蓝图列表
+
         const response = await apiClient.searchBlueprints(searchFilters);
-        // 确保discoverBlueprints始终是数组
         this.discoverBlueprints = Array.isArray(response.data?.items) ? response.data.items : [];
-        // 更新总条数
         this.total = response.data?.total || 0;
-        // 更新当前页码
         this.currentPage = page;
-        // 更新搜索和筛选条件
         this.searchQuery = filters.search || this.searchQuery;
         this.selectedArea = filters.area || this.selectedArea;
       } catch (err) {
         this.error = err.message || '加载蓝图失败';
         console.error('加载发现页面蓝图失败:', err);
-        // 出错时确保discoverBlueprints是数组
         this.discoverBlueprints = [];
         this.total = 0;
       } finally {
         this.loading.discover = false;
       }
     },
-    
+
     // 设置搜索和筛选条件
     setSearchFilters(filters) {
       if (filters.search !== undefined) {
@@ -317,7 +338,6 @@ export const useHomeStore = defineStore('home', {
 
     async getBlueprintById(blueprintId) {
       return await apiClient.getBlueprintById(blueprintId);
-    },
-
+    }
   }
 });

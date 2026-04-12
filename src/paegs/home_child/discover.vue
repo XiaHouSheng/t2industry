@@ -1,14 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import {
-  Search,
-  Share,
-  View,
-  Link,
-  Loading,
-  Upload,
-} from "@element-plus/icons-vue";
 import { toast } from "../../components/ui/wrapper-v1/toast";
 import { useHomeStore } from "../../stores/HomeStore";
 import { Pagination } from "../../components/ui/wrapper-v1/pagination/index.js";
@@ -60,7 +52,6 @@ const handleSearchChange = () => {
 
 // 处理每页大小变化
 const handleSizeChange = (size) => {
-  console.log("size", size);
   homeStore.setSearchFilters({ pageSize: size });
   homeStore.loadDiscoverBlueprints(1);
 };
@@ -99,15 +90,8 @@ const handleBilibili = (blueprint) => {
   //console.log("跳转到B站:", blueprint);
 };
 
-// 格式化时间为 y-m-d 格式
-const formatDate = (dateString) => {
-  if (!dateString) return "未知时间";
-  try {
-    const date = new Date(dateString);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-  } catch (err) {
-    return "未知时间";
-  }
+const handleRetry = () => {
+  homeStore.loadDiscoverBlueprints(currentPage.value);
 };
 
 // 页面加载时获取数据
@@ -137,9 +121,9 @@ onMounted(() => {
         :closable="false"
         show-icon
         class="mb-4 mx-6 mt-6"
-      >
+            >
         <template #default>
-          <el-button type="primary" size="small" @click="loadBlueprints"
+          <el-button type="primary" size="small" @click="handleRetry"
             >重试</el-button
           >
         </template>
@@ -166,9 +150,9 @@ onMounted(() => {
 
         <div v-if="!loading && total > 0" class="pagination-container">
           <Pagination
-            :current-page="currentPage"
-            :page-size="pageSize"
-            :page-sizes="[12, 24, 36]"
+            :current-page="homeStore.currentPage"
+            :page-size="homeStore.pageSize"
+            :page-sizes="[10, 20, 30]"
             layout="total, sizes, prev, pager, next, jumper"
             :total="total"
             @size-change="handleSizeChange"

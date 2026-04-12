@@ -2,35 +2,40 @@
  * API请求客户端
  * 封装了所有后端API的调用方法，方便前端使用
  */
-//https://api.t2blueprint.xyz
+//https://api.t2blueprint.xyz 生产环境用此host
 class ApiClient {
-  constructor(baseUrl = 'https://api.t2blueprint.xyz') {
+  constructor(baseUrl = "http://localhost:5000") {
     this.baseUrl = baseUrl;
-    this.token = null;
-  }
-
-  /**
-   * 设置认证令牌
-   * @param {string} token - JWT令牌
-   */
-  setToken(token) {
-    this.token = token;
+    this.searchBlueprintTimer = null;
   }
 
   /**
    * 构建请求头
+   * @param {boolean} isJson - 是否为 JSON 请求
    * @returns {Object} 请求头对象
    */
-  getHeaders() {
-    const headers = {
-      'Content-Type': 'application/json'
+  getHeaders(isJson = true) {
+    if (!isJson) return {};
+
+    return {
+      "Content-Type": "application/json",
     };
+  }
 
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
+  /**
+   * 统一发起请求（自动携带 Cookie）
+   * @param {string} endpoint - 接口路径
+   * @param {RequestInit} options - fetch 配置
+   * @returns {Promise<any>} 响应数据
+   */
+  async request(endpoint, options = {}) {
+    const url = `${this.baseUrl}${endpoint}`;
+    const response = await fetch(url, {
+      credentials: "include",
+      ...options,
+    });
 
-    return headers;
+    return this.handleResponse(response);
   }
 
   /**
@@ -39,13 +44,81 @@ class ApiClient {
    * @returns {Promise<any>} 响应数据
    */
   async handleResponse(response) {
-    const data = await response.json();
+    let data = null;
+
+    try {
+      data = await response.json();
+    } catch (err) {
+      if (!response.ok) {
+        throw new Error(`请求失败 (${response.status})`);
+      }
+      return { code: 200, data: null, msg: "success" };
+    }
 
     if (!response.ok) {
-      throw new Error(data.message || '请求失败');
+      throw new Error(
+        data?.msg || data?.message || `请求失败 (${response.status})`,
+      );
+    }
+
+    if (typeof data?.code === "number" && data.code !== 200) {
+      throw new Error(data?.msg || "请求失败");
     }
 
     return data;
+  }
+
+  /**
+   * 规范化蓝图数据结构（后端 snake_case -> 前端 camelCase）
+   * @param {Object} blueprint - 蓝图对象
+   * @returns {Object|null}
+   */
+  normalizeBlueprint(blueprint) {
+    if (!blueprint || typeof blueprint !== "object") return null;
+
+    const fileHash = blueprint.file_hash ?? blueprint.fileHash ?? null;
+    const biliHref = blueprint.bili_href ?? blueprint.biliHref ?? null;
+    const createdAt = blueprint.created_at ?? blueprint.createdAt ?? null;
+    const lastEdited = blueprint.last_edited ?? blueprint.lastEdited ?? null;
+    const editor = blueprint.editor ?? blueprint.creator?.name ?? null;
+
+    return {
+      ...blueprint,
+      fileHash,
+      biliHref,
+      createdAt,
+      lastEdited,
+      editor,
+      creator: { name: editor || "未知作者" },
+    };
+  }
+
+  /**
+   * 规范化分页蓝图响应
+   * @param {Object} payload
+   * @returns {Object}
+   */
+  normalizeBlueprintPagePayload(payload = {}) {
+    return {
+      ...payload,
+      items: Array.isArray(payload.items)
+        ? payload.items.map((item) => this.normalizeBlueprint(item))
+        : [],
+    };
+  }
+
+  /**
+   * 规范化用户信息
+   * @param {Object} user
+   * @returns {Object|null}
+   */
+  normalizeUser(user) {
+    if (!user || typeof user !== "object") return null;
+
+    return {
+      ...user,
+      blueprintCount: user.blueprint_count ?? user.blueprintCount ?? 0,
+    };
   }
 
   /**
@@ -55,15 +128,19 @@ class ApiClient {
    * @returns {Promise<any>} 响应数据
    */
   async get(endpoint, params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    const url = `${this.baseUrl}${endpoint}${queryString ? `?${queryString}` : ''}`;
+    const cleanParams = Object.entries(params).reduce((acc, [key, value]) => {
+      if (value === undefined || value === null || value === "") return acc;
+      acc[key] = value;
+      return acc;
+    }, {});
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.getHeaders()
+    const queryString = new URLSearchParams(cleanParams).toString();
+    const url = `${endpoint}${queryString ? `?${queryString}` : ""}`;
+
+    return this.request(url, {
+      method: "GET",
+      headers: this.getHeaders(),
     });
-
-    return this.handleResponse(response);
   }
 
   /**
@@ -73,15 +150,11 @@ class ApiClient {
    * @returns {Promise<any>} 响应数据
    */
   async post(endpoint, data = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
-
-    const response = await fetch(url, {
-      method: 'POST',
+    return this.request(endpoint, {
+      method: "POST",
       headers: this.getHeaders(),
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
-
-    return this.handleResponse(response);
   }
 
   /**
@@ -91,20 +164,11 @@ class ApiClient {
    * @returns {Promise<any>} 响应数据
    */
   async postFile(endpoint, formData) {
-    const url = `${this.baseUrl}${endpoint}`;
-
-    const headers = {};
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: formData
+    return this.request(endpoint, {
+      method: "POST",
+      headers: this.getHeaders(false),
+      body: formData,
     });
-
-    return this.handleResponse(response);
   }
 
   /**
@@ -114,15 +178,11 @@ class ApiClient {
    * @returns {Promise<any>} 响应数据
    */
   async put(endpoint, data = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
-
-    const response = await fetch(url, {
-      method: 'PUT',
+    return this.request(endpoint, {
+      method: "PUT",
       headers: this.getHeaders(),
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
-
-    return this.handleResponse(response);
   }
 
   /**
@@ -131,196 +191,156 @@ class ApiClient {
    * @returns {Promise<any>} 响应数据
    */
   async delete(endpoint) {
-    const url = `${this.baseUrl}${endpoint}`;
-
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: this.getHeaders()
+    return this.request(endpoint, {
+      method: "DELETE",
+      headers: this.getHeaders(),
     });
-
-    return this.handleResponse(response);
-  }
-
-  /**
-   * 下载文件
-   * @param {string} endpoint - 接口路径
-   * @returns {Promise<Blob>} 文件blob对象
-   */
-  async downloadFile(endpoint) {
-    const url = `${this.baseUrl}${endpoint}`;
-
-    const response = await fetch(url, {
-      method: 'GET'
-    });
-
-    if (!response.ok) {
-      throw new Error('下载失败');
-    }
-
-    return await response.blob();
   }
 
   // ==================== 蓝图相关接口 ====================
 
-  /**
-   * 获取蓝图列表
-   * @param {Object} filters - 筛选条件
-   * @returns {Promise<any>} 蓝图列表
-   */
   async getBlueprints(filters = {}) {
-    return this.get('/api/efs/v1/blueprints', filters);
+    const response = await this.get("/api/efs/v1/blueprints", filters);
+    return {
+      ...response,
+      data: this.normalizeBlueprintPagePayload(response.data),
+    };
   }
 
-  /**
-   * 创建蓝图
-   * @param {Object} blueprintData - 蓝图数据
-   * @param {string} blueprintData.name - 蓝图名称
-   * @param {string} blueprintData.description - 蓝图描述
-   * @param {string} blueprintData.area - 蓝图地区
-   * @param {string} [blueprintData.biliHref] - Bilibili链接
-   * @returns {Promise<any>} 创建的蓝图
-   */
   async createBlueprint(blueprintData) {
-    return this.post('/api/efs/v1/blueprints', blueprintData);
+    const response = await this.post("/api/efs/v1/blueprints", blueprintData);
+    return {
+      ...response,
+      data: this.normalizeBlueprint(response.data),
+    };
   }
 
-  /**
-   * 获取蓝图详情
-   * @param {number} id - 蓝图ID
-   * @returns {Promise<any>} 蓝图详情
-   */
   async getBlueprintById(id) {
-    return this.get(`/api/efs/v1/blueprints/${id}`);
+    const response = await this.get(`/api/efs/v1/blueprints/${id}`);
+    return {
+      ...response,
+      data: this.normalizeBlueprint(response.data),
+    };
   }
 
-  /**
-   * 更新蓝图
-   * @param {number} id - 蓝图ID
-   * @param {Object} blueprintData - 蓝图数据
-   * @param {string} [blueprintData.name] - 蓝图名称
-   * @param {string} [blueprintData.description] - 蓝图描述
-   * @param {string} [blueprintData.area] - 蓝图地区
-   * @param {string} [blueprintData.biliHref] - Bilibili链接
-   * @returns {Promise<any>} 更新后的蓝图
-   */
   async updateBlueprint(id, blueprintData) {
-    return this.put(`/api/efs/v1/blueprints/${id}`, blueprintData);
+    const response = await this.put(
+      `/api/efs/v1/blueprints/${id}`,
+      blueprintData,
+    );
+    return {
+      ...response,
+      data: this.normalizeBlueprint(response.data),
+    };
   }
 
-  /**
-   * 删除蓝图
-   * @param {number} id - 蓝图ID
-   * @returns {Promise<any>} 删除结果
-   */
   async deleteBlueprint(id) {
-    return this.delete(`/api/efs/v1/blueprints/${id}`);
+    const response = await this.delete(`/api/efs/v1/blueprints/${id}`);
+    return {
+      ...response,
+      data: this.normalizeBlueprint(response.data),
+    };
   }
 
   /**
    * 上传蓝图文件
-   * @param {number} blueprintId - 蓝图ID
-   * @param {File} file - 蓝图文件
-   * @returns {Promise<any>} 上传结果
+   * @param {File} file - 蓝图文件（.json）
+   * @returns {Promise<any>} 上传结果（data 为 fileHash）
    */
-  async uploadBlueprint(blueprintId, file) {
+  async uploadBlueprint(file) {
     const formData = new FormData();
-    formData.append('blueprintFile', file);
-    formData.append('id', blueprintId);
+    formData.append("file", file);
 
-    return this.postFile('/api/efs/v1/blueprints/upload', formData);
+    return this.postFile("/api/efs/v1/blueprints/upload", formData);
   }
 
   /**
    * 下载蓝图文件
-   * @param {string} fileName - 文件名
-   * @returns {Promise<Blob>} 文件blob对象
+   * @param {string} fileHash - 文件哈希
+   * @returns {Promise<any>} 文件JSON数据
    */
-  async downloadBlueprint(fileName) {
-    return this.downloadFile(`/download/${fileName}`);
+  async downloadBlueprint(fileHash) {
+    return this.get(`/api/efs/v1/blueprints/download/${fileHash}`);
   }
 
-  /**
-   * 搜索蓝图
-   * @param {Object} filters - 搜索条件
-   * @param {string} filters.search - 搜索关键词（按名称搜索）
-   * @param {string} filters.sortBy - 排序字段（例如 'views'）
-   * @param {string} filters.sortOrder - 排序顺序（'asc' 或 'desc'）
-   * @param {number} filters.page - 页码
-   * @param {number} filters.limit - 每页数量
-   * @returns {Promise<any>} 搜索结果
-   */
   async searchBlueprints(filters = {}) {
-    return this.get('/api/efs/v1/blueprints/search', filters);
+    clearTimeout(this.searchBlueprintTimer);
+    return new Promise((resolve, reject) => {
+      this.searchBlueprintTimer = setTimeout(async () => {
+        const searchFilters = {
+          ...filters,
+          name: filters.name ?? filters.search,
+        };
+        delete searchFilters.search;
+
+        const response = await this.get(
+          "/api/efs/v1/blueprints/search",
+          searchFilters,
+        );
+
+        const result = {
+          ...response,
+          data: this.normalizeBlueprintPagePayload(response.data),
+        };
+
+        resolve(result)
+
+      }, 500);
+    });
   }
 
-  /**
-   * 获取主页数据
-   * @returns {Promise<any>} 主页数据，包含总蓝图数量、总用户数、总浏览量、总下载数量、热门蓝图和随机蓝图
-   */
   async getHomepageData() {
-    return this.get('/api/efs/v1/blueprints/homepage');
+    const response = await this.get("/api/efs/v1/blueprints/homepage");
+    const homepageData = response.data || {};
+
+    return {
+      ...response,
+      data: {
+        totalBlueprints: homepageData.total_blueprints ?? 0,
+        totalUsers: homepageData.total_users ?? 0,
+        totalViews: homepageData.total_views ?? 0,
+        totalDownloads: homepageData.total_downloads ?? 0,
+        hotBlueprints: Array.isArray(homepageData.top_8_blueprints)
+          ? homepageData.top_8_blueprints.map((item) =>
+              this.normalizeBlueprint(item),
+            )
+          : [],
+      },
+    };
   }
 
-  /**
-   * 获取用户自己的蓝图
-   * @param {Object} filters - 筛选条件
-   * @returns {Promise<any>} 用户的蓝图列表
-   */
   async getUserBlueprints(filters = {}) {
-    return this.get('/api/efs/v1/blueprints/self', filters);
+    const response = await this.get("/api/efs/v1/blueprints/self", filters);
+    return {
+      ...response,
+      data: this.normalizeBlueprintPagePayload(response.data),
+    };
   }
 
   // ==================== 用户相关接口 ====================
 
-  /**
-   * 用户登录
-   * @param {Object} credentials - 登录凭证
-   * @returns {Promise<any>} 登录结果
-   */
   async login(credentials) {
-    return this.post('/api/efs/v1/user/login', credentials);
+    return this.post("/api/efs/v1/auth/login", credentials);
   }
 
-  /**
-   * 发送验证码
-   * @param {Object} data - 数据
-   * @param {string} data.email - 邮箱
-   * @returns {Promise<any>} 发送结果
-   */
   async sendVerificationCode(data) {
-    return this.post('/api/efs/v1/user/send-verification-code', data);
+    return this.post("/api/efs/v1/auth/send-captcha", data);
   }
 
-  /**
-   * 用户注册
-   * @param {Object} userData - 用户数据
-   * @param {string} userData.username - 用户名
-   * @param {string} userData.password - 密码
-   * @param {string} userData.nickname - 用户昵称
-   * @param {string} userData.email - 用户邮箱
-   * @param {string} userData.verificationCode - 验证码
-   * @returns {Promise<any>} 注册结果
-   */
   async register(userData) {
-    // 移除role字段，确保角色固定为user
-    const { role, ...dataWithoutRole } = userData;
-    return this.post('/api/efs/v1/user/register', dataWithoutRole);
+    const { verificationCode, role, ...rest } = userData;
+    return this.post("/api/efs/v1/auth/register", {
+      ...rest,
+      code: verificationCode,
+    });
   }
 
-  /**
-   * 获取用户信息
-   * @returns {Promise<any>} 用户信息
-   */
   async getUserInfo() {
-    return this.get('/api/efs/v1/user/info');
-  }
-
-  /**
-   * 验证Token
-   * @returns {Promise<any>} 验证结果
-   */
-  async validateToken() {
-    return this.get('/api/efs/v1/user/validate');
+    const response = await this.get("/api/efs/v1/user/info");
+    return {
+      ...response,
+      data: this.normalizeUser(response.data),
+    };
   }
 
   // ==================== 模拟相关接口 ====================
@@ -331,30 +351,16 @@ class ApiClient {
 
   // ==================== 数据查询接口 ====================
 
-  /**
-   * 获取机器列表
-   * @param {Object} filters - 筛选条件
-   * @returns {Promise<any>} 机器列表
-   */
   async getMachines(filters = {}) {
-    return this.get('/api/efs/v1/data/machines', filters);
+    return this.get("/api/efs/v1/data/machines", filters);
   }
 
-  /**
-   * 获取配方列表
-   * @param {Object} filters - 筛选条件
-   * @returns {Promise<any>} 配方列表
-   */
   async getRecipes(filters = {}) {
-    return this.get('/api/efs/v1/data/recipes', filters);
+    return this.get("/api/efs/v1/data/recipes", filters);
   }
 
-  /**
-   * 获取材料列表
-   * @returns {Promise<any>} 材料列表
-   */
   async getMaterials() {
-    return this.get('/api/efs/v1/data/materials');
+    return this.get("/api/efs/v1/data/materials");
   }
 }
 

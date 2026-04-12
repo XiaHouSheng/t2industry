@@ -56,23 +56,45 @@ class ApiParserClient {
    */
   async request(endpoint, options = {}) {
     const url = `${this.baseUrl}${endpoint}`;
-    const response = await fetch(url, options);
-    return this.handleResponse(response);
+
+    try {
+      const response = await fetch(url, options);
+      return this.handleResponse(response);
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error("网络请求失败，请检查服务地址或网络连接");
+      }
+      throw error;
+    }
   }
 
   /**
    * 上传图片
    * POST /upload
    * @param {File|Blob} file
-   * @returns {Promise<{code:number,msg:string,data:{image_url:string,asset_id:string,task_id:string}}>} 
+   * @param {{width:number,height:number}} options
+   * @returns {Promise<{code:number,msg:string,data:{image_url:string,asset_id:string,width:number,height:number}}>} 
    */
-  async uploadImage(file) {
+  async uploadImage(file, options = {}) {
     if (!file) {
       throw new Error("file 不能为空");
     }
 
+    const width = Number(options.width);
+    const height = Number(options.height);
+
+    if (!Number.isInteger(width) || width <= 0) {
+      throw new Error("width 必须是正整数");
+    }
+
+    if (!Number.isInteger(height) || height <= 0) {
+      throw new Error("height 必须是正整数");
+    }
+
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("width", String(width));
+    formData.append("height", String(height));
 
     return this.request("/upload", {
       method: "POST",

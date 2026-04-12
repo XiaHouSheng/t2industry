@@ -1,10 +1,8 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { Edit, Upload, Share, Delete } from "@element-plus/icons-vue";
 import toast from "../../components/ui/wrapper-v1/toast/toast.js";
 import { useHomeStore } from "../../stores/HomeStore";
-import apiClient from "../../utils/api-client";
 import { StatsCard } from "../../components/ui/wrapper-v1/card/index.js";
 import { SelfBlueprintCard } from "../../components/ui/wrapper-v1/card/index.js";
 import { GuideCard } from "../../components/ui/wrapper-v1/card/index.js";
@@ -47,13 +45,13 @@ const uploadForm = ref({
 const deleteDialogVisible = ref(false);
 const currentBlueprint = ref(null);
 const uploadFormRules = {
-  name: [
+    name: [
     { required: true, message: '请输入蓝图名称', trigger: 'blur' },
-    { min: 1, max: 50, message: '名称长度在 1 到 50 个字符', trigger: 'blur' }
+    { min: 2, max: 50, message: '名称长度在 2 到 50 个字符', trigger: 'blur' }
   ],
   description: [
     { required: true, message: '请输入蓝图描述', trigger: 'blur' },
-    { min: 1, max: 200, message: '描述长度在 1 到 200 个字符', trigger: 'blur' }
+    { min: 2, max: 50, message: '描述长度在 2 到 50 个字符', trigger: 'blur' }
   ],
   area: [
     { required: true, message: '请选择地区', trigger: 'change' }
@@ -126,8 +124,8 @@ const handleReupload = async (blueprint) => {
         // 显示加载状态
         blueprint.uploading = true;
         
-        // 调用API上传蓝图文件
-        await apiClient.uploadBlueprint(blueprint.id, file);
+                // 调用 Store 统一处理重新上传逻辑（上传文件并更新 fileHash）
+        await homeStore.reuploadBlueprint(blueprint.id, file);
         
         // 上传成功，重新加载蓝图列表
         await homeStore.loadBlueprints();
@@ -180,8 +178,8 @@ const confirmDelete = async () => {
   if (!currentBlueprint.value) return;
   
   try {
-    // 调用API删除蓝图
-    await apiClient.deleteBlueprint(currentBlueprint.value.id);
+        // 调用 Store 统一删除蓝图
+    await homeStore.deleteUserBlueprint(currentBlueprint.value.id);
     
     // 删除成功，重新加载蓝图列表
     await homeStore.loadBlueprints();
@@ -224,12 +222,17 @@ const handleUploadBlueprint = () => {
 };
 
 // 获取统计信息
-const totalBlueprints = computed(() => allBlueprints.value.length);
+const totalBlueprints = computed(() => {
+  if (!homeStore.userInfo.isLoggedIn) {
+    return localBlueprints.value.length;
+  }
+  return localBlueprints.value.length + homeStore.totalUserBlueprints;
+});
 const uploadedBlueprintsCount = computed(() => {
   if (!homeStore.userInfo.isLoggedIn) {
     return 0;
   }
-  return homeStore.allBlueprints.length;
+  return homeStore.totalUserBlueprints;
 });
 
 // 按地区统计蓝图数量
@@ -262,17 +265,6 @@ const statsLabels = computed(() => ({
   downloads: '武陵'
 }));
 
-// 格式化时间为 y-m-d 格式
-const formatDate = (dateString) => {
-  if (!dateString) return '未知';
-  try {
-    const date = new Date(dateString);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  } catch (err) {
-    return '未知';
-  }
-};
-
 // 处理文件选择
 const handleFileChange = (file) => {
   if (file) {
@@ -292,18 +284,13 @@ const submitUploadForm = async () => {
     
     uploadLoading.value = true;
     
-    // 首先创建蓝图记录
-    const blueprintData = {
+    // 通过 Store 统一处理：先上传文件，再创建蓝图
+    await homeStore.createUserBlueprint({
       name: uploadForm.value.name,
       description: uploadForm.value.description,
-      area: uploadForm.value.area
-    };
-    
-    const blueprintResponse = await apiClient.createBlueprint(blueprintData);
-    const blueprintId = blueprintResponse.data.id;
-    //console.log(blueprintResponse)
-    // 然后上传蓝图文件
-    await apiClient.uploadBlueprint(blueprintId, uploadForm.value.file);
+      area: uploadForm.value.area,
+      file: uploadForm.value.file,
+    });
     
     // 上传成功，重新加载蓝图列表
     await homeStore.loadBlueprints();
@@ -412,13 +399,13 @@ onMounted(() => {
       </div>
 
       <!-- 分页组件 -->
-      <div v-if="homeStore.userInfo.isLoggedIn && homeStore.userBlueprintsTotal > 0" class="pagination-container mx-6 mt-6">
+      <div v-if="homeStore.userInfo.isLoggedIn && homeStore.totalUserBlueprints > 0" class="pagination-container mx-6 mt-6">
         <Pagination
           v-model:current-page="homeStore.userBlueprintsPage"
           v-model:page-size="homeStore.userBlueprintsLimit"
-          :page-sizes="[10, 20, 30, 50]"
+          :page-sizes="[10, 20, 30]"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="homeStore.userBlueprintsTotal"
+          :total="homeStore.totalUserBlueprints"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
@@ -453,10 +440,11 @@ onMounted(() => {
                 class="!bg-gray-800 !border-gray-700 !text-gray-300"
               />
             </el-form-item>
-            <el-form-item label="地区" prop="area">
+                        <el-form-item label="地区" prop="area">
               <el-select
                 v-model="uploadForm.area"
                 placeholder="请选择地区"
+                :teleported="false"
                 class="!bg-gray-800 !border-gray-700 !text-gray-300"
               >
                 <el-option

@@ -1,18 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import {
-  House,
-  Grid,
-  User,
-  UserFilled,
-  View,
-  Share,
-  Link,
-  Lock,
-  Message,
-  Check,
-} from "@element-plus/icons-vue";
+import { User, UserFilled, Lock, Message, Check } from "@element-plus/icons-vue";
 import { useHomeStore } from "../stores/HomeStore";
 import {
   Dialog,
@@ -124,7 +113,7 @@ const handleLogin = async () => {
     loginError.value = "";
 
     // 调用登录API
-    const response = await homeStore.login(loginForm.value);
+    await homeStore.login(loginForm.value);
 
     // 登录成功，关闭对话框
     closeLoginDialog();
@@ -187,7 +176,7 @@ const handleRegister = async () => {
     registerError.value = "";
 
     // 调用注册API
-    const response = await homeStore.register({
+    await homeStore.register({
       username: registerForm.value.username,
       password: registerForm.value.password,
       nickname: registerForm.value.nickname,
@@ -227,8 +216,8 @@ const handleLogout = () => {
 
 // 初始化
 const init = async () => {
-  // 检查登录状态
-  homeStore.checkLoginStatus();
+  // 检查登录状态（基于 Cookie）
+  await homeStore.checkLoginStatus();
 
   // 加载数据
   await homeStore.refreshData();
@@ -253,7 +242,12 @@ onUnmounted(() => {
         <SelfCard :userInfo="homeStore.userInfo" />
         <div class="h-px bg-gray-800 my-2"></div>
         <SidebarMenu :active-menu="activeMenu" @select="handleMenuSelect" />
-        <LoginActions @login="openLoginDialog" @register="openRegisterDialog" />
+        <LoginActions
+          :is-logged-in="homeStore.userInfo.isLoggedIn"
+          @login="openLoginDialog"
+          @register="openRegisterDialog"
+          @logout="handleLogout"
+        />
 
         <!-- 登录对话框 -->
         <Dialog v-model:open="loginDialogVisible">

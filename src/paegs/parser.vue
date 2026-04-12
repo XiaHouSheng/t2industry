@@ -1,6 +1,8 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { UploadFilled } from "@element-plus/icons-vue";
+import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+
+import Cropper from "cropperjs";
+import { UploadFilled, Edit } from "@element-plus/icons-vue";
 import {
   Card,
   CardHeader,
@@ -20,6 +22,14 @@ const polling = ref(false);
 
 const uploadData = ref(null);
 const previewImageUrl = ref("");
+const cropDialogVisible = ref(false);
+const cropSaving = ref(false);
+const cropperImageRef = ref(null);
+let cropperInstance = null;
+
+const blueprintWidth = ref(20);
+const blueprintHeight = ref(40);
+
 const currentJobId = ref("");
 const parseResult = ref(null);
 const jobs = ref([]);
@@ -37,6 +47,10 @@ const canSubmitParse = computed(() => {
 });
 
 const canQueryResult = computed(() => Boolean(currentJobId.value));
+
+const previewSourceUrl = computed(() => {
+  return previewImageUrl.value || uploadData.value?.image_url || "";
+});
 
 const currentStatusText = computed(() => {
   const status = parseResult.value?.status;
@@ -121,12 +135,28 @@ const handleUploadImage = async () => {
     return;
   }
 
+  const width = Number(blueprintWidth.value);
+  const height = Number(blueprintHeight.value);
+
+  if (!Number.isInteger(width) || width <= 0) {
+    toast.warning("蓝图宽度必须是正整数");
+    return;
+  }
+
+  if (!Number.isInteger(height) || height <= 0) {
+    toast.warning("蓝图高度必须是正整数");
+    return;
+  }
+
   try {
     clearError();
     uploadLoading.value = true;
     setAuthToken();
 
-    const response = await apiParserClient.uploadImage(selectedFile.value);
+    const response = await apiParserClient.uploadImage(selectedFile.value, {
+      width,
+      height,
+    });
     uploadData.value = response.data;
 
     toast.success("图片上传成功，下一步可以开始解析啦");
@@ -199,13 +229,16 @@ const handlePollParserResult = async () => {
     polling.value = true;
     setAuthToken();
 
-    const response = await apiParserClient.pollParserResult(currentJobId.value, {
-      interval: 1200,
-      timeout: 120000,
-      onProgress: (res) => {
-        parseResult.value = res.data;
+    const response = await apiParserClient.pollParserResult(
+      currentJobId.value,
+      {
+        interval: 1200,
+        timeout: 120000,
+        onProgress: (res) => {
+          parseResult.value = res.data;
+        },
       },
-    });
+    );
 
     parseResult.value = response.data;
 
@@ -227,6 +260,98 @@ const handleUseJob = (jobId) => {
   toast.info("已选中历史任务");
 };
 
+const destroyCropper = () => {
+  if (cropperInstance) {
+    cropperInstance.destroy();
+    cropperInstance = null;
+  }
+};
+
+const initCropper = async () => {
+  await nextTick();
+
+  if (!cropperImageRef.value) {
+    return;
+  }
+
+  destroyCropper();
+
+  cropperInstance = new Cropper(cropperImageRef.value, {
+    viewMode: 1,
+    dragMode: "move",
+    autoCropArea: 0.9,
+    background: false,
+    responsive: true,
+    checkOrientation: false,
+  });
+};
+
+const handleEditPreview = () => {
+  if (!previewSourceUrl.value) {
+    toast.warning("请先上传或选择一张截图");
+    return;
+  }
+
+  cropDialogVisible.value = true;
+};
+
+const handleApplyCrop = async () => {
+  if (!cropperInstance) {
+    toast.warning("裁剪器尚未就绪");
+    return;
+  }
+
+  try {
+    cropSaving.value = true;
+
+    const canvas = cropperInstance.getCroppedCanvas({
+      imageSmoothingEnabled: true,
+      imageSmoothingQuality: "high",
+    });
+
+    if (!canvas) {
+      toast.warning("当前没有可裁剪区域");
+      return;
+    }
+
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (resultBlob) => {
+          if (resultBlob) {
+            resolve(resultBlob);
+          } else {
+            reject(new Error("裁剪失败，请重试"));
+          }
+        },
+        "image/png",
+        0.95,
+      );
+    });
+
+    const croppedFile = new File([blob], `crop-${Date.now()}.png`, {
+      type: "image/png",
+    });
+
+    selectedFile.value = croppedFile;
+
+    if (previewImageUrl.value && previewImageUrl.value.startsWith("blob:")) {
+      URL.revokeObjectURL(previewImageUrl.value);
+    }
+
+    previewImageUrl.value = URL.createObjectURL(croppedFile);
+    uploadData.value = null;
+    parseResult.value = null;
+    currentJobId.value = "";
+    cropDialogVisible.value = false;
+
+    toast.success("裁剪完成，请重新上传截图");
+  } catch (error) {
+    toast.error(error.message || "裁剪失败");
+  } finally {
+    cropSaving.value = false;
+  }
+};
+
 const downloadBlueprintData = (sourceResult, fileName) => {
   let blueprintData = sourceResult.blueprint;
   if (typeof blueprintData === "string") {
@@ -238,7 +363,10 @@ const downloadBlueprintData = (sourceResult, fileName) => {
   }
 
   const baseName = (fileName || "parser-blueprint").trim();
-  const safeName = (baseName || "parser-blueprint").replace(/[\\/:*?"<>|]/g, "_");
+  const safeName = (baseName || "parser-blueprint").replace(
+    /[\\/:*?"<>|]/g,
+    "_",
+  );
   const finalName = safeName.endsWith(".json") ? safeName : `${safeName}.json`;
 
   const blob = new Blob([JSON.stringify(blueprintData, null, 2)], {
@@ -283,11 +411,16 @@ const handleDownloadHistoryJob = (job) => {
     return;
   }
 
-  downloadBlueprintData(parsed, `${downloadFileName.value || "parser-blueprint"}-${job.jobId.slice(0, 8)}`);
+  downloadBlueprintData(
+    parsed,
+    `${downloadFileName.value || "parser-blueprint"}-${job.jobId.slice(0, 8)}`,
+  );
   toast.success("历史蓝图已下载");
 };
 
 onUnmounted(() => {
+  destroyCropper();
+
   if (previewImageUrl.value && previewImageUrl.value.startsWith("blob:")) {
     URL.revokeObjectURL(previewImageUrl.value);
   }
@@ -303,9 +436,7 @@ const handleGetJobs = async () => {
     const jobIds = response.data?.job_ids || [];
 
     const settled = await Promise.allSettled(
-      jobIds.map((jobId) =>
-        apiParserClient.getParserResult({ job_id: jobId }),
-      ),
+      jobIds.map((jobId) => apiParserClient.getParserResult({ job_id: jobId })),
     );
 
     jobs.value = jobIds.map((jobId, index) => {
@@ -387,9 +518,13 @@ onMounted(() => {
               class="w-full"
             >
               <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
-              <div class="el-upload__text">把游戏截图拖进来，或者 <em>点击选择</em></div>
+              <div class="el-upload__text">
+                把游戏截图拖进来，或者 <em>点击选择</em>
+              </div>
               <template #tip>
-                <div class="text-gray-400 mt-2">支持 png / jpg / jpeg / webp</div>
+                <div class="text-gray-400 mt-2">
+                  支持 png / jpg / jpeg / webp
+                </div>
               </template>
             </el-upload>
 
@@ -427,8 +562,35 @@ onMounted(() => {
               </button>
             </div>
 
+            <div class="mt-4 size-input-row">
+              <div class="size-input-item">
+                <label class="block text-sm text-gray-400 mb-2">蓝图宽度</label>
+                <input
+                  v-model.number="blueprintWidth"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="例如 1920"
+                  class="size-input"
+                />
+              </div>
+              <div class="size-input-item">
+                <label class="block text-sm text-gray-400 mb-2">蓝图高度</label>
+                <input
+                  v-model.number="blueprintHeight"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="例如 1080"
+                  class="size-input"
+                />
+              </div>
+            </div>
+
             <div class="mt-4">
-              <label class="block text-sm text-gray-400 mb-2">高级选项：任务ID（可不填）</label>
+              <label class="block text-sm text-gray-400 mb-2"
+                >高级选项：任务ID（可不填）</label
+              >
               <input
                 v-model="currentJobId"
                 type="text"
@@ -439,21 +601,30 @@ onMounted(() => {
           </CardContent>
         </Card>
 
-                <Card>
+        <Card>
           <CardHeader>
-            <CardTitle>截图预览（预留）</CardTitle>
+            <div class="preview-header-row">
+              <CardTitle> 预览/编辑 </CardTitle>
+              <el-button
+                circle
+                type="primary"
+                class="preview-edit-btn"
+                @click="handleEditPreview"
+                color="#facc15"
+              >
+                <el-icon><Edit /></el-icon>
+              </el-button>
+            </div>
           </CardHeader>
           <CardContent>
             <div class="image-preview-box">
               <img
-                v-if="previewImageUrl || uploadData?.image_url"
-                :src="previewImageUrl || uploadData?.image_url"
+                v-if="previewSourceUrl"
+                :src="previewSourceUrl"
                 alt="上传截图预览"
                 class="preview-image"
               />
-              <div v-else class="preview-empty">
-                这里会显示你上传的截图
-              </div>
+              <div v-else class="preview-empty">这里会显示你上传的截图</div>
             </div>
           </CardContent>
         </Card>
@@ -464,10 +635,19 @@ onMounted(() => {
           </CardHeader>
 
           <CardContent>
-                        <div class="status-box">
-              <p><span class="text-gray-400">当前状态：</span>{{ currentStatusText }}</p>
-              <p><span class="text-gray-400">任务ID：</span>{{ currentJobId || "-" }}</p>
-              <p><span class="text-gray-400">错误信息：</span>{{ parseResult?.error_msg || "无" }}</p>
+            <div class="status-box">
+              <p>
+                <span class="text-gray-400">当前状态：</span
+                >{{ currentStatusText }}
+              </p>
+              <p>
+                <span class="text-gray-400">任务ID：</span
+                >{{ currentJobId || "-" }}
+              </p>
+              <p>
+                <span class="text-gray-400">错误信息：</span
+                >{{ parseResult?.error_msg || "无" }}
+              </p>
             </div>
 
             <div class="download-row">
@@ -503,22 +683,24 @@ onMounted(() => {
             <CardTitle>历史任务</CardTitle>
           </CardHeader>
           <CardContent>
-            <button class="secondary-btn" :disabled="jobsLoading" @click="handleGetJobs">
+            <button
+              class="secondary-btn"
+              :disabled="jobsLoading"
+              @click="handleGetJobs"
+            >
               {{ jobsLoading ? "加载中..." : "刷新历史任务" }}
             </button>
 
             <div class="mt-4 max-h-[220px] overflow-y-auto pr-1 space-y-2">
-                            <div
-                v-for="job in jobs"
-                :key="job.jobId"
-                class="task-item"
-              >
+              <div v-for="job in jobs" :key="job.jobId" class="task-item">
                 <div class="task-main">
                   <span class="truncate">{{ job.jobId }}</span>
                   <span class="task-status">{{ job.statusText }}</span>
                 </div>
                 <div class="task-actions">
-                  <button class="mini-btn" @click="handleUseJob(job.jobId)">选中</button>
+                  <button class="mini-btn" @click="handleUseJob(job.jobId)">
+                    选中
+                  </button>
                   <button
                     class="mini-btn secondary-mini-btn"
                     :disabled="!job.canDownload"
@@ -529,13 +711,46 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div v-if="!jobsLoading && jobs.length === 0" class="text-sm text-gray-500 py-2">
+              <div
+                v-if="!jobsLoading && jobs.length === 0"
+                class="text-sm text-gray-500 py-2"
+              >
                 暂无历史任务
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      <el-dialog
+        v-model="cropDialogVisible"
+        title="裁剪截图"
+        width="760px"
+        destroy-on-close
+        @opened="initCropper"
+        @closed="destroyCropper"
+      >
+        <div class="cropper-wrapper">
+          <img
+            ref="cropperImageRef"
+            :src="previewSourceUrl"
+            alt="待裁剪截图"
+            class="cropper-image"
+            crossorigin="anonymous"
+          />
+        </div>
+
+        <template #footer>
+          <el-button @click="cropDialogVisible = false">取消</el-button>
+          <el-button
+            type="primary"
+            :loading="cropSaving"
+            @click="handleApplyCrop"
+          >
+            应用裁剪
+          </el-button>
+        </template>
+      </el-dialog>
     </el-col>
   </el-row>
 </template>
@@ -627,12 +842,64 @@ onMounted(() => {
   font-size: 14px;
 }
 
-.image-preview-box {
+.preview-header-row {
+  display: flex;
+  align-items: center;
   width: 100%;
-  height: 100%;
-  min-height: 360px;
-  border-radius: 8px;
+  gap: 8px;
+}
+
+.preview-edit-btn {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.cropper-wrapper {
+  width: 100%;
+  height: 520px;
+  background: #0b1220;
   border: 1px solid #374151;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cropper-image {
+  display: block;
+  width: 100%;
+  max-height: 100%;
+}
+
+.size-input-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.size-input-item {
+  flex: 1;
+  min-width: 160px;
+}
+
+.size-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #4b5563;
+  background: #111827;
+  color: #e5e7eb;
+  outline: none;
+}
+
+.size-input:focus {
+  border-color: #facc15;
+  box-shadow: 0 0 0 1px #facc15;
+}
+
+.image-preview-box {
+  width: min(100%, 460px);
+  height: 400px;
+  margin: 0 auto;
+  box-sizing: border-box;
   background: #111827;
   display: flex;
   align-items: center;
@@ -641,9 +908,13 @@ onMounted(() => {
 }
 
 .preview-image {
+  padding: 4px;
   width: 100%;
   height: 100%;
   object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid #1f2937;
+  background: #030712;
 }
 
 .preview-empty {
@@ -652,7 +923,6 @@ onMounted(() => {
 }
 
 .task-item {
-
   padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid #374151;
@@ -688,7 +958,6 @@ onMounted(() => {
   gap: 8px;
   flex-wrap: wrap;
 }
-
 
 .download-name-input {
   flex: 1;
@@ -731,8 +1000,4 @@ onMounted(() => {
 .mini-btn.secondary-mini-btn:hover {
   background: #374151;
 }
-
 </style>
-
-
-  
